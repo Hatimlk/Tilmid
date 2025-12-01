@@ -1,0 +1,643 @@
+
+import { BlogPost, Student, Appointment, SuccessStory, VideoReel } from '../types';
+
+// Keys
+const KEYS = {
+  POSTS: 'tilmid_posts',
+  STUDENTS: 'tilmid_students',
+  APPOINTMENTS: 'tilmid_appointments',
+  STORIES: 'tilmid_stories',
+  REELS: 'tilmid_reels'
+};
+
+// Initial Seed Data (Moved from constants.ts)
+const SEED_DATA = {
+  POSTS: [
+    {
+      id: '1',
+      title: "هاد التقنية غادي تنفعك إلى كنتي كاتعاني من التسويف",
+      category: "تقنية POMODORO",
+      date: "1 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "تعرف على كيفية استخدام تقنية بومودورو لزيادة الإنتاجية والتغلب على الملل أثناء المراجعة.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p class="text-lg font-medium">هل تجد صعوبة في البدء بالمذاكرة؟ هل تشعر بالملل بعد 10 دقائق فقط؟ تقنية <strong>بومودورو (Pomodoro)</strong> هي الحل السحري الذي يستخدمه ملايين الطلاب حول العالم.</p>
+            
+            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 my-6">
+                <h3 class="text-xl font-bold text-primary mb-3">🍅 ما هي هذه التقنية؟</h3>
+                <p>هي طريقة لإدارة الوقت طورها الإيطالي "فرانسيسكو سيريلو" في أواخر الثمانينيات. الفكرة بسيطة: تقسيم وقت العمل إلى فترات زمنية قصيرة (25 دقيقة) مفصولة باستراحات قصيرة.</p>
+            </div>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">خطوات التطبيق العملية:</h3>
+            <ul class="space-y-4">
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">1</span>
+                    <div>
+                        <strong>اختر المهمة:</strong> حدد درساً واحداً أو تمريناً تريد إنجازه.
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">2</span>
+                    <div>
+                        <strong>اضبط المؤقت:</strong> عير المنبه على 25 دقيقة (تسمى هذه الفترة "بومودورو").
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">3</span>
+                    <div>
+                        <strong>اعمل بتركيز تام:</strong> ركز فقط على المهمة حتى يرن المنبه. لا هاتف، لا فيسبوك!
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">4</span>
+                    <div>
+                        <strong>خذ استراحة قصيرة:</strong> خذ استراحة لمدة 5 دقائق (تمدد، اشرب ماء، تنفس).
+                    </div>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold">5</span>
+                    <div>
+                        <strong>كرر العملية:</strong> بعد كل 4 دورات "بومودورو"، خذ استراحة طويلة (15-30 دقيقة).
+                    </div>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-8 mb-4">لماذا تنجح هذه الطريقة؟</h3>
+            <p>لأنها تحول المهمة الكبيرة "المخيفة" إلى خطوات صغيرة يمكن إدارتها. كما أن فكرة "الاستراحة القادمة" تحفز الدماغ على الاستمرار في التركيز.</p>
+        </div>
+      `,
+      author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+      status: 'published',
+      views: 1205
+    },
+    {
+      id: '2',
+      title: "هاد التقنية كاتقوليك إلى بغيتي تكون سبع مرحبا بيك",
+      category: "تقنية MURDER",
+      date: "3 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "استراتيجية MURDER الشاملة للمذاكرة الفعالة والحفظ السريع للمعلومات المعقدة.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p class="text-lg">هل تعاني من نسيان المعلومات بمجرد الانتهاء من المراجعة؟ نظام <strong>MURDER</strong> هو نظام دراسي متكامل صممه علماء النفس للمساعدة في تخزين المعلومات في الذاكرة طويلة المدى.</p>
+            
+            <h3 class="text-2xl font-bold text-gray-900 mt-6 mb-4">تفكيك نظام M.U.R.D.E.R:</h3>
+            
+            <div class="grid gap-4 md:grid-cols-2">
+                <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">Mood (المزاج)</h4>
+                    <p class="text-sm">هيئ عقلك ونفسيتك للدراسة. اختر مكاناً هادئاً وتخلص من الأفكار السلبية.</p>
+                </div>
+                <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">Understand (الفهم)</h4>
+                    <p class="text-sm">لا تحفظ دون فهم! حدد النقاط الغامضة في الدرس وابحث عن شرح لها أولاً.</p>
+                </div>
+                <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">Recall (الاسترجاع)</h4>
+                    <p class="text-sm">أغلق الكتاب وحاول تذكر ما قرأته، صغ المعلومات بأسلوبك الخاص.</p>
+                </div>
+                <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">Digest (الهضم)</h4>
+                    <p class="text-sm">عد إلى الأجزاء التي لم تستطع تذكرها، بسطها ولخصها مرة أخرى.</p>
+                </div>
+                <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">Expand (التوسع)</h4>
+                    <p class="text-sm">اربط المعلومات الجديدة بمعلومات سابقة لديك. اسأل نفسك: كيف يمكن تطبيق هذا؟</p>
+                </div>
+                <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">Review (المراجعة)</h4>
+                    <p class="text-sm">راجع بانتظام لضمان بقاء المعلومة راسخة.</p>
+                </div>
+            </div>
+
+            <p class="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <strong>نصيحة ذهبية:</strong> تطبيق هذه الخطوات بالترتيب يضمن لك فهم الدرس بنسبة تصل إلى 90% مقارنة بالقراءة العادية.
+            </p>
+        </div>
+      `,
+      author: { name: "سارة العلمي", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+      status: 'published',
+      views: 980
+    },
+    {
+      id: '3',
+      title: "تخيل فرضو عليك تاكل ضفدع أو يتم قتلك",
+      category: "تقنية أكل الضفدع",
+      date: "4 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "كيف تبدأ بأصعب المهام في يومك لتضمن النجاح وتتخلص من ضغط المماطلة.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <div class="border-r-4 border-green-500 pr-4 bg-gray-50 p-4 rounded-r-xl">
+                <p class="italic text-gray-600">"إذا كان عملك هو أكل ضفدع، فمن الأفضل أن تفعله أول شيء في الصباح. وإذا كان عملك هو أكل ضفدعين، فمن الأفضل أن تأكل الأكبر أولاً."</p>
+                <p class="text-sm font-bold mt-2 text-gray-800">- مارك توين</p>
+            </div>
+
+            <p>لا تقلق، لن تأكل ضفادع حقيقية! 🐸 المقصود بـ <strong>"الضفدع"</strong> هنا هو المهمة الأصعب، الأثقل، والأكثر أهمية في يومك، تلك المهمة التي تميل لتأجيلها باستمرار.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">كيف تطبق هذه التقنية في دراستك؟</h3>
+            <ol class="list-decimal list-inside space-y-4 marker:font-bold marker:text-green-600">
+                <li><strong>حدد ضفدعك:</strong> في الليلة السابقة، حدد أصعب مادة أو تمرين عليك القيام به غداً (مثلاً: حل مسألة الرياضيات المعقدة).</li>
+                <li><strong>كله أولاً:</strong> ابدأ يومك الدراسي بإنجاز هذه المهمة مباشرة. لا تفتح الهاتف، لا تراجع مواد سهلة، ابدأ بالصعب.</li>
+                <li><strong>استمتع بالإنجاز:</strong> بمجرد الانتهاء من أصعب مهمة في الصباح الباكر، ستشعر بدفعة هائلة من الدوبامين (هرمون السعادة) والثقة بالنفس.</li>
+            </ol>
+
+            <div class="bg-green-50 p-6 rounded-2xl mt-6">
+                <h4 class="font-bold text-green-800 mb-2">لماذا تنجح؟</h4>
+                <p class="text-green-700 text-sm">لأن إرادتنا وطاقتنا الذهنية تكون في ذروتها صباحاً. إذا تركت المهام الصعبة للمساء، غالباً لن تنجزها بسبب التعب.</p>
+            </div>
+        </div>
+      `,
+      author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+      status: 'published',
+      views: 1500
+    },
+    {
+        id: '4',
+        title: "من أكثر التقنيات الرائعة ولي غادي تخليك منظم",
+        category: "تقنية كانبان",
+        date: "5 شتنبر 2023",
+        image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "نظام كانبان الياباني لتنظيم المهام الدراسية وتتبع تقدمك بشكل بصري ممتع.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+              <p>كلمة <strong>"كانبان" (Kanban)</strong> هي كلمة يابانية تعني "بطاقة مرئية". هي طريقة رائعة لتصور مهامك الدراسية ومعرفة أين وصلت بالضبط، مما يقلل من التوتر والقلق.</p>
+              
+              <h3 class="text-2xl font-bold text-gray-900 mt-6 mb-4">كيف تصنع لوحة كانبان للدراسة؟</h3>
+              <p>تحتاج فقط لسبورة (أو ورقة كبيرة) وأوراق ملاحظات لاصقة (Stickynotes). قسم اللوحة إلى 3 أعمدة:</p>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div class="bg-gray-100 p-4 rounded-xl border-t-4 border-red-400">
+                      <h4 class="font-bold text-center mb-2">1. المهام (To Do)</h4>
+                      <p class="text-xs text-gray-500 text-center">ضع هنا كل الدروس والتمارين التي "يجب" عليك فعلها.</p>
+                  </div>
+                  <div class="bg-blue-50 p-4 rounded-xl border-t-4 border-blue-400">
+                      <h4 class="font-bold text-center mb-2">2. جاري العمل (Doing)</h4>
+                      <p class="text-xs text-gray-500 text-center">انقل هنا فقط المهمة التي تدرسها "الآن". (مهمة واحدة أو اثنتين كحد أقصى).</p>
+                  </div>
+                  <div class="bg-green-50 p-4 rounded-xl border-t-4 border-green-400">
+                      <h4 class="font-bold text-center mb-2">3. تم الإنجاز (Done)</h4>
+                      <p class="text-xs text-gray-500 text-center">الشعور الأجمل! انقل البطاقة هنا بعد الانتهاء.</p>
+                  </div>
+              </div>
+
+              <h3 class="text-2xl font-bold text-gray-900 mt-8">الفائدة النفسية:</h3>
+              <ul class="list-disc list-inside space-y-2">
+                  <li>تمنعك من الشعور بالضياع وسط كثرة الدروس.</li>
+                  <li>رؤية عمود "تم الإنجاز" يمتلئ يعطيك حافزاً قوياً للاستمرار.</li>
+                  <li>تساعدك على التركيز على مهمة واحدة في كل مرة (عمود "جاري العمل").</li>
+              </ul>
+          </div>
+        `,
+        author: { name: "محمد التازي", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 850
+    },
+    // Tawjih Articles
+    {
+        id: '9',
+        title: "الفرق بين المدارس و المعاهد و الجامعات",
+        category: "توجيه",
+        date: "12 أكتوبر 2023",
+        image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "دليلك الشامل لفهم الفرق بين مؤسسات التعليم العالي واختيار الأنسب لمسارك المهني.",
+        content: `
+          <div class="space-y-8 text-gray-700 leading-relaxed">
+            <p class="text-lg font-medium">بعد الحصول على البكالوريا، يجد الطالب نفسه أمام مفترق طرق: الجامعة؟ المدارس العليا؟ أم المعاهد؟ فهم الفرق بينهم هو الخطوة الأولى لاختيار المسار الصحيح.</p>
+            
+            <div class="space-y-6">
+                <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100">
+                    <h3 class="text-xl font-bold text-orange-600 mb-2 flex items-center gap-2">🏛️ 1. الجامعات (Facultés)</h3>
+                    <p><strong>طبيعة الولوج:</strong> مفتوح لجميع الحاصلين على البكالوريا (باستثناء FMP/FMD التي تتطلب مباراة).</p>
+                    <p><strong>النظام:</strong> تعتمد نظام LMD (إجازة 3 سنوات، ماستر 5 سنوات، دكتوراه 8 سنوات).</p>
+                    <p><strong>المميزات:</strong> حرية أكاديمية، وتكوين نظري قوي يؤسس للبحث العلمي. تتطلب من الطالب انضباطاً ذاتياً كبيراً لأن الحضور غير إجباري في المحاضرات الكبرى.</p>
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <h3 class="text-xl font-bold text-blue-600 mb-2 flex items-center gap-2">🎓 2. المدارس العليا (Grandes Écoles)</h3>
+                    <p><strong>أمثلة:</strong> ENCG, ENSA, ENSAM, ENA.</p>
+                    <p><strong>طبيعة الولوج:</strong> محدود جداً (انتقاء أولي + مباراة كتابية).</p>
+                    <p><strong>النظام:</strong> تكوين يمتد عادة لـ 5 سنوات. يجمع بين النظري والتطبيقي.</p>
+                    <p><strong>المميزات:</strong> ربط مباشر بسوق الشغل، تكوين في "المهارات الناعمة" (Soft Skills)، وتوفر داخليات في الغالب. الحضور إجباري والصرامة عالية.</p>
+                </div>
+
+                <div class="bg-green-50 p-6 rounded-2xl border border-green-100">
+                    <h3 class="text-xl font-bold text-green-600 mb-2 flex items-center gap-2">🛠️ 3. المعاهد (Instituts)</h3>
+                    <p><strong>أمثلة:</strong> ISTA (OFPPT), ISPITS (التمريض), ISIC (الإعلام).</p>
+                    <p><strong>طبيعة الولوج:</strong> انتقاء أو مباراة حسب المعهد.</p>
+                    <p><strong>النظام:</strong> مدة دراسة قصيرة (سنتين إلى 3 سنوات).</p>
+                    <p><strong>المميزات:</strong> تكوين مهني تقني بحت يهدف لإدماج الطالب في سوق الشغل فور التخرج. مناسب لمن يريد مساراً عملياً سريعاً.</p>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-lg mt-6">نصيحة أخيرة:</h3>
+            <p>لا يوجد خيار "أفضل" بالمطلق، بل يوجد الخيار "الأنسب" لشخصيتك وطموحك. إذا كنت تحب البحث والنظريات فالجامعة مكانك، وإذا كنت تفضل التطبيق والهندسة فالمدارس العليا هي وجهتك.</p>
+          </div>
+        `,
+        author: { name: "المستشار التربوي", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 2300
+    },
+    {
+        id: '10',
+        title: "المدارس بعد الباك: دليلك الشامل",
+        category: "توجيه",
+        date: "15 أكتوبر 2023",
+        image: "https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "قائمة بأفضل المدارس العليا العمومية والخاصة التي يمكنك الالتحاق بها بعد الحصول على البكالوريا.",
+        content: `
+          <div class="space-y-8 text-gray-700 leading-relaxed">
+            <p>بعد الحصول على الباكالوريا، تفتح أمامك أبواب العديد من المدارس العليا في المغرب. لتبسيط الأمر، قسمنا لك أهم المدارس حسب المجالات:</p>
+            
+            <div class="grid gap-6 md:grid-cols-2">
+                <div class="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="font-bold text-blue-600 text-lg mb-2">1. مجال الهندسة</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>ENSA:</strong> المدارس الوطنية للعلوم التطبيقية.</li>
+                        <li><strong>ENSAM:</strong> المدارس الوطنية العليا للفنون والمهن.</li>
+                        <li><strong>APESA:</strong> معهد الحسن الثاني للزراعة والبيطرة (تكوين مهندسين زراعيين).</li>
+                    </ul>
+                </div>
+
+                <div class="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="font-bold text-purple-600 text-lg mb-2">2. مجال التجارة والتسيير</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>ENCG:</strong> المدارس الوطنية للتجارة والتسيير.</li>
+                        <li><strong>ISCAE:</strong> المعهد العالي للتجارة وإدارة المقاولات (يتطلب باك+2 لبعض التخصصات أو انتقاء دقيق).</li>
+                    </ul>
+                </div>
+
+                <div class="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="font-bold text-green-600 text-lg mb-2">3. مجال الصحة</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>FMP/FMD:</strong> كليات الطب والصيدلة وطب الأسنان.</li>
+                        <li><strong>ISPITS:</strong> المعاهد العليا للمهن التمريضية وتقنيات الصحة.</li>
+                    </ul>
+                </div>
+
+                <div class="border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="font-bold text-red-500 text-lg mb-2">4. الفنون والهندسة المعمارية</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>ENA:</strong> المدرسة الوطنية للهندسة المعمارية.</li>
+                        <li><strong>INBA:</strong> المعهد الوطني للفنون الجميلة.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-2xl mt-6">
+                <h4 class="font-bold text-gray-900 mb-2">⚠️ ملاحظة هامة:</h4>
+                <p>كل هذه المدارس تتطلب نقطاً جيدة في الباكالوريا واجتياز مباريات كتابية. ننصحك بالاطلاع على "الإطار المرجعي" لمباراة كل مدرسة والبدء في التحضير لها مباشرة بعد الامتحانات الوطنية.</p>
+            </div>
+          </div>
+        `,
+        author: { name: "فريق التوجيه", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 3100
+    },
+    {
+        id: '11',
+        title: "كيفية حساب عتبة الانتقاء للمدارس العليا",
+        category: "توجيه",
+        date: "20 أكتوبر 2023",
+        image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "شرح مفصل لكيفية احتساب المعدل العام ومعدل الانتقاء لمختلف المباريات والمدارس العليا.",
+        content: `
+          <div class="space-y-8 text-gray-700 leading-relaxed">
+            <p>عتبة الانتقاء (Seuil de présélection) هي النقطة الدنيا التي يجب أن يحصل عليها التلميذ ليتم استدعاؤه لاجتياز المباراة الكتابية. تختلف طريقة الحساب حسب نوع المدرسة.</p>
+            
+            <div class="bg-blue-600 text-white p-8 rounded-3xl shadow-lg text-center my-8 transform hover:scale-105 transition-transform">
+                <h3 class="text-2xl font-bold mb-4">القاعدة الذهبية (75/25)</h3>
+                <p class="mb-4 text-blue-100">هذه الصيغة معتمدة في أغلب المدارس الكبرى (ENSA, ENCG, ENSAM):</p>
+                <div class="bg-white/20 backdrop-blur-md p-4 rounded-xl text-xl font-bold font-mono dir-ltr" dir="ltr">
+                    Moyenne = (National × 0.75) + (Régional × 0.25)
+                </div>
+                <p class="mt-4 text-xs text-blue-200">* ملاحظة: قد تتغير النسب قليلاً حسب المذكرات الوزارية السنوية، لذا وجب التأكد دائماً.</p>
+            </div>
+
+            <h3 class="text-xl font-bold text-gray-900 mb-4">حالات خاصة:</h3>
+            <ul class="space-y-4">
+                <li class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <span class="font-bold text-primary block mb-1">CPGE (الأقسام التحضيرية):</span>
+                    تعتمد معادلة معقدة (M = N1 + (N2-10) + 170/N3...) تأخذ بعين الاعتبار نقط الرياضيات والفيزياء ومعاملات خاصة.
+                </li>
+                <li class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <span class="font-bold text-primary block mb-1">EST / FST:</span>
+                    غالباً ما يعتمد الانتقاء على "معاملات الترجيح" (Coefficients de pondération)، حيث يتم ضرب نقط مواد معينة (مثل الرياضيات والفيزياء) في معاملات أكبر حسب التخصص المختار.
+                </li>
+                <li class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <span class="font-bold text-primary block mb-1">FMP (كليات الطب):</span>
+                    في السنوات الأخيرة، تم توحيد العتبة في 12/20 (كمثال) بناءً على معدل الباكالوريا العام، أو باعتماد صيغة 75/25. يجب انتظار المذكرة السنوية للتأكد.
+                </li>
+            </ul>
+
+            <p class="mt-6 font-bold text-center text-lg">نصيحتنا: ركز على الامتحان الوطني لأنه يمثل 75% من فرصتك في ولوج هذه المدارس!</p>
+          </div>
+        `,
+        author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 1800
+    },
+    // Tilmid & Talib Extra Topics
+    {
+        id: '12',
+        title: "كيف تستعد للامتحانات بذكاء ودون توتر؟",
+        category: "نصائح",
+        date: "25 أكتوبر 2023",
+        image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "خطوات عملية للتحضير للامتحانات وتجنب ضغط اللحظة الأخيرة.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>الامتحانات على الأبواب؟ لا داعي للذعر! التخطيط الجيد هو نصف النجاح. إليك استراتيجيات فعالة للتحضير:</p>
+            <h3 class="font-bold text-lg">1. ضع جدولاً واقعياً</h3>
+            <p>لا تضع جدولاً مثالياً يستحيل تنفيذه. خصص وقتاً للمراجعة ووقتاً للراحة. ابدأ بالمواد التي تجد فيها صعوبة.</p>
+            <h3 class="font-bold text-lg">2. حل الامتحانات السابقة</h3>
+            <p>أفضل طريقة للتدرب هي حل نماذج الامتحانات الوطنية والجهوية للسنوات الماضية. هذا يعطيك فكرة عن طبيعة الأسئلة ويدربك على إدارة الوقت.</p>
+            <h3 class="font-bold text-lg">3. النوم والتغذية</h3>
+            <p>عقلك يحتاج للراحة لترسيخ المعلومات. تجنب السهر ليلة الامتحان وتناول طعاماً صحياً يمدك بالطاقة.</p>
+          </div>
+        `,
+        author: { name: "فريق تلميذ", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 1450
+    },
+    {
+        id: '13',
+        title: "فن تنظيم الوقت المدرسي: كيف توازن بين الدراسة والراحة؟",
+        category: "نصائح",
+        date: "28 أكتوبر 2023",
+        image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "دليل التلميذ للتحكم في وقته وعدم تراكم الدروس.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>الوقت هو أثمن مورد لديك كتلميذ. إليك كيفية إدارته:</p>
+            <ul class="list-disc list-inside space-y-2">
+                <li><strong>استخدم مصفوفة الأولويات:</strong> ركز على المهام "العاجلة والمهمة" أولاً.</li>
+                <li><strong>تخلص من المشتتات:</strong> أبعد الهاتف أثناء الدراسة. كل إشعار يقطع تركيزك يحتاج عقلك 15 دقيقة للعودة لنفس مستوى التركيز.</li>
+                <li><strong>استغل الأوقات الميتة:</strong> راجع ملخصات سريعة أثناء المواصلات أو في أوقات الانتظار.</li>
+            </ul>
+          </div>
+        `,
+        author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 1600
+    },
+    {
+        id: '14',
+        title: "منهجية البحث الجامعي: كيف تكتب بحثاً أكاديمياً متميزاً؟",
+        category: "تقنيات",
+        date: "01 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "خطوات إعداد البحث العلمي من اختيار الموضوع إلى التوثيق والمراجع.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>البحث الجامعي يختلف تماماً عن العروض المدرسية. يتطلب دقة، أمانة علمية، ومنهجية صارمة.</p>
+            <h3 class="font-bold text-lg">هيكل البحث الناجح:</h3>
+            <ol class="list-decimal list-inside space-y-2">
+                <li><strong>المقدمة:</strong> تطرح فيها الإشكالية وأهمية الموضوع.</li>
+                <li><strong>العرض:</strong> يقسم إلى مباحث ومطالب بتسلسل منطقي.</li>
+                <li><strong>الخاتمة:</strong> تلخص النتائج والتوصيات.</li>
+                <li><strong>لائحة المصادر والمراجع:</strong> توثيق كل اقتباس بدقة (APA, MLA...).</li>
+            </ol>
+          </div>
+        `,
+        author: { name: "د. العمراني", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 1100
+    },
+    {
+        id: '15',
+        title: "التوازن بين الدراسة والحياة الشخصية: سر النجاح المستمر",
+        category: "نصائح",
+        date: "05 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "كيف تتفوق في دراستك دون أن تفقد حياتك الاجتماعية وهواياتك.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>التفوق الدراسي لا يعني العزلة عن العالم. بالعكس، الحفاظ على صحتك النفسية والاجتماعية وقود للاستمرار.</p>
+            <p>خصص وقتاً في عطلة نهاية الأسبوع لهواياتك، للرياضة، وللقاء الأصدقاء. الطالب المتوازن هو طالب أكثر إنتاجية وإبداعاً.</p>
+          </div>
+        `,
+        author: { name: "سارة العلمي", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 1350
+    },
+    {
+        id: '16',
+        title: "كيف تخطط لمسارك المهني وأنت لا تزال طالباً؟",
+        category: "توجيه",
+        date: "10 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "خطوات عملية لبناء مسار مهني ناجح يبدأ من مقاعد الدراسة.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>سوق الشغل لا ينتظر تخرجك. ابدأ الآن:</p>
+            <ul>
+                <li><strong>طور المهارات الناعمة (Soft Skills):</strong> التواصل، القيادة، العمل الجماعي.</li>
+                <li><strong>تعلم اللغات:</strong> الإنجليزية ضرورة قصوى.</li>
+                <li><strong>التدريب (Internships):</strong> ابحث عن فرص تدريب صيفية لاكتساب الخبرة الميدانية.</li>
+                <li><strong>ابنِ شبكة علاقات:</strong> احضر ندوات وتعرف على محترفين في مجالك.</li>
+            </ul>
+          </div>
+        `,
+        author: { name: "المستشار المهني", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 2100
+    }
+  ] as BlogPost[],
+  STUDENTS: [
+    { 
+      id: 'std-1', 
+      username: 'amin', 
+      password: '123', 
+      name: 'أمين التلميذ', 
+      grade: 'الثانية باكالوريا', 
+      status: 'active', 
+      joinDate: '2023-09-01',
+      stats: {
+        studyHours: 12,
+        commitmentRate: 85,
+        weeklyProgress: [40, 60, 55, 80, 70, 85, 50]
+      }
+    },
+    { 
+      id: 'std-2', 
+      username: 'sara', 
+      password: '123', 
+      name: 'سارة المجتهدة', 
+      grade: 'الأولى باكالوريا', 
+      status: 'active', 
+      joinDate: '2023-09-05',
+      stats: {
+        studyHours: 24,
+        commitmentRate: 95,
+        weeklyProgress: [70, 85, 90, 95, 80, 100, 60]
+      }
+    },
+    { 
+      id: 'std-3', 
+      username: 'demo', 
+      password: '123', 
+      name: 'طالب تجريبي', 
+      grade: 'مشترك', 
+      status: 'active', 
+      joinDate: '2023-09-10',
+      stats: {
+        studyHours: 5,
+        commitmentRate: 40,
+        weeklyProgress: [20, 30, 25, 40, 35, 50, 10]
+      }
+    },
+  ] as Student[],
+  STORIES: [
+    {
+      id: 1,
+      name: "سلمى بناني",
+      role: "طالبة طب - سنة أولى",
+      content: "بفضل توجيهات تلميذ، تمكنت من تنظيم وقتي واجتياز مباراة الطب بنجاح. التقنيات التي تعلمتها كانت فارقة في مساري.",
+      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+    },
+    {
+      id: 2,
+      name: "كريم العلمي",
+      role: "مدرسة المهندسين",
+      content: "كنت أعاني من التشتت، لكن برنامج المواكبة ساعدني على التركيز وتحديد أولوياتي. الحمد لله حصلت على ميزة حسن جداً.",
+      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+    },
+    {
+      id: 3,
+      name: "هدى التازي",
+      role: "علوم رياضية",
+      content: "الاستشارات النفسية ساعدتني كثيراً في التغلب على توتر الامتحانات. شكراً لفريق تلميذ على الدعم المستمر.",
+      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+    }
+  ] as SuccessStory[]
+};
+
+export const dataManager = {
+  // Initialize Data if empty
+  init: () => {
+    // Posts Initialization & Merge Logic
+    const storedPosts = localStorage.getItem(KEYS.POSTS);
+    let currentPosts: BlogPost[] = storedPosts ? JSON.parse(storedPosts) : [];
+    let hasChanges = false;
+
+    // Check seed items. If they exist in currentPosts, UPDATE them with new seed content (for rich text updates).
+    // If they don't exist, ADD them.
+    SEED_DATA.POSTS.forEach(seedPost => {
+        const existingIndex = currentPosts.findIndex(p => p.id === seedPost.id);
+        if (existingIndex >= 0) {
+            // Update existing post if it matches a seed ID (ensures content updates propagate)
+            // We only update if content is different to avoid unnecessary writes, 
+            // but for simplicity here we overwrite seed posts to ensure latest version.
+            // Preserve views if possible or any user-specific dynamic data if we had it.
+            const existingPost = currentPosts[existingIndex];
+            currentPosts[existingIndex] = {
+                ...seedPost,
+                views: existingPost.views || seedPost.views // Keep existing view count
+            };
+            hasChanges = true;
+        } else {
+            // Add new seed post
+            currentPosts.push(seedPost);
+            hasChanges = true;
+        }
+    });
+
+    if (hasChanges || !storedPosts) {
+        localStorage.setItem(KEYS.POSTS, JSON.stringify(currentPosts));
+    }
+
+    // Other Data Types (Standard Init)
+    if (!localStorage.getItem(KEYS.STUDENTS)) localStorage.setItem(KEYS.STUDENTS, JSON.stringify(SEED_DATA.STUDENTS));
+    if (!localStorage.getItem(KEYS.STORIES)) localStorage.setItem(KEYS.STORIES, JSON.stringify(SEED_DATA.STORIES));
+    if (!localStorage.getItem(KEYS.APPOINTMENTS)) localStorage.setItem(KEYS.APPOINTMENTS, JSON.stringify([]));
+  },
+
+  // --- POSTS ---
+  getPosts: (): BlogPost[] => JSON.parse(localStorage.getItem(KEYS.POSTS) || '[]'),
+  savePost: (post: BlogPost) => {
+    const posts = dataManager.getPosts();
+    const existingIndex = posts.findIndex(p => p.id === post.id);
+    let newPosts;
+    if (existingIndex >= 0) {
+      newPosts = [...posts];
+      newPosts[existingIndex] = post;
+    } else {
+      newPosts = [post, ...posts];
+    }
+    localStorage.setItem(KEYS.POSTS, JSON.stringify(newPosts));
+    return newPosts;
+  },
+  deletePost: (id: string) => {
+    const posts = dataManager.getPosts().filter(p => p.id !== id);
+    localStorage.setItem(KEYS.POSTS, JSON.stringify(posts));
+    return posts;
+  },
+
+  // --- STUDENTS ---
+  getStudents: (): Student[] => JSON.parse(localStorage.getItem(KEYS.STUDENTS) || '[]'),
+  saveStudent: (student: Student) => {
+    const students = dataManager.getStudents();
+    const existingIndex = students.findIndex(s => s.id === student.id);
+    let newStudents;
+    if (existingIndex >= 0) {
+        newStudents = [...students];
+        newStudents[existingIndex] = student;
+    } else {
+        newStudents = [...students, student];
+    }
+    localStorage.setItem(KEYS.STUDENTS, JSON.stringify(newStudents));
+    return newStudents;
+  },
+  deleteStudent: (id: string) => {
+    const students = dataManager.getStudents().filter(s => s.id !== id);
+    localStorage.setItem(KEYS.STUDENTS, JSON.stringify(students));
+    return students;
+  },
+
+  // --- APPOINTMENTS ---
+  getAppointments: (): Appointment[] => JSON.parse(localStorage.getItem(KEYS.APPOINTMENTS) || '[]'),
+  saveAppointment: (app: Appointment) => {
+    const apps = dataManager.getAppointments();
+    const existingIndex = apps.findIndex(a => a.id === app.id);
+    let newApps;
+    if (existingIndex >= 0) {
+        newApps = [...apps];
+        newApps[existingIndex] = app;
+    } else {
+        newApps = [...apps, app];
+    }
+    localStorage.setItem(KEYS.APPOINTMENTS, JSON.stringify(newApps));
+    return newApps;
+  },
+  deleteAppointment: (id: number) => {
+    const apps = dataManager.getAppointments().filter(a => a.id !== id);
+    localStorage.setItem(KEYS.APPOINTMENTS, JSON.stringify(apps));
+    return apps;
+  },
+
+  // --- SUCCESS STORIES ---
+  getStories: (): SuccessStory[] => JSON.parse(localStorage.getItem(KEYS.STORIES) || '[]'),
+  saveStory: (story: SuccessStory) => {
+      const stories = dataManager.getStories();
+      const existingIndex = stories.findIndex(s => s.id === story.id);
+      let newStories;
+      if (existingIndex >= 0) {
+          newStories = [...stories];
+          newStories[existingIndex] = story;
+      } else {
+          newStories = [...stories, story];
+      }
+      localStorage.setItem(KEYS.STORIES, JSON.stringify(newStories));
+      return newStories;
+  },
+  deleteStory: (id: number) => {
+      const stories = dataManager.getStories().filter(s => s.id !== id);
+      localStorage.setItem(KEYS.STORIES, JSON.stringify(stories));
+      return stories;
+  }
+};
+
+// Initialize immediately
+dataManager.init();

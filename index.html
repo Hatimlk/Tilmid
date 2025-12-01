@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تلميذ - Tilmid | رفيقك نحو التفوق</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#0095ff',
+              secondary: '#00d2ff',
+              royal: '#040fd9',
+              dark: '#1f2937',
+              light: '#f3f4f6'
+            },
+            fontFamily: {
+              sans: ['Tajawal', 'sans-serif'],
+            },
+            lineHeight: {
+              'relaxed': '1.8',
+            },
+            letterSpacing: {
+              normal: '0.015em',
+              wide: '0.03em',
+            },
+            animation: {
+              'blob': 'blob 7s infinite',
+              'bounce-slow': 'bounce 3s infinite',
+              'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+              'float': 'float 6s ease-in-out infinite',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Tajawal', sans-serif;
+        letter-spacing: 0.015em; /* Global letter spacing */
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Ensure all paragraphs have good readability defaults */
+      p {
+        line-height: 1.8;
+      }
+      
+      /* Custom Animations */
+      @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+      }
+      
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+      }
+
+      .animate-delay-100 { animation-delay: 100ms; }
+      .animate-delay-200 { animation-delay: 200ms; }
+      .animate-delay-300 { animation-delay: 300ms; }
+      .animate-delay-400 { animation-delay: 400ms; }
+      
+      /* Hide scrollbar for cleaner UI in some containers */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "jspdf": "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm",
+    "html2canvas": "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm"
+  }
+}
+</script>
+</head>
+  <body class="bg-white text-gray-800 antialiased">
+    <div id="root"></div>
+  </body>
+</html>
