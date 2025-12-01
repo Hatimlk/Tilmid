@@ -4,7 +4,7 @@ import {
   Shield, LayoutDashboard, FilePlus, LogOut, Trash2, Eye, 
   CheckCircle, Plus, Users, Calendar, 
   Search, PenTool, Bold, Italic, Settings,
-  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, Mail
+  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, Mail, ChevronLeft, TrendingUp, Filter, MoreHorizontal, FileText
 } from 'lucide-react';
 import { ADMIN_CREDENTIALS, CUSTOM_POSTS_KEY, BLOG_POSTS, GLOBAL_APPOINTMENTS_KEY, STUDENT_ACCOUNTS, GLOBAL_STUDENTS_KEY } from '../constants';
 import { BlogPost, Appointment, Student } from '../types';
@@ -13,13 +13,13 @@ import { BlogPost, Appointment, Student } from '../types';
 
 const StatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
-        active: 'bg-green-100 text-green-700',
-        suspended: 'bg-red-100 text-red-700',
-        published: 'bg-green-100 text-green-700',
-        draft: 'bg-gray-100 text-gray-700',
-        pending: 'bg-orange-100 text-orange-700',
-        confirmed: 'bg-blue-100 text-blue-700',
-        cancelled: 'bg-red-100 text-red-700'
+        active: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        suspended: 'bg-red-100 text-red-700 border-red-200',
+        published: 'bg-blue-100 text-blue-700 border-blue-200',
+        draft: 'bg-gray-100 text-gray-700 border-gray-200',
+        pending: 'bg-amber-100 text-amber-700 border-amber-200',
+        confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        cancelled: 'bg-red-100 text-red-700 border-red-200'
     };
     
     const labels: Record<string, string> = {
@@ -33,7 +33,8 @@ const StatusBadge = ({ status }: { status: string }) => {
     };
 
     return (
-        <span className={`px-3 py-1 rounded-lg text-xs font-bold ${styles[status] || 'bg-gray-100'}`}>
+        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${styles[status] || 'bg-gray-100 border-gray-200'} flex items-center gap-1 w-fit`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${status === 'active' || status === 'published' || status === 'confirmed' ? 'bg-current' : 'bg-gray-400'}`}></span>
             {labels[status] || status}
         </span>
     );
@@ -50,14 +51,40 @@ interface SidebarItemProps {
 const SidebarItem: React.FC<SidebarItemProps> = ({ id, label, icon: Icon, activeTab, onClick }) => (
     <button 
         onClick={() => onClick(id)}
-        className={`w-full p-4 rounded-xl flex items-center gap-3 font-bold transition-all mb-2 ${
+        className={`relative w-full p-4 rounded-2xl flex items-center gap-4 font-bold transition-all duration-300 mb-2 overflow-hidden group ${
             activeTab === id 
-            ? 'bg-white text-primary shadow-md' 
-            : 'text-blue-100 hover:bg-white/10'
+            ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg shadow-blue-500/25 translate-x-1' 
+            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
         }`}
     >
-        <Icon size={20} /> {label}
+        <Icon size={22} className={`${activeTab === id ? 'text-white' : 'text-slate-500 group-hover:text-white'} transition-colors`} />
+        <span className="relative z-10">{label}</span>
+        {activeTab === id && (
+            <ChevronLeft className="mr-auto text-white/60 animate-pulse" size={18} />
+        )}
     </button>
+);
+
+const StatCard = ({ label, val, icon: Icon, color, trend }: any) => (
+    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+        <div className={`absolute -top-10 -right-10 w-32 h-32 ${color} opacity-[0.05] rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
+        
+        <div className="flex justify-between items-start mb-6 relative z-10">
+            <div className={`p-4 rounded-2xl text-white shadow-md ${color} bg-opacity-90 group-hover:rotate-6 transition-transform duration-300`}>
+                <Icon size={26} />
+            </div>
+            {trend && (
+                <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                    <TrendingUp size={14} /> {trend}
+                </span>
+            )}
+        </div>
+        
+        <div className="relative z-10">
+            <h3 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">{val}</h3>
+            <p className="text-sm text-gray-500 font-bold">{label}</p>
+        </div>
+    </div>
 );
 
 // --- MAIN COMPONENT ---
@@ -336,20 +363,32 @@ export const AdminDashboard: React.FC = () => {
 
   if (!isAuthenticated) {
      return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-4">
-            <div className="bg-white p-10 rounded-[2rem] shadow-2xl w-full max-w-md border border-white">
+        <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center p-4 font-sans">
+            <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white/50 backdrop-blur-xl animate-in zoom-in-95">
                 <div className="text-center mb-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary to-royal rounded-3xl flex items-center justify-center mx-auto mb-6 text-white shadow-lg shadow-blue-500/30"><Shield size={40} /></div>
-                    <h1 className="text-3xl font-extrabold text-gray-900">بوابة الإدارة</h1>
-                    <p className="text-gray-500 mt-2">الوصول الآمن للمسؤولين فقط</p>
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary to-royal rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-white shadow-xl shadow-blue-500/30 transform rotate-3 hover:rotate-6 transition-transform duration-500">
+                        <Shield size={48} />
+                    </div>
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight">بوابة الإدارة</h1>
+                    <p className="text-slate-500 mt-2 font-medium">الوصول الآمن للمسؤولين فقط</p>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-6">
-                    <div><label className="block text-sm font-bold text-gray-700 mb-2">المعرف الإداري</label><input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full px-5 py-4 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:bg-white outline-none text-lg" dir="ltr" /></div>
-                    <div><label className="block text-sm font-bold text-gray-700 mb-2">رمز الدخول</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-5 py-4 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary outline-none text-lg" dir="ltr" /></div>
-                    {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold text-center border border-red-100">{error}</div>}
-                    <button className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-royal transition-all shadow-lg shadow-blue-500/20 text-lg">تسجيل الدخول</button>
+                    <div>
+                        <label className="block text-sm font-extrabold text-slate-600 mb-2 mr-1">المعرف الإداري</label>
+                        <div className="relative">
+                            <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-slate-100 focus:border-primary focus:bg-white outline-none text-lg font-bold transition-all text-left" dir="ltr" placeholder="admin" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-extrabold text-slate-600 mb-2 mr-1">رمز الدخول</label>
+                        <div className="relative">
+                            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none text-lg font-bold transition-all text-left" dir="ltr" placeholder="•••••••" />
+                        </div>
+                    </div>
+                    {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2"><XCircle size={18} /> {error}</div>}
+                    <button className="w-full py-4 bg-primary text-white font-extrabold rounded-2xl hover:bg-royal transition-all shadow-lg shadow-blue-500/30 text-lg hover:-translate-y-1 active:scale-[0.98]">تسجيل الدخول</button>
                 </form>
-                <div className="mt-6 text-center text-xs text-gray-400">
+                <div className="mt-8 pt-6 border-t border-slate-100 text-center text-xs font-bold text-slate-400">
                     <p>demo: admin / admin123</p>
                 </div>
             </div>
@@ -358,46 +397,49 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row font-sans" dir="rtl">
+    <div className="min-h-screen bg-[#F3F6F9] flex flex-col lg:flex-row font-sans text-slate-800" dir="rtl">
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
-            <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
         )}
 
         {/* Sidebar */}
         <aside className={`
-            fixed inset-y-0 right-0 z-50 w-64 lg:w-72 bg-slate-900 text-white p-6 flex flex-col shrink-0
-            transform transition-transform duration-300 ease-in-out
+            fixed inset-y-0 right-0 z-50 w-72 bg-slate-900 text-white p-6 flex flex-col shrink-0 shadow-2xl
+            transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static
             ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-            lg:translate-x-0 lg:static
         `}>
-            <div className="flex items-center justify-between mb-10 px-2">
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center font-bold text-2xl text-white shadow-lg shadow-blue-500/20">T</div>
-                    <div><h2 className="font-bold text-xl">لوحة التحكم</h2><p className="text-xs text-slate-400">v2.0.1 (Beta)</p></div>
+            <div className="flex items-center justify-between mb-12 px-2 pt-2">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-lg shadow-blue-500/20">T</div>
+                    <div><h2 className="font-bold text-xl tracking-tight">لوحة التحكم</h2><p className="text-xs text-slate-400 font-medium">v2.0.1 (Beta)</p></div>
                 </div>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-gray-400 hover:text-white"><X size={24} /></button>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400 hover:text-white transition-colors"><X size={28} /></button>
             </div>
-            <nav className="flex-grow space-y-2">
+            
+            <nav className="flex-grow space-y-3">
                 <SidebarItem id="overview" label="نظرة عامة" icon={LayoutDashboard} activeTab={activeTab} onClick={handleTabChange} />
                 <SidebarItem id="posts" label="إدارة المحتوى" icon={FilePlus} activeTab={activeTab} onClick={handleTabChange} />
                 <SidebarItem id="students" label="الطلاب" icon={Users} activeTab={activeTab} onClick={handleTabChange} />
                 <SidebarItem id="appointments" label="المواعيد" icon={Calendar} activeTab={activeTab} onClick={handleTabChange} />
             </nav>
-            <div className="pt-6 border-t border-slate-800 mt-auto">
-                <button onClick={handleLogout} className="w-full p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-xl flex items-center gap-3 font-bold transition-all"><LogOut size={20} /> خروج</button>
+            
+            <div className="pt-8 border-t border-slate-800 mt-auto">
+                <button onClick={handleLogout} className="w-full p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl flex items-center gap-3 font-bold transition-all group">
+                    <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" /> خروج
+                </button>
             </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-grow h-screen overflow-y-auto relative bg-[#F9FAFB]">
+        <main className="flex-grow h-screen overflow-y-auto relative bg-[#F8FAFC]">
             {/* Header */}
-            <header className="bg-white px-4 lg:px-8 py-5 border-b border-gray-200 sticky top-0 z-30 flex justify-between items-center shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+            <header className="bg-white/80 backdrop-blur-xl px-6 lg:px-10 py-5 border-b border-gray-100 sticky top-0 z-30 flex justify-between items-center shadow-sm">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
-                        <Menu size={24} className="text-gray-600" />
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 rounded-xl text-slate-600 transition-colors">
+                        <Menu size={28} />
                     </button>
-                    <h2 className="text-xl lg:text-2xl font-extrabold text-gray-900 tracking-tight">
+                    <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
                         {activeTab === 'overview' && 'نظرة عامة'}
                         {activeTab === 'posts' && 'إدارة المحتوى'}
                         {activeTab === 'students' && 'قاعدة بيانات الطلاب'}
@@ -405,25 +447,25 @@ export const AdminDashboard: React.FC = () => {
                     </h2>
                 </div>
                 
-                <div className="flex items-center gap-3 lg:gap-6">
+                <div className="flex items-center gap-4 lg:gap-6">
                     {/* Settings Icon */}
-                    <div onClick={() => setShowSettings(true)} className="p-2 text-gray-400 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-gray-100 hidden sm:block">
-                        <Settings size={20} />
+                    <div onClick={() => setShowSettings(true)} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl cursor-pointer transition-all hidden sm:flex">
+                        <Settings size={22} />
                     </div>
 
-                    <div className="h-8 w-px bg-gray-100 mx-1 hidden md:block"></div>
+                    <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
 
                     {/* User Profile */}
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setShowSettings(true)}>
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setShowSettings(true)}>
                        <div className="relative">
-                          <div className="w-10 h-10 lg:w-11 lg:h-11 rounded-full bg-[#0095ff] flex items-center justify-center text-white font-bold text-sm shadow-sm border-2 border-white">
+                          <div className="w-11 h-11 rounded-full bg-gradient-to-r from-primary to-royal flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white ring-2 ring-gray-100 group-hover:ring-primary/20 transition-all">
                              AD
                           </div>
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#22c55e] border-2 border-white rounded-full"></div>
+                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
                        </div>
                        <div className="text-right hidden md:block">
-                          <p className="text-sm font-bold text-gray-900 leading-tight">{adminName}</p>
-                          <p className="text-[11px] text-gray-500 font-medium mt-0.5">Super Admin</p>
+                          <p className="text-sm font-extrabold text-slate-800 leading-tight group-hover:text-primary transition-colors">{adminName}</p>
+                          <p className="text-[11px] text-slate-500 font-bold mt-0.5">Super Admin</p>
                        </div>
                     </div>
 
@@ -431,31 +473,34 @@ export const AdminDashboard: React.FC = () => {
                     <div className="relative" ref={notifRef}>
                         <button 
                             onClick={() => setShowNotifications(!showNotifications)}
-                            className={`p-2.5 lg:p-3 bg-white border rounded-2xl text-gray-500 hover:text-primary hover:shadow-md transition-all group ${showNotifications ? 'border-primary text-primary shadow-md' : 'border-gray-100'}`}
+                            className={`w-11 h-11 flex items-center justify-center bg-white border rounded-xl transition-all group ${showNotifications ? 'border-primary text-primary shadow-lg shadow-blue-500/20' : 'border-gray-200 text-slate-500 hover:border-primary hover:text-primary'}`}
                         >
-                            <span className="absolute top-2.5 right-3 w-2 h-2 bg-red-500 rounded-full border-2 border-white group-hover:scale-110 transition-transform"></span>
-                            <Bell size={20} />
+                            <span className="absolute top-3 right-3.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white group-hover:scale-110 transition-transform"></span>
+                            <Bell size={22} />
                         </button>
                         
                         {/* Dropdown */}
                         {showNotifications && (
-                            <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 animate-in fade-in slide-in-from-top-2 z-50">
-                                <div className="flex justify-between items-center px-4 py-2 border-b border-gray-50 mb-2">
-                                    <span className="font-bold text-sm text-gray-900">الإشعارات</span>
-                                    <button onClick={() => setShowNotifications(false)} className="text-xs text-primary font-bold">مسح الكل</button>
+                            <div className="absolute top-full left-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 animate-in fade-in slide-in-from-top-4 z-50">
+                                <div className="flex justify-between items-center px-4 py-3 border-b border-gray-50 mb-1">
+                                    <span className="font-bold text-sm text-slate-800">الإشعارات</span>
+                                    <button onClick={() => setShowNotifications(false)} className="text-xs text-primary font-bold hover:underline">مسح الكل</button>
                                 </div>
-                                <div className="space-y-1 max-h-64 overflow-y-auto">
+                                <div className="space-y-1 max-h-64 overflow-y-auto custom-scrollbar">
                                     {appointments.filter(a => a.status === 'pending').slice(0, 3).map(app => (
-                                        <div key={app.id} onClick={() => { setActiveTab('appointments'); setShowNotifications(false); }} className="p-3 hover:bg-gray-50 rounded-xl cursor-pointer flex gap-3 items-start">
-                                            <div className="p-2 bg-orange-50 text-orange-500 rounded-full"><Calendar size={16} /></div>
+                                        <div key={app.id} onClick={() => { setActiveTab('appointments'); setShowNotifications(false); }} className="p-3 hover:bg-blue-50 rounded-xl cursor-pointer flex gap-3 items-start transition-colors">
+                                            <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center shrink-0"><Calendar size={18} /></div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-800">حجز جديد: {app.studentName}</p>
-                                                <p className="text-xs text-gray-500">{app.date} - {app.time}</p>
+                                                <p className="text-sm font-bold text-slate-800 mb-0.5">حجز جديد: {app.studentName}</p>
+                                                <p className="text-[11px] text-slate-500 font-medium">{app.date} - {app.time}</p>
                                             </div>
                                         </div>
                                     ))}
                                     {appointments.filter(a => a.status === 'pending').length === 0 && (
-                                        <p className="text-center text-gray-400 text-xs py-4">لا توجد إشعارات جديدة</p>
+                                        <div className="py-8 text-center text-slate-400">
+                                            <Bell size={24} className="mx-auto mb-2 opacity-50" />
+                                            <p className="text-xs font-bold">لا توجد إشعارات جديدة</p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -464,67 +509,64 @@ export const AdminDashboard: React.FC = () => {
                 </div>
             </header>
 
-            <div className="p-4 lg:p-10 max-w-7xl mx-auto">
+            <div className="p-6 lg:p-10 max-w-[1600px] mx-auto">
                 
                 {/* --- OVERVIEW TAB --- */}
                 {activeTab === 'overview' && (
-                    <div className="space-y-8 animate-in fade-in duration-500">
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {[
-                                { label: 'إجمالي الطلاب', val: students.length, icon: Users, color: 'bg-blue-600' },
-                                { label: 'المقالات الكلية', val: BLOG_POSTS.length + customPosts.length, icon: FilePlus, color: 'bg-purple-600' },
-                                { label: 'مواعيد معلقة', val: appointments.filter(a => a.status === 'pending').length, icon: Clock, color: 'bg-orange-500' },
-                                { label: 'المواعيد المؤكدة', val: appointments.filter(a => a.status === 'confirmed').length, icon: CheckCircle, color: 'bg-green-500' }
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 hover:-translate-y-1 transition-all duration-300 group">
-                                    <div className="flex justify-between items-start mb-4"><div className={`p-3.5 rounded-xl text-white shadow-lg ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={24} /></div></div>
-                                    <h3 className="text-3xl font-black text-gray-900 mb-1">{stat.val}</h3>
-                                    <p className="text-sm text-gray-500 font-bold opacity-80">{stat.label}</p>
-                                </div>
-                            ))}
+                            <StatCard label="إجمالي الطلاب" val={students.length} icon={Users} color="bg-blue-600" trend="+12%" />
+                            <StatCard label="المقالات الكلية" val={BLOG_POSTS.length + customPosts.length} icon={FilePlus} color="bg-purple-600" trend="+5%" />
+                            <StatCard label="مواعيد معلقة" val={appointments.filter(a => a.status === 'pending').length} icon={Clock} color="bg-amber-500" />
+                            <StatCard label="المواعيد المؤكدة" val={appointments.filter(a => a.status === 'confirmed').length} icon={CheckCircle} color="bg-emerald-500" trend="+8%" />
                         </div>
                         
                         {/* Charts & Activity */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                            <div className="xl:col-span-2 bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
                                 <div className="flex justify-between items-center mb-8">
-                                    <h3 className="font-bold text-xl text-gray-900">النشاط الأخير</h3>
-                                    <button onClick={() => setActiveTab('appointments')} className="text-sm text-primary font-bold hover:underline">عرض الكل</button>
+                                    <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2">
+                                        <Activity className="text-primary" /> النشاط الأخير
+                                    </h3>
+                                    <button onClick={() => setActiveTab('appointments')} className="text-sm text-primary font-bold hover:underline bg-blue-50 px-4 py-2 rounded-full transition-colors">عرض الكل</button>
                                 </div>
-                                <div className="space-y-5">
+                                <div className="space-y-4">
                                     {getActivityFeed().map((item: any, i) => (
-                                        <div key={i} className="flex items-center gap-5 pb-5 border-b border-gray-50 last:border-0 last:pb-0 group">
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${item.type === 'post' ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-100' : 'bg-orange-50 text-orange-600 group-hover:bg-orange-100'}`}>
-                                                {item.type === 'post' ? <PenTool size={20} /> : <Calendar size={20} />}
+                                        <div key={i} className="flex items-center gap-5 p-4 rounded-2xl hover:bg-slate-50 transition-all group border border-transparent hover:border-gray-100">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all ${item.type === 'post' ? 'bg-blue-50 text-blue-600 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-blue-500/20' : 'bg-amber-50 text-amber-600 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-amber-500/20'}`}>
+                                                {item.type === 'post' ? <PenTool size={24} /> : <Calendar size={24} />}
                                             </div>
                                             <div className="flex-grow">
-                                                <p className="text-sm font-bold text-gray-900 mb-0.5 group-hover:text-primary transition-colors">{item.title}</p>
-                                                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                                                   <span>{item.type === 'post' ? 'تم النشر بواسطة' : 'قام بالحجز'}</span>
-                                                   <span className="font-bold text-gray-700">{item.user}</span>
+                                                <p className="text-base font-bold text-slate-900 mb-1 group-hover:text-primary transition-colors">{item.title}</p>
+                                                <div className="flex items-center gap-2 text-xs text-slate-500 font-bold">
+                                                   <span className="bg-white px-2 py-1 rounded-md border border-gray-100 shadow-sm">{item.type === 'post' ? 'نشر مقال' : 'حجز موعد'}</span>
+                                                   <span>•</span>
+                                                   <span className="text-slate-700">{item.user}</span>
                                                 </div>
                                             </div>
-                                            <span className="text-xs font-bold bg-gray-50 px-3 py-1.5 rounded-lg text-gray-500 border border-gray-100">{item.date}</span>
+                                            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg whitespace-nowrap">{item.date}</span>
                                         </div>
                                     ))}
-                                    {getActivityFeed().length === 0 && <p className="text-gray-400 text-center py-6">لا يوجد نشاط حديث.</p>}
+                                    {getActivityFeed().length === 0 && <p className="text-slate-400 text-center py-10 font-medium">لا يوجد نشاط حديث.</p>}
                                 </div>
                             </div>
                             
-                            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col">
-                                <h3 className="font-bold text-xl mb-8 text-gray-900">توزيع الطلاب</h3>
+                            <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col h-full">
+                                <h3 className="font-extrabold text-xl mb-8 text-slate-900">توزيع الطلاب</h3>
                                 <div className="flex-grow flex items-center justify-center">
-                                    <div className="flex gap-6 items-end h-56 w-full px-2">
+                                    <div className="flex gap-6 items-end h-64 w-full px-4">
                                         {['2 باك', '1 باك', 'جذع'].map((level, i) => {
                                             const count = students.filter(s => s.grade.includes(level)).length;
                                             const height = count > 0 ? (count / students.length) * 100 : 10;
+                                            const colors = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500'];
                                             return (
-                                                <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
-                                                     <div className="w-full bg-gray-100 rounded-t-2xl relative overflow-hidden" style={{ height: `${height}%`, minHeight: '40px' }}>
-                                                         <div className="absolute inset-0 bg-primary opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                                                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 font-bold text-gray-900 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">{count}</div>
+                                                <div key={i} className="flex-1 flex flex-col items-center gap-4 group">
+                                                     <div className="w-full bg-slate-50 rounded-2xl relative overflow-hidden ring-4 ring-white shadow-inner" style={{ height: `${height}%`, minHeight: '60px' }}>
+                                                         <div className={`absolute inset-0 ${colors[i]} opacity-80 group-hover:opacity-100 transition-all duration-500`}></div>
+                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                                         <div className="absolute top-2 left-1/2 -translate-x-1/2 text-white font-bold text-lg drop-shadow-md opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0">{count}</div>
                                                      </div>
-                                                     <span className="text-xs font-bold text-gray-500">{level}</span>
+                                                     <span className="text-sm font-bold text-slate-500 group-hover:text-slate-900 transition-colors">{level}</span>
                                                 </div>
                                             )
                                         })}
@@ -537,30 +579,79 @@ export const AdminDashboard: React.FC = () => {
 
                 {/* --- POSTS TAB --- */}
                 {activeTab === 'posts' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in">
-                        <div className="lg:col-span-1 bg-white p-6 lg:p-8 rounded-3xl shadow-sm border border-gray-100 h-fit lg:sticky lg:top-28">
-                             <h3 className="font-extrabold text-xl mb-8 flex items-center gap-3 text-gray-900">
-                                <div className="p-2 bg-blue-50 rounded-lg text-primary"><PenTool size={22} /></div>
-                                {isEditingPost ? 'تعديل المقال' : 'إضافة مقال جديد'}
-                             </h3>
-                             <form onSubmit={handleSavePost} className="space-y-5">
-                                <div><label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">العنوان</label><input type="text" required value={newPost.title || ''} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full p-4 rounded-xl border border-gray-200 focus:border-primary outline-none bg-gray-50 focus:bg-white transition-colors font-bold" placeholder="اكتب عنواناً جذاباً..." /></div>
-                                <div><label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">التصنيف</label><select value={newPost.category || 'نصائح'} onChange={e => setNewPost({...newPost, category: e.target.value})} className="w-full p-4 rounded-xl border border-gray-200 outline-none bg-white font-medium"><option>نصائح</option><option>تقنيات</option><option>توجيه</option><option>الحفظ والمراجعة</option><option>الصحة والدراسة</option></select></div>
-                                <div><label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">صورة (URL)</label><input type="text" value={newPost.image || ''} onChange={e => setNewPost({...newPost, image: e.target.value})} className="w-full p-4 rounded-xl border border-gray-200 outline-none text-sm bg-gray-50 focus:bg-white" placeholder="https://..." dir="ltr" /></div>
-                                <div><label className="text-xs font-bold text-gray-500 mb-2 block uppercase tracking-wider">مقتطف</label><textarea required value={newPost.excerpt || ''} onChange={e => setNewPost({...newPost, excerpt: e.target.value})} className="w-full p-4 rounded-xl border border-gray-200 outline-none h-24 resize-none text-sm bg-gray-50 focus:bg-white"></textarea></div>
-                                <div className="flex items-center gap-4 pt-4"><button type="submit" className="flex-1 py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1">{isEditingPost ? 'حفظ التعديلات' : 'نشر المقال'}</button>{isEditingPost && (<button type="button" onClick={resetPostForm} className="px-6 py-4 bg-gray-100 text-gray-500 font-bold rounded-xl hover:bg-gray-200 transition-colors">إلغاء</button>)}</div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="lg:col-span-1 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-fit lg:sticky lg:top-32 order-2 lg:order-1">
+                             <div className="flex justify-between items-center mb-8">
+                                <h3 className="font-extrabold text-xl text-slate-900">
+                                    {isEditingPost ? 'تعديل المقال' : 'إنشاء مقال جديد'}
+                                </h3>
+                                {isEditingPost && <button onClick={resetPostForm} className="text-xs bg-slate-100 px-3 py-1 rounded-full font-bold text-slate-500 hover:bg-slate-200">إلغاء</button>}
+                             </div>
+                             <form onSubmit={handleSavePost} className="space-y-6">
+                                <div>
+                                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">العنوان</label>
+                                    <input type="text" required value={newPost.title || ''} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none bg-slate-50 focus:bg-white transition-all font-bold text-slate-800" placeholder="عنوان جذاب للمقال..." />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">التصنيف</label>
+                                    <div className="relative">
+                                        <select value={newPost.category || 'نصائح'} onChange={e => setNewPost({...newPost, category: e.target.value})} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none bg-slate-50 focus:bg-white font-bold text-slate-800 appearance-none cursor-pointer">
+                                            <option>نصائح</option><option>تقنيات</option><option>توجيه</option><option>الحفظ والمراجعة</option><option>الصحة والدراسة</option>
+                                        </select>
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><Filter size={18} /></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">صورة الغلاف (URL)</label>
+                                    <input type="text" value={newPost.image || ''} onChange={e => setNewPost({...newPost, image: e.target.value})} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none text-sm font-medium bg-slate-50 focus:bg-white transition-all" placeholder="https://example.com/image.jpg" dir="ltr" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">مقتطف قصير</label>
+                                    <textarea required value={newPost.excerpt || ''} onChange={e => setNewPost({...newPost, excerpt: e.target.value})} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none h-32 resize-none text-sm font-medium bg-slate-50 focus:bg-white transition-all leading-relaxed"></textarea>
+                                </div>
+                                <button type="submit" className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-royal shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
+                                    {isEditingPost ? <Save size={20} /> : <FilePlus size={20} />}
+                                    <span>{isEditingPost ? 'حفظ التعديلات' : 'نشر المقال'}</span>
+                                </button>
                              </form>
                         </div>
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="max-h-[700px] overflow-y-auto custom-scrollbar">
-                                    <table className="w-full text-right relative">
-                                        <thead className="bg-gray-50 text-gray-500 text-xs font-extrabold uppercase sticky top-0 z-10 border-b border-gray-100"><tr><th className="p-6">المقال</th><th className="p-6 hidden sm:table-cell">الحالة</th><th className="p-6 hidden md:table-cell">التاريخ</th><th className="p-6">إجراءات</th></tr></thead>
+                        
+                        <div className="lg:col-span-2 space-y-6 order-1 lg:order-2">
+                            <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                                    <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2"><FileText size={24} className="text-blue-500" /> مكتبة المقالات</h3>
+                                    <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold">{customPosts.length} مقال</span>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-right">
+                                        <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase border-b border-gray-100">
+                                            <tr><th className="p-6">المقال</th><th className="p-6 hidden sm:table-cell">الحالة</th><th className="p-6 hidden md:table-cell">التاريخ</th><th className="p-6 text-center">إجراءات</th></tr>
+                                        </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {customPosts.map(post => (
-                                                <tr key={post.id} className="hover:bg-blue-50/30 transition-colors group"><td className="p-6"><div className="flex items-center gap-4"><img src={post.image} className="w-12 h-12 rounded-xl object-cover shadow-sm" alt="" /><div><p className="font-bold text-gray-900 text-sm line-clamp-1 mb-1">{post.title}</p><span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{post.category}</span></div></div></td><td className="p-6 hidden sm:table-cell"><StatusBadge status={post.status || 'published'} /></td><td className="p-6 text-sm font-bold text-gray-400 hidden md:table-cell">{post.date}</td><td className="p-6"><div className="flex gap-2 opacity-100 lg:opacity-50 group-hover:opacity-100 transition-opacity"><button onClick={() => handleEditPost(post)} className="p-2.5 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"><PenTool size={18} /></button><button onClick={() => handleDeletePost(post.id)} className="p-2.5 text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors"><Trash2 size={18} /></button></div></td></tr>
+                                                <tr key={post.id} className="hover:bg-blue-50/30 transition-colors group">
+                                                    <td className="p-6">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm shrink-0">
+                                                                <img src={post.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-slate-900 text-base line-clamp-1 mb-1.5">{post.title}</p>
+                                                                <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md border border-slate-200">{post.category}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6 hidden sm:table-cell"><StatusBadge status={post.status || 'published'} /></td>
+                                                    <td className="p-6 text-sm font-bold text-slate-400 hidden md:table-cell">{post.date}</td>
+                                                    <td className="p-6">
+                                                        <div className="flex justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                            <button onClick={() => handleEditPost(post)} className="p-2.5 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 hover:scale-110 transition-all" title="تعديل"><PenTool size={18} /></button>
+                                                            <button onClick={() => handleDeletePost(post.id)} className="p-2.5 text-red-600 bg-red-50 rounded-xl hover:bg-red-100 hover:scale-110 transition-all" title="حذف"><Trash2 size={18} /></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                             ))}
-                                            {customPosts.length === 0 && <tr><td colSpan={4} className="p-12 text-center text-gray-400 font-medium">لا توجد مقالات مضافة يدوياً. ابدأ بالكتابة الآن!</td></tr>}
+                                            {customPosts.length === 0 && <tr><td colSpan={4} className="p-16 text-center text-slate-400 font-bold bg-slate-50/50">لا توجد مقالات مضافة يدوياً. ابدأ بالكتابة الآن! ✍️</td></tr>}
                                         </tbody>
                                     </table>
                                 </div>
@@ -571,70 +662,72 @@ export const AdminDashboard: React.FC = () => {
 
                 {/* --- STUDENTS TAB --- */}
                 {activeTab === 'students' && (
-                    <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in">
-                         <div className="p-6 lg:p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-white">
-                            <div className="relative w-full max-w-md">
-                                <Search size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+                         <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-white">
+                            <div className="relative w-full max-w-lg group">
+                                <Search size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
                                 <input 
                                   type="text" 
                                   placeholder="بحث عن طالب (الاسم، اسم المستخدم)..." 
                                   value={studentSearch}
                                   onChange={(e) => setStudentSearch(e.target.value)}
-                                  className="w-full pl-4 pr-12 py-3.5 bg-gray-50 rounded-2xl border border-gray-200 text-sm font-bold outline-none focus:border-primary focus:bg-white transition-all shadow-inner" 
+                                  className="w-full pl-4 pr-14 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner focus:shadow-lg focus:shadow-blue-500/5" 
                                 />
-                                {studentSearch && (
-                                    <button 
-                                        onClick={() => setStudentSearch('')}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                )}
+                                {studentSearch && <button onClick={() => setStudentSearch('')} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"><X size={18} /></button>}
                             </div>
                             <div className="flex flex-wrap justify-center items-center gap-4 w-full md:w-auto">
-                                <span className="text-gray-400 text-sm font-bold"> {filteredStudents.length} طالب </span>
-                                <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all w-full md:w-auto justify-center"><UserPlus size={18} /> إضافة طالب</button>
+                                <span className="bg-slate-100 px-4 py-2 rounded-xl text-slate-500 text-xs font-bold border border-slate-200"> {filteredStudents.length} طالب مسجل </span>
+                                <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-primary shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all w-full md:w-auto justify-center group">
+                                    <UserPlus size={18} className="group-hover:scale-110 transition-transform" /> 
+                                    <span>إضافة طالب جديد</span>
+                                </button>
                             </div>
                          </div>
                          <div className="overflow-x-auto">
-                             <table className="w-full text-right min-w-[800px]">
-                                <thead className="bg-gray-50 text-gray-400 text-xs font-extrabold uppercase tracking-wider">
+                             <table className="w-full text-right min-w-[900px]">
+                                <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase tracking-wider border-b border-slate-100">
                                     <tr>
-                                        <th className="p-6">الاسم</th>
-                                        <th className="p-6">اسم المستخدم</th>
+                                        <th className="p-6">بيانات الطالب</th>
+                                        <th className="p-6">معلومات الدخول</th>
                                         <th className="p-6">المستوى</th>
                                         <th className="p-6">الحالة</th>
-                                        <th className="p-6 text-center">الإجراءات</th>
+                                        <th className="p-6 text-center">تحكم</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-slate-50">
                                     {filteredStudents.map(student => (
-                                        <tr key={student.id} className="hover:bg-gray-50 transition-colors group">
+                                        <tr key={student.id} className="hover:bg-blue-50/40 transition-colors group">
                                             <td className="p-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-full bg-gray-100 p-0.5 border border-gray-200 overflow-hidden">
+                                                <div className="flex items-center gap-4 cursor-pointer" onClick={() => setViewStudent(student)}>
+                                                    <div className="w-12 h-12 rounded-full p-0.5 border-2 border-slate-100 overflow-hidden shadow-sm group-hover:border-primary transition-colors bg-white">
                                                         <img src={student.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`} className="w-full h-full object-cover" alt="" />
                                                     </div>
-                                                    <span className="font-bold text-gray-900 text-base">{student.name}</span>
+                                                    <div>
+                                                        <span className="block font-bold text-slate-900 text-base group-hover:text-primary transition-colors">{student.name}</span>
+                                                        <span className="text-xs text-slate-400 font-medium">تم الانضمام: {student.joinDate}</span>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="p-6 font-mono text-sm text-gray-500 font-bold" dir="ltr">{student.username}</td>
-                                            <td className="p-6"><span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">{student.grade}</span></td>
+                                            <td className="p-6">
+                                                <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg select-all" dir="ltr">{student.username}</span>
+                                            </td>
+                                            <td className="p-6"><span className="text-sm font-bold text-slate-600 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-300"></div>{student.grade}</span></td>
                                             <td className="p-6"><StatusBadge status={student.status} /></td>
                                             <td className="p-6">
-                                                <div className="flex items-center justify-center gap-4">
-                                                    <button onClick={() => setViewStudent(student)} className="text-gray-400 hover:text-primary text-xs font-bold underline transition-colors decoration-2 underline-offset-4">عرض الملف</button>
-                                                    <div className="flex gap-2 opacity-100 lg:opacity-20 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => handleOpenStudentModal(student)} className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors" title="تعديل"><Edit size={16} /></button>
-                                                        <button onClick={() => toggleStudentStatus(student.id)} className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${student.status === 'active' ? 'text-orange-500 bg-orange-50 hover:bg-orange-100' : 'text-green-500 bg-green-50 hover:bg-green-100'}`} title={student.status === 'active' ? 'تجميد' : 'تنشيط'}>{student.status === 'active' ? <Ban size={16} /> : <Unlock size={16} />}</button>
-                                                        <button onClick={() => deleteStudent(student.id)} className="p-2 text-red-500 bg-red-50 rounded-lg hover:bg-red-100 transition-colors" title="حذف"><Trash2 size={16} /></button>
-                                                    </div>
+                                                <div className="flex items-center justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => setViewStudent(student)} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="عرض"><Eye size={18} /></button>
+                                                    <button onClick={() => handleOpenStudentModal(student)} className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل"><Edit size={18} /></button>
+                                                    <button onClick={() => toggleStudentStatus(student.id)} className={`p-2 rounded-lg transition-colors ${student.status === 'active' ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'}`} title={student.status === 'active' ? 'تجميد' : 'تنشيط'}>{student.status === 'active' ? <Ban size={18} /> : <Unlock size={18} />}</button>
+                                                    <button onClick={() => deleteStudent(student.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف"><Trash2 size={18} /></button>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))}
                                     {filteredStudents.length === 0 && (
-                                        <tr><td colSpan={5} className="p-12 text-center text-gray-400 font-medium">لم يتم العثور على طلاب مطابقين للبحث.</td></tr>
+                                        <tr><td colSpan={5} className="p-20 text-center text-slate-400 font-bold">
+                                            <div className="mb-4 bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto"><Search size={32} /></div>
+                                            لم يتم العثور على طلاب مطابقين للبحث.
+                                        </td></tr>
                                     )}
                                 </tbody>
                              </table>
@@ -644,50 +737,98 @@ export const AdminDashboard: React.FC = () => {
 
                 {/* --- APPOINTMENTS TAB --- */}
                 {activeTab === 'appointments' && (
-                    <div className="space-y-8 animate-in fade-in">
-                        <div className="flex justify-end">
-                             <button onClick={handleOpenAppointmentModal} className="w-full md:w-auto flex items-center justify-center gap-2 bg-orange-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-600 hover:-translate-y-0.5 transition-all"><CalendarPlus size={20} /> حجز موعد جديد</button>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                             <div>
+                                 <h3 className="text-xl font-extrabold text-slate-900">إدارة المواعيد</h3>
+                                 <p className="text-slate-500 text-sm font-medium">تتبع وتنظيم جلسات التوجيه</p>
+                             </div>
+                             <button onClick={handleOpenAppointmentModal} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 hover:shadow-orange-500/40 transition-all"><CalendarPlus size={20} /> حجز موعد جديد</button>
                         </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white p-6 lg:p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-fit">
-                                <h3 className="font-extrabold text-lg mb-8 flex items-center gap-2 text-orange-500 bg-orange-50 w-fit px-4 py-2 rounded-xl">
-                                    <Clock size={20} /> طلبات قيد الانتظار
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                            {/* Pending Column */}
+                            <div className="flex flex-col h-full">
+                                <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-3 text-lg px-2">
+                                    <span className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></span>
+                                    طلبات قيد الانتظار 
+                                    <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-0.5 rounded-full">{appointments.filter(a => a.status === 'pending').length}</span>
                                 </h3>
-                                <div className="space-y-5 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {appointments.filter(a => a.status === 'pending').map(app => (
-                                        <div key={app.id} className="p-6 rounded-3xl bg-orange-50 border border-orange-100 relative group transition-all hover:bg-white hover:shadow-md hover:border-orange-200">
-                                            <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
-                                                <div>
-                                                    <h4 className="font-bold text-gray-900 text-lg mb-1">{app.title}</h4>
-                                                    <p className="text-sm text-gray-600 font-medium flex items-center gap-2"><Users size={14}/> {app.studentName}</p>
+                                <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow min-h-[500px]">
+                                    <div className="space-y-4 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
+                                        {appointments.filter(a => a.status === 'pending').map(app => (
+                                            <div key={app.id} className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-amber-200 group">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold shadow-inner">
+                                                            {app.date.split('-')[2]}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-900 text-sm mb-0.5">{app.title}</h4>
+                                                            <p className="text-xs text-slate-500 font-bold bg-slate-50 px-2 py-0.5 rounded w-fit">{app.studentName}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={() => deleteAppointment(app.id)} className="text-slate-300 hover:text-red-500 transition-colors"><X size={18}/></button>
                                                 </div>
-                                                <span className="text-xs font-bold bg-white px-3 py-1.5 rounded-lg text-orange-600 shadow-sm">{app.date}</span>
+                                                
+                                                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                                    <span className="flex items-center gap-1.5"><Calendar size={14} className="text-amber-500" /> {app.date}</span>
+                                                    <span className="w-px h-3 bg-slate-300"></span>
+                                                    <span className="flex items-center gap-1.5"><Clock size={14} className="text-amber-500" /> {app.time}</span>
+                                                </div>
+
+                                                <div className="flex gap-3">
+                                                    <button onClick={() => updateAppointmentStatus(app.id, 'confirmed')} className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"><Check size={16} /> قبول</button>
+                                                    <button onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="flex-1 py-3 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"><Ban size={16} /> رفض</button>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-3 mt-6">
-                                                <button onClick={() => updateAppointmentStatus(app.id, 'confirmed')} className="flex-1 py-3 bg-green-500 text-white rounded-xl text-sm font-bold hover:bg-green-600 flex items-center justify-center gap-2 transition-all shadow-sm"><Check size={16} /> قبول</button>
-                                                <button onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="flex-1 py-3 bg-white text-red-500 border border-red-100 rounded-xl text-sm font-bold hover:bg-red-50 flex items-center justify-center gap-2 transition-all"><XCircle size={16} /> رفض</button>
+                                        ))}
+                                        {appointments.filter(a => a.status === 'pending').length === 0 && (
+                                            <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20 opacity-60">
+                                                <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4"><Check size={32} /></div>
+                                                <p className="font-bold">لا توجد طلبات معلقة</p>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {appointments.filter(a => a.status === 'pending').length === 0 && <p className="text-center text-gray-400 py-8 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 font-bold">لا توجد طلبات جديدة.</p>}
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div className="bg-white p-6 lg:p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-fit">
-                                <h3 className="font-extrabold text-lg mb-8 flex items-center gap-2 text-green-600 bg-green-50 w-fit px-4 py-2 rounded-xl">
-                                    <CheckCircle size={20} /> المواعيد المؤكدة
+                            {/* Confirmed Column */}
+                            <div className="flex flex-col h-full">
+                                <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-3 text-lg px-2">
+                                    <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+                                    المواعيد القادمة
+                                    <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-0.5 rounded-full">{appointments.filter(a => a.status === 'confirmed').length}</span>
                                 </h3>
-                                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {appointments.filter(a => a.status !== 'pending').map(app => (
-                                        <div key={app.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-white border border-gray-100 group hover:shadow-md transition-all gap-4">
-                                            <div><h4 className="font-bold text-gray-900 text-sm mb-1">{app.title}</h4><p className="text-xs text-gray-400 font-medium">{app.studentName} • {app.date}</p></div>
-                                            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                                                <StatusBadge status={app.status} />
-                                                <button onClick={() => deleteAppointment(app.id)} className="text-red-300 hover:text-red-600 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
+                                <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow min-h-[500px]">
+                                    <div className="space-y-3 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
+                                        {appointments.filter(a => a.status === 'confirmed').map(app => (
+                                            <div key={app.id} className="bg-white p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all border border-transparent hover:border-emerald-100 flex items-center justify-between group">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex flex-col items-center justify-center font-bold border border-emerald-100">
+                                                        <span className="text-lg leading-none">{app.date.split('-')[2]}</span>
+                                                        <span className="text-[10px] uppercase opacity-70">شهر {app.date.split('-')[1]}</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-slate-900 text-sm mb-1">{app.title}</h4>
+                                                        <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
+                                                            <span className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded"><Users size={12}/> {app.studentName}</span>
+                                                            <span className="flex items-center gap-1"><Clock size={12}/> {app.time}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => deleteAppointment(app.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {appointments.filter(a => a.status !== 'pending').length === 0 && <p className="text-center text-gray-400 py-8 bg-gray-50 rounded-2xl font-bold">السجل فارغ.</p>}
+                                        ))}
+                                        {appointments.filter(a => a.status === 'confirmed').length === 0 && (
+                                            <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20 opacity-60">
+                                                <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4"><Calendar size={32} /></div>
+                                                <p className="font-bold">الجدول فارغ</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -701,45 +842,46 @@ export const AdminDashboard: React.FC = () => {
         
         {/* Student View Profile Modal (Read Only) */}
         {viewStudent && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-8 animate-in zoom-in-95 duration-300 relative overflow-hidden">
-                    <button onClick={() => setViewStudent(null)} className="absolute top-6 left-6 p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors z-10"><X size={24}/></button>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+                <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-0 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+                    <div className="h-32 bg-gradient-to-r from-primary to-royal relative">
+                        <button onClick={() => setViewStudent(null)} className="absolute top-6 left-6 p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-colors z-10"><X size={20}/></button>
+                    </div>
                     
-                    <div className="text-center mb-8 relative">
-                        <div className="w-28 h-28 rounded-full p-1 border-4 border-white shadow-lg bg-gray-100 mx-auto relative z-10">
-                            <img src={viewStudent.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${viewStudent.username}`} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                    <div className="px-8 pb-8 -mt-16 text-center">
+                        <div className="w-32 h-32 rounded-full p-1.5 bg-white shadow-xl mx-auto relative z-10 mb-4">
+                            <img src={viewStudent.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${viewStudent.username}`} alt="Profile" className="w-full h-full object-cover rounded-full bg-slate-100" />
+                            <div className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-4 border-white ${viewStudent.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
                         </div>
-                        <div className="absolute top-1/2 left-0 w-full h-32 bg-gradient-to-b from-primary/10 to-transparent -z-0 -translate-y-1/2 rounded-b-full"></div>
-                        <h3 className="text-2xl font-extrabold text-gray-900 mt-4">{viewStudent.name}</h3>
-                        <p className="text-gray-500 font-mono font-bold text-sm">@{viewStudent.username}</p>
-                        <div className="flex justify-center gap-2 mt-3">
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">{viewStudent.grade}</span>
-                            <StatusBadge status={viewStudent.status} />
-                        </div>
-                    </div>
+                        
+                        <h3 className="text-2xl font-black text-slate-900 mb-1">{viewStudent.name}</h3>
+                        <p className="text-slate-500 font-mono font-bold text-sm bg-slate-50 px-3 py-1 rounded-lg w-fit mx-auto mb-6">@{viewStudent.username}</p>
 
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
-                            <div className="text-primary mb-2 flex justify-center"><Clock size={24} /></div>
-                            <h4 className="text-2xl font-bold text-gray-900">{viewStudent.stats?.studyHours || 0}</h4>
-                            <p className="text-xs text-gray-500 font-bold">ساعات الدراسة</p>
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                            <div className="bg-blue-50 p-5 rounded-3xl border border-blue-100">
+                                <div className="text-primary mb-2 flex justify-center"><Clock size={28} /></div>
+                                <h4 className="text-3xl font-black text-slate-900 mb-1">{viewStudent.stats?.studyHours || 0}</h4>
+                                <p className="text-xs text-blue-600 font-bold uppercase tracking-wider">ساعات الدراسة</p>
+                            </div>
+                            <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100">
+                                <div className="text-emerald-500 mb-2 flex justify-center"><Activity size={28} /></div>
+                                <h4 className="text-3xl font-black text-slate-900 mb-1">{viewStudent.stats?.commitmentRate || 0}%</h4>
+                                <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider">معدل الالتزام</p>
+                            </div>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
-                            <div className="text-green-500 mb-2 flex justify-center"><Activity size={24} /></div>
-                            <h4 className="text-2xl font-bold text-gray-900">{viewStudent.stats?.commitmentRate || 0}%</h4>
-                            <p className="text-xs text-gray-500 font-bold">معدل الالتزام</p>
-                        </div>
-                    </div>
 
-                    <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                        <div className="flex justify-between items-end h-24 gap-2 px-2">
-                            {(viewStudent.stats?.weeklyProgress || [0,0,0,0,0,0,0]).map((h, i) => (
-                                <div key={i} className="flex-1 w-full bg-blue-200 rounded-t-lg relative overflow-hidden">
-                                    <div className="absolute bottom-0 w-full bg-primary" style={{ height: `${h}%` }}></div>
-                                </div>
-                            ))}
+                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                            <div className="flex justify-between items-end h-24 gap-3 px-2 mb-4">
+                                {(viewStudent.stats?.weeklyProgress || [30, 50, 40, 70, 50, 80, 60]).map((h, i) => (
+                                    <div key={i} className="flex-1 w-full bg-slate-200 rounded-t-lg relative overflow-hidden group">
+                                        <div className="absolute bottom-0 w-full bg-primary group-hover:bg-royal transition-colors" style={{ height: `${h}%` }}></div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase px-1">
+                                <span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
+                            </div>
                         </div>
-                        <p className="text-center text-xs text-blue-400 font-bold mt-3">النشاط الأسبوعي</p>
                     </div>
                 </div>
             </div>
@@ -748,18 +890,18 @@ export const AdminDashboard: React.FC = () => {
         {/* Settings Modal */}
         {showSettings && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-gray-900">الإعدادات</h3>
-                        <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20}/></button>
+                <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
+                    <div className="flex justify-between items-center mb-8">
+                        <h3 className="text-xl font-extrabold text-slate-900">إعدادات الحساب</h3>
+                        <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={20}/></button>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
-                            <label className="text-sm font-bold text-gray-700 mb-1 block">اسم المسؤول</label>
-                            <input type="text" value={adminName} onChange={e => setAdminName(e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-primary font-bold" />
+                            <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">اسم المسؤول</label>
+                            <input type="text" value={adminName} onChange={e => setAdminName(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary font-bold text-slate-800 transition-all" />
                         </div>
-                        <div className="pt-4">
-                            <button onClick={() => { alert('تم حفظ الإعدادات'); setShowSettings(false); }} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 shadow-lg">حفظ التغييرات</button>
+                        <div className="pt-2">
+                            <button onClick={() => { alert('تم حفظ الإعدادات'); setShowSettings(false); }} className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-royal shadow-lg shadow-blue-500/20 transition-transform active:scale-[0.98]">حفظ التغييرات</button>
                         </div>
                     </div>
                 </div>
@@ -769,23 +911,37 @@ export const AdminDashboard: React.FC = () => {
         {/* Student Modal */}
         {showStudentModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-             <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300 border border-gray-100">
+             <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300 border border-white/50">
                 <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-extrabold flex items-center gap-3 text-gray-900">
-                        <div className={`p-3 rounded-xl ${currentStudent.id ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
-                            {currentStudent.id ? <Edit size={20} /> : <UserPlus size={20} />}
+                    <h3 className="text-xl font-extrabold flex items-center gap-3 text-slate-900">
+                        <div className={`p-3 rounded-2xl ${currentStudent.id ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                            {currentStudent.id ? <Edit size={22} /> : <UserPlus size={22} />}
                         </div>
                         {currentStudent.id ? 'تعديل بيانات الطالب' : 'إضافة طالب جديد'}
                     </h3>
-                    <button onClick={() => setShowStudentModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"><X size={24}/></button>
+                    <button onClick={() => setShowStudentModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"><X size={24}/></button>
                 </div>
-                <form onSubmit={handleSaveStudent} className="space-y-6">
-                   <div><label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">الاسم الكامل</label><input required type="text" value={currentStudent.name || ''} onChange={e => setCurrentStudent({...currentStudent, name: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-gray-900" placeholder="مثال: أحمد التلميذ" /></div>
-                   <div><label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">اسم المستخدم (للدخول)</label><input required type="text" value={currentStudent.username || ''} onChange={e => setCurrentStudent({...currentStudent, username: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-primary focus:bg-white transition-all font-mono text-sm" placeholder="ahmed123" dir="ltr" /></div>
-                   <div><label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">المستوى الدراسي</label><select value={currentStudent.grade || '2 باكالوريا'} onChange={e => setCurrentStudent({...currentStudent, grade: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-primary bg-white font-bold text-gray-700"><option>2 باكالوريا</option><option>1 باكالوريا</option><option>جذع مشترك</option></select></div>
+                <form onSubmit={handleSaveStudent} className="space-y-5">
+                   <div>
+                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">الاسم الكامل</label>
+                       <input required type="text" value={currentStudent.name || ''} onChange={e => setCurrentStudent({...currentStudent, name: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-800" placeholder="مثال: أحمد التلميذ" />
+                   </div>
+                   <div>
+                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">اسم المستخدم</label>
+                       <input required type="text" value={currentStudent.username || ''} onChange={e => setCurrentStudent({...currentStudent, username: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-mono font-bold text-sm text-slate-800" placeholder="ahmed123" dir="ltr" />
+                   </div>
+                   <div>
+                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">المستوى الدراسي</label>
+                       <div className="relative">
+                           <select value={currentStudent.grade || '2 باكالوريا'} onChange={e => setCurrentStudent({...currentStudent, grade: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary bg-white font-bold text-slate-800 appearance-none cursor-pointer">
+                               <option>2 باكالوريا</option><option>1 باكالوريا</option><option>جذع مشترك</option>
+                           </select>
+                           <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><ChevronLeft size={18} className="-rotate-90" /></div>
+                       </div>
+                   </div>
                    <div className="flex gap-3 pt-4">
-                      <button type="submit" className="flex-1 bg-primary text-white py-4 rounded-xl font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5">حفظ البيانات</button>
-                      <button type="button" onClick={() => setShowStudentModal(false)} className="px-6 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-all">إلغاء</button>
+                      <button type="submit" className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold hover:bg-royal shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:scale-[0.98]">حفظ البيانات</button>
+                      <button type="button" onClick={() => setShowStudentModal(false)} className="px-6 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">إلغاء</button>
                    </div>
                 </form>
              </div>
@@ -795,30 +951,42 @@ export const AdminDashboard: React.FC = () => {
         {/* Appointment Modal */}
         {showAppointmentModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-             <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300">
+             <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300">
                 <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-extrabold flex items-center gap-3 text-gray-900">
-                        <div className="p-3 bg-orange-50 text-orange-500 rounded-xl"><CalendarPlus size={22} /></div>
-                        حجز موعد لطالب
+                    <h3 className="text-xl font-extrabold flex items-center gap-3 text-slate-900">
+                        <div className="p-3 bg-amber-50 text-amber-500 rounded-2xl"><CalendarPlus size={24} /></div>
+                        حجز موعد جديد
                     </h3>
-                    <button onClick={() => setShowAppointmentModal(false)} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600"><X size={24}/></button>
+                    <button onClick={() => setShowAppointmentModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"><X size={24}/></button>
                 </div>
-                <form onSubmit={handleSaveAppointment} className="space-y-6">
+                <form onSubmit={handleSaveAppointment} className="space-y-5">
                    <div>
-                        <label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">الطالب</label>
-                        <select required value={newBooking.studentName || ''} onChange={e => setNewBooking({...newBooking, studentName: e.target.value})} className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white outline-none focus:border-orange-500 transition-all font-bold text-gray-900">
-                           <option value="">اختر الطالب...</option>
-                           {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                        </select>
+                        <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">الطالب</label>
+                        <div className="relative">
+                            <select required value={newBooking.studentName || ''} onChange={e => setNewBooking({...newBooking, studentName: e.target.value})} className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-slate-800 appearance-none cursor-pointer">
+                               <option value="">اختر الطالب...</option>
+                               {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                            </select>
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><ChevronLeft size={18} className="-rotate-90" /></div>
+                        </div>
                    </div>
-                   <div><label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">نوع الموعد</label><input required type="text" value={newBooking.title || ''} onChange={e => setNewBooking({...newBooking, title: e.target.value})} placeholder="مثال: حصة دعم رياضيات" className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white outline-none focus:border-orange-500 transition-all font-bold" /></div>
+                   <div>
+                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">عنوان الموعد</label>
+                       <input required type="text" value={newBooking.title || ''} onChange={e => setNewBooking({...newBooking, title: e.target.value})} placeholder="مثال: حصة دعم رياضيات" className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-slate-800" />
+                   </div>
                    <div className="grid grid-cols-2 gap-4">
-                       <div><label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">التاريخ</label><input required type="date" value={newBooking.date || ''} onChange={e => setNewBooking({...newBooking, date: e.target.value})} className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white outline-none focus:border-orange-500 transition-all font-medium text-sm" /></div>
-                       <div><label className="text-xs font-bold block mb-2 text-gray-500 uppercase tracking-wider">الوقت</label><input required type="time" value={newBooking.time || ''} onChange={e => setNewBooking({...newBooking, time: e.target.value})} className="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white outline-none focus:border-orange-500 transition-all font-medium text-sm" /></div>
+                       <div>
+                           <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">التاريخ</label>
+                           <input required type="date" value={newBooking.date || ''} onChange={e => setNewBooking({...newBooking, date: e.target.value})} className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-sm text-slate-800" />
+                       </div>
+                       <div>
+                           <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">الوقت</label>
+                           <input required type="time" value={newBooking.time || ''} onChange={e => setNewBooking({...newBooking, time: e.target.value})} className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-sm text-slate-800" />
+                       </div>
                    </div>
                    <div className="flex gap-3 pt-4">
-                      <button type="submit" className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all hover:-translate-y-0.5">تأكيد الحجز</button>
-                      <button type="button" onClick={() => setShowAppointmentModal(false)} className="px-6 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-all">إلغاء</button>
+                      <button type="submit" className="flex-1 bg-amber-500 text-white py-4 rounded-2xl font-bold hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5 active:scale-[0.98]">تأكيد الحجز</button>
+                      <button type="button" onClick={() => setShowAppointmentModal(false)} className="px-6 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">إلغاء</button>
                    </div>
                 </form>
              </div>
