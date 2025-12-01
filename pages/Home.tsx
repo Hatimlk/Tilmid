@@ -351,10 +351,6 @@ export const Home: React.FC = () => {
                          </span>
                      </div>
                      
-                     <h3 className="text-lg font-bold text-gray-900 leading-snug mb-4 line-clamp-2" title={reel.title}>
-                         {reel.title}
-                     </h3>
-
                      <a 
                        href={reel.url} 
                        target="_blank" 

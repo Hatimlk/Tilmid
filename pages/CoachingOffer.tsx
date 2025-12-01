@@ -298,8 +298,8 @@ export const CoachingOffer: React.FC = () => {
          </div>
       </section>
 
-      {/* Main Content Area */}
-      <div className="container mx-auto px-4 lg:px-8 -mt-20 relative z-20 space-y-20">
+      {/* Main Content Area - Updated spacing */}
+      <div className="container mx-auto px-4 lg:px-8 mt-12 lg:mt-24 relative z-20 space-y-20">
 
         {/* 1. Registration Card + Benefits Summary */}
         <div id="registration-card" className="grid grid-cols-1 lg:grid-cols-5 gap-8 animate-fade-in-up animate-delay-300">
@@ -454,7 +454,7 @@ export const CoachingOffer: React.FC = () => {
             </div>
         </div>
 
-        {/* 2. Features Grid */}
+        {/* 2. Features Grid - Redesigned */}
         <div className="max-w-6xl mx-auto">
              <div className="text-center mb-16">
                  <h2 className="text-3xl font-bold text-gray-900 mb-4">ماذا ستستفيد من العرض؟</h2>
@@ -463,14 +463,22 @@ export const CoachingOffer: React.FC = () => {
                  </p>
              </div>
              
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                  {features.map((feature) => (
-                     <div key={feature.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
-                         <div className={`w-14 h-14 ${feature.color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-md group-hover:scale-110 transition-transform`}>
-                             <feature.icon size={28} />
+                     <div key={feature.id} className="group relative bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                         {/* Top Border Accent */}
+                         <div className={`absolute top-0 left-0 w-full h-1 ${feature.color}`}></div>
+                         
+                         {/* Decorative Background Glow */}
+                         <div className={`absolute -right-10 -top-10 w-40 h-40 ${feature.color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`}></div>
+                         
+                         <div className="relative z-10">
+                             <div className={`w-16 h-16 ${feature.color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                                 <feature.icon size={32} />
+                             </div>
+                             <h3 className="text-xl font-extrabold text-gray-900 mb-3">{feature.title}</h3>
+                             <p className="text-gray-500 leading-relaxed font-medium">{feature.text}</p>
                          </div>
-                         <h3 className="font-bold text-lg text-gray-900 mb-3">{feature.title}</h3>
-                         <p className="text-gray-500 text-sm leading-relaxed">{feature.text}</p>
                      </div>
                  ))}
              </div>
