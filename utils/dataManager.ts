@@ -443,6 +443,119 @@ const SEED_DATA = {
         author: { name: "المستشار المهني", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
         status: 'published',
         views: 2100
+    },
+    {
+        id: '17',
+        title: "لماذا يعتبر النوم سلاحك السري للتفوق الدراسي؟",
+        category: "الصحة والدراسة",
+        date: "15 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1541781777621-af139437881f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "اكتشف العلاقة القوية بين النوم العميق وترسيخ المعلومات في الذاكرة وكيف يؤثر السهر سلباً على أدائك.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>يعتقد الكثير من الطلاب أن السهر لساعات متأخرة يعني المزيد من الدراسة، لكن العلم يقول العكس.</p>
+            <h3 class="font-bold text-lg text-primary">ماذا يحدث لعقلك أثناء النوم؟</h3>
+            <p>أثناء النوم، يقوم الدماغ بعملية "تنظيف" للخلايا العصبية وترسيخ المعلومات التي تعلمتها خلال اليوم ونقلها من الذاكرة قصيرة المدى إلى الذاكرة طويلة المدى.</p>
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <strong>نصيحة:</strong> حاول النوم لمدة 7-8 ساعات يومياً، خاصة أيام الامتحانات. النوم الجيد يعادل ساعات من المراجعة.
+            </div>
+          </div>
+        `,
+        author: { name: "د. أخصائي نوم", avatar: "https://ui-avatars.com/api/?name=Sleep+Doc&background=random" },
+        status: 'published',
+        views: 1900
+    },
+    {
+        id: '18',
+        title: "طريقة كورنيل: كيف تلخص دروسك باحترافية؟",
+        category: "تقنيات",
+        date: "18 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "تعلم طريقة Cornell لأخذ الملاحظات التي تستخدم في أكبر جامعات العالم لتنظيم وتلخيص الدروس.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>طريقة كورنيل (Cornell Method) هي نظام لتنظيم الملاحظات يجعل المراجعة أسهل بكثير.</p>
+            <h3 class="font-bold text-lg">كيف تطبقها؟</h3>
+            <p>قسم ورقتك إلى 3 أقسام:</p>
+            <ul class="list-disc list-inside">
+                <li><strong>العمود الأيمن (صغير):</strong> للكلمات المفتاحية والأسئلة.</li>
+                <li><strong>العمود الأيسر (كبير):</strong> للملاحظات التفصيلية أثناء الدرس.</li>
+                <li><strong>الأسفل (مستطيل):</strong> ملخص سريع لما في الصفحة.</li>
+            </ul>
+            <p>هذه الطريقة تجبر عقلك على التلخيص والاستنتاج بدلاً من النقل الحرفي.</p>
+          </div>
+        `,
+        author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 2200
+    },
+    {
+        id: '19',
+        title: "تمارين تنفس بسيطة للقضاء على توتر الامتحانات",
+        category: "صحة نفسية",
+        date: "22 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "تقنيات عملية لتهدئة الأعصاب واستعادة التركيز أثناء الفترات الصعبة وضغط الامتحانات.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>التوتر يغلق مراكز التفكير المنطقي في الدماغ. الحل الأسرع هو التنفس.</p>
+            <h3 class="font-bold text-lg text-green-600">تقنية 4-7-8</h3>
+            <ol class="list-decimal list-inside space-y-2">
+                <li>خُذ شهيقاً عميقاً من الأنف لمدة <strong>4 ثوانٍ</strong>.</li>
+                <li>احبس نفسك لمدة <strong>7 ثوانٍ</strong>.</li>
+                <li>ازفر ببطء من الفم لمدة <strong>8 ثوانٍ</strong>.</li>
+            </ol>
+            <p>كرر هذه العملية 4 مرات قبل بدء الامتحان أو عند الشعور بالهلع، وستلاحظ الفرق فوراً.</p>
+          </div>
+        `,
+        author: { name: "مدرب كوتشينغ", avatar: "https://ui-avatars.com/api/?name=Coach&background=random" },
+        status: 'published',
+        views: 1650
+    },
+    {
+        id: '20',
+        title: "كيف تتقن اللغة الفرنسية بجانب دراستك؟",
+        category: "مهارات",
+        date: "25 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1543269865-cbf427effbad?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "استراتيجيات لدمج تعلم اللغات في روتينك اليومي دون التأثير على موادك الأساسية.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>اللغة الفرنسية عقدة للكثيرين، لكن حلها بسيط: <strong>الممارسة اليومية</strong>.</p>
+            <ul class="list-disc list-inside space-y-2">
+                <li><strong>غير لغة هاتفك:</strong> خطوة بسيطة لكن فعالة.</li>
+                <li><strong>شاهد محتوى تحبه:</strong> يوتيوب، أفلام، أو بودكاست بالفرنسية.</li>
+                <li><strong>تحدث مع نفسك:</strong> حاول وصف ما تفعله بالفرنسية بصوت عالٍ.</li>
+                <li><strong>اقرأ قصصاً قصيرة:</strong> ابدأ بقصص الأطفال أو المقالات البسيطة.</li>
+            </ul>
+            <p>تذكر: 15 دقيقة يومياً أفضل من 5 ساعات مرة في الشهر.</p>
+          </div>
+        `,
+        author: { name: "أستاذة لغات", avatar: "https://ui-avatars.com/api/?name=Prof+FR&background=random" },
+        status: 'published',
+        views: 3000
+    },
+    {
+        id: '21',
+        title: "الدومبابين الرقمي: تخلص من إدمان الهاتف",
+        category: "نصائح",
+        date: "30 نونبر 2023",
+        image: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        excerpt: "خطوات عملية لاستعادة تركيزك والتحكم في وقت استخدامك للشاشات أثناء فترة المراجعة.",
+        content: `
+          <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>الهاتف هو العدو رقم 1 للتركيز. إشعارات التطبيقات مصممة لتشتيت انتباهك.</p>
+            <h3 class="font-bold text-lg">خطة الديتوكس (Detox):</h3>
+            <ul class="list-disc list-inside space-y-2">
+                <li><strong>وضع الطيران:</strong> فعّله أثناء ساعات الدراسة.</li>
+                <li><strong>تطبيقات القفل:</strong> استخدم تطبيقات مثل Forest لزراعة أشجار افتراضية تموت إذا لمست هاتفك.</li>
+                <li><strong>أبعده عنك:</strong> ضعه في غرفة أخرى. الكسل في النهوض لإحضاره سيحميك.</li>
+            </ul>
+          </div>
+        `,
+        author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        status: 'published',
+        views: 2500
     }
   ] as BlogPost[],
   STUDENTS: [
