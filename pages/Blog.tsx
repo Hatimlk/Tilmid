@@ -41,9 +41,21 @@ export const Blog: React.FC = () => {
       element.setAttribute('content', content);
     };
 
+    // Canonical Tag Helper
+    const updateCanonical = (url: string) => {
+      let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('rel', 'canonical');
+        document.head.appendChild(link);
+      }
+      link.setAttribute('href', url);
+    };
+
     // Standard Meta
     updateMeta('description', description);
     updateMeta('keywords', 'تعليم, مدونة, توجيه مدرسي, باكالوريا, نصائح دراسية, تقنيات الحفظ, المغرب, تلميذ');
+    updateCanonical(url);
 
     // Open Graph / Facebook
     updateMeta('', title, 'og:title');

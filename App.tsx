@@ -72,6 +72,17 @@ const updateMeta = (name: string, content: string, property?: string) => {
   element.setAttribute('content', content);
 };
 
+// Helper function to update/create canonical link
+const updateCanonical = (url: string) => {
+  let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+  if (!link) {
+    link = document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    document.head.appendChild(link);
+  }
+  link.setAttribute('href', url);
+};
+
 // BlogPost Placeholder
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -90,34 +101,59 @@ const BlogPost = () => {
   // SEO & Metadata Logic
   React.useEffect(() => {
     if (post) {
+      const currentUrl = window.location.href;
+
       // 1. Title
       document.title = `${post.title} - مدونة تلميذ`;
 
-      // 2. Meta Description
-      updateMeta('description', post.excerpt);
-      updateMeta('keywords', `${post.category}, تعليم, دراسة, ${post.title.split(' ').slice(0,3).join(', ')}`);
+      // 2. Canonical URL
+      updateCanonical(currentUrl);
 
-      // 3. Open Graph (Social Media)
+      // 3. Meta Description
+      updateMeta('description', post.excerpt);
+      updateMeta('keywords', `${post.category}, تعليم, دراسة, توجيه مدرسي, ${post.title.split(' ').slice(0,3).join(', ')}`);
+
+      // 4. Open Graph (Social Media)
       updateMeta('', post.title, 'og:title');
       updateMeta('', post.excerpt, 'og:description');
       updateMeta('', post.image, 'og:image');
-      updateMeta('', window.location.href, 'og:url');
+      updateMeta('', currentUrl, 'og:url');
       updateMeta('', 'article', 'og:type');
+      updateMeta('', post.category, 'article:section');
+      if (post.date) updateMeta('', post.date, 'article:published_time');
 
-      // 4. Twitter Card
+      // 5. Twitter Card
       updateMeta('twitter:card', 'summary_large_image');
       updateMeta('twitter:title', post.title);
       updateMeta('twitter:description', post.excerpt);
       updateMeta('twitter:image', post.image);
+      updateMeta('twitter:creator', '@tilmid_official'); // Mock handle
 
-      // 5. Schema.org (JSON-LD)
+      // 6. Schema.org (JSON-LD) with ISO Date Parsing
+      // Attempt to parse Arabic date "1 شتنبر 2023" to "2023-09-01"
+      let isoDate = new Date().toISOString(); 
+      try {
+          const arabicMonths = ["يناير", "فبراير", "مارس", "أبريل", "ماي", "يونيو", "يوليوز", "غشت", "شتنبر", "أكتوبر", "نونبر", "دجنبر"];
+          const dateParts = post.date.split(' ');
+          if (dateParts.length === 3) {
+              const day = dateParts[0].padStart(2, '0');
+              const monthIndex = arabicMonths.indexOf(dateParts[1]);
+              const year = dateParts[2];
+              if (monthIndex > -1) {
+                  isoDate = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${day}`;
+              }
+          }
+      } catch (e) {
+          console.warn("Date parsing failed, using current date for schema fallback.");
+      }
+
       const schemaData = {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         "headline": post.title,
         "image": [post.image],
-        "datePublished": post.date, 
-        "dateModified": post.date,
+        "datePublished": isoDate, 
+        "dateModified": isoDate,
         "author": {
           "@type": "Person",
           "name": post.author?.name || "فريق تلميذ"
@@ -131,9 +167,10 @@ const BlogPost = () => {
            }
         },
         "description": post.excerpt,
+        "articleBody": post.content ? post.content.replace(/<[^>]*>?/gm, '') : post.excerpt, // Strip HTML for schema body
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": window.location.href
+            "@id": currentUrl
         }
       };
 
