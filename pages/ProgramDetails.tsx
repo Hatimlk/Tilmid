@@ -37,6 +37,7 @@ const TawjihAIAdvisor: React.FC = () => {
   const [step, setStep] = useState<'intro' | 'quiz' | 'analyzing' | 'result'>('intro');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
+  const [resultType, setResultType] = useState<string>('');
   const [analysisText, setAnalysisText] = useState('جاري تحليل البيانات...');
 
   const questions = [
@@ -125,20 +126,19 @@ const TawjihAIAdvisor: React.FC = () => {
   };
 
   const calculateResult = (finalAnswers: string[]) => {
-    // Simple logic: Find the most frequent type
     const counts: Record<string, number> = { eng: 0, med: 0, art: 0, bus: 0 };
     finalAnswers.forEach(a => counts[a] = (counts[a] || 0) + 1);
     
-    const resultType = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+    // Find the type with the highest count.
+    // Use >= to prioritize earlier keys in case of a tie, or just standard reduce.
+    const winningType = Object.keys(counts).reduce((a, b) => counts[a] >= counts[b] ? a : b);
+    
+    setResultType(winningType);
     setStep('result');
   };
 
   const getResultContent = () => {
-    const mostFrequent = answers.sort((a,b) =>
-          answers.filter(v => v===a).length - answers.filter(v => v===b).length
-    ).pop();
-
-    switch (mostFrequent) {
+    switch (resultType) {
       case 'eng':
         return {
           title: "المجال الهندسي والتقني",
@@ -301,7 +301,7 @@ const TawjihAIAdvisor: React.FC = () => {
 
             <div className="text-center mt-auto">
                <button 
-                 onClick={() => { setStep('intro'); setCurrentQuestion(0); setAnswers([]); }}
+                 onClick={() => { setStep('intro'); setCurrentQuestion(0); setAnswers([]); setResultType(''); }}
                  className="text-slate-400 hover:text-white text-sm font-bold flex items-center justify-center gap-2 mx-auto transition-colors group"
                >
                  <RefreshCcw size={16} className="group-hover:rotate-180 transition-transform duration-500" />
