@@ -4,10 +4,9 @@ import { MAIN_SERVICES, INSTAGRAM_REELS } from '../constants';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost, SuccessStory } from '../types';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, ChevronLeft, CheckCircle2, Users, Lightbulb, Clock, BarChart3, UserPlus, PlayCircle, Target, Sparkles, GraduationCap, Star, Instagram, Play, Volume2, Maximize2, X, Heart, Quote } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronLeft, CheckCircle2, Users, Lightbulb, Clock, BarChart3, UserPlus, PlayCircle, Target, Sparkles, GraduationCap, Star, Instagram, Share2, Quote, Heart } from 'lucide-react';
 
 export const Home: React.FC = () => {
-  const [activeReel, setActiveReel] = useState<string | null>(null);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [successStories, setSuccessStories] = useState<SuccessStory[]>([]);
 
@@ -295,86 +294,95 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Media Section */}
-      <section id="media" className="py-16 lg:py-20 bg-[#FDFBF7]">
-        <div className="container mx-auto px-4 lg:px-8 text-center">
-          <div className="mb-12">
-             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-purple-600 font-bold text-lg tracking-wide mb-2 block">
-                الترند في انستغرام
-             </span>
-             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">الأكثر مشاهدة على صفحة تلميذ 🔥</h2>
+      <section id="media" className="py-20 lg:py-28 bg-[#FDFBF7] relative overflow-hidden">
+        {/* Background Decor */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
+            <div className="absolute top-20 left-10 text-pink-200 animate-float delay-100"><Heart size={48} fill="currentColor" /></div>
+            <div className="absolute bottom-20 right-10 text-purple-200 animate-float delay-300"><PlayCircle size={64} /></div>
+        </div>
+
+        <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
+          {/* Header */}
+          <div className="mb-16">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full font-bold text-sm mb-6 shadow-lg shadow-purple-200 animate-fade-in-up">
+                  <Instagram size={18} />
+                  <span>تابعنا على انستغرام</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                  الأكثر مشاهدة على <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">تلميذ</span> 🔥
+              </h2>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                  محتوى تعليمي، تحفيزي، وترفيهي. انضم لمجتمعنا وكن جزءاً من النجاح.
+              </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-            {INSTAGRAM_REELS.map((reel) => (
-              <div key={reel.id} className="group relative max-w-sm mx-auto w-full">
-                 {/* Colorful Border Gradient */}
-                 <div className="absolute -inset-0.5 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-[2.2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+          {/* Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 max-w-6xl mx-auto">
+            {INSTAGRAM_REELS.map((reel, idx) => (
+              <div key={reel.id} className="group relative flex flex-col items-center animate-fade-in-up" style={{ animationDelay: `${idx * 150}ms` }}>
                  
-                 {/* Phone Frame Card */}
-                 <div className="relative bg-white p-2 rounded-[2rem] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
-                     <div className="relative overflow-hidden rounded-[1.6rem] aspect-[9/16] bg-black w-full">
-                        {activeReel === reel.id ? (
-                          <div className="w-full h-full bg-black animate-in fade-in duration-500 relative flex items-center justify-center">
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); setActiveReel(null); }}
-                              className="absolute top-4 right-4 z-50 bg-white/20 hover:bg-white/40 backdrop-blur p-2 rounded-full text-white transition-colors"
-                              title="إغلاق الفيديو"
-                            >
-                              <X size={20} />
-                            </button>
-                            <iframe 
-                              src={`https://www.instagram.com/reel/${reel.reelId}/embed/`} 
-                              className="w-full h-full border-0" 
-                              allowFullScreen
-                              title={reel.title}
-                              scrolling="no"
-                            ></iframe>
-                          </div>
-                        ) : (
-                          <div className="w-full h-full relative cursor-pointer group/cover" onClick={() => setActiveReel(reel.id)}>
-                            <img 
-                              src={reel.thumbnail} 
-                              alt={reel.title} 
-                              className="w-full h-full object-cover opacity-90 group-hover/cover:opacity-100 group-hover/cover:scale-105 transition-all duration-700" 
-                              referrerPolicy="no-referrer"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
-                              }}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/10 flex flex-col justify-end p-6 text-white text-right">
-                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                  <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white hover:bg-white hover:text-primary transition-all shadow-xl transform group-hover/cover:scale-110 animate-pulse">
-                                     <Play size={32} fill="currentColor" className="ml-1" />
-                                  </div>
-                               </div>
-                               <div className="transform translate-y-2 group-hover/cover:translate-y-0 transition-transform duration-300">
-                                  <h3 className="font-bold text-base leading-snug mb-3 drop-shadow-md line-clamp-2" dir="rtl">{reel.title}</h3>
-                                  <div className="flex items-center justify-between text-xs font-medium text-gray-300 border-t border-white/20 pt-3">
-                                     <div className="flex items-center gap-4">
-                                        <span className="flex items-center gap-1 text-white"><Heart size={14} /> {reel.views}</span>
-                                        <span className="flex items-center gap-1"><Clock size={14} /> {reel.duration}</span>
-                                     </div>
-                                  </div>
-                               </div>
-                            </div>
-                          </div>
-                        )}
+                 {/* Phone Frame */}
+                 <div className="relative w-full max-w-[320px] bg-gray-900 rounded-[2.5rem] p-3 shadow-2xl border-4 border-gray-900 ring-1 ring-gray-800/50 transform transition-transform duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+                     {/* Notch/Top Bar */}
+                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-xl z-20 flex justify-center items-center">
+                         <div className="w-12 h-1.5 bg-gray-800 rounded-full"></div>
                      </div>
-                     <div className="pt-3 px-1 pb-1">
-                        <a 
-                          href={reel.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="block w-full py-3 bg-gray-50 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 text-gray-700 hover:text-pink-600 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 group/btn"
-                        >
-                          <Instagram size={18} className="group-hover/btn:text-pink-600" /> 
-                          <span>مشاهدة في التطبيق</span>
-                        </a>
+
+                     {/* Screen Content */}
+                     <div className="relative overflow-hidden rounded-[2rem] bg-black aspect-[9/16] w-full">
+                        <iframe 
+                          src={`https://www.instagram.com/reel/${reel.reelId}/embed/`} 
+                          className="w-full h-full border-0" 
+                          allowFullScreen
+                          title={reel.title}
+                          scrolling="no"
+                        ></iframe>
                      </div>
                  </div>
+
+                 {/* Stats / Info Below Phone */}
+                 <div className="mt-6 text-center max-w-[300px]">
+                     <div className="flex items-center justify-center gap-4 text-sm font-bold text-gray-500 mb-3">
+                         <span className="flex items-center gap-1.5 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">
+                             <PlayCircle size={14} className="text-purple-500" /> {reel.views}
+                         </span>
+                         <span className="flex items-center gap-1.5 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">
+                             <Clock size={14} className="text-pink-500" /> {reel.duration}
+                         </span>
+                     </div>
+                     
+                     <h3 className="text-lg font-bold text-gray-900 leading-snug mb-4 line-clamp-2" title={reel.title}>
+                         {reel.title}
+                     </h3>
+
+                     <a 
+                       href={reel.url} 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       className="inline-flex items-center gap-2 text-primary hover:text-purple-600 font-bold transition-colors group/link"
+                     >
+                       <span>مشاهدة على التطبيق</span>
+                       <ArrowLeft size={18} className="transition-transform group-hover/link:-translate-x-1" />
+                     </a>
+                 </div>
+
               </div>
             ))}
           </div>
+          
+          {/* Bottom CTA */}
+          <div className="mt-16">
+              <a 
+                  href="https://www.instagram.com/tilmid.official/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:-translate-y-1"
+              >
+                  <Instagram size={24} />
+                  <span>مشاهدة المزيد على انستغرام</span>
+              </a>
+          </div>
+
         </div>
       </section>
 
