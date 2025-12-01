@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Play, Target, Eye, Heart, Shield, Zap, Users, Award, CheckCircle2, Brain } from 'lucide-react';
+import { Play, Target, Eye, Heart, Shield, Zap, Users, Award, CheckCircle2, Brain, Quote, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const About: React.FC = () => {
@@ -147,40 +147,65 @@ export const About: React.FC = () => {
           </div>
       </section>
 
-      {/* Founder Section */}
-      <section className="py-20 lg:py-32 overflow-hidden">
+      {/* Founder Section - Redesigned to match Success Stories style */}
+      <section className="py-20 lg:py-28 bg-blue-50/30">
           <div className="container mx-auto px-4 lg:px-8">
-              <div className="bg-royal rounded-[3rem] p-8 md:p-16 relative text-white shadow-2xl overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+              <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">مؤسس المنصة</h2>
+                  <p className="text-gray-500 text-lg">تعرف على الخبير وراء نجاح تلميذ</p>
+              </div>
+
+              <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+                  {/* Decorative Elements matching Success Stories */}
+                  <div className="absolute top-10 left-10 text-gray-100 group-hover:text-blue-50 transition-colors">
+                      <Quote size={80} />
+                  </div>
                   
-                  <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
-                      <div className="flex-1 text-center lg:text-right">
-                          <div className="inline-block px-4 py-1 bg-white/20 rounded-full text-sm font-bold mb-6 backdrop-blur-sm">كلمة المؤسس</div>
-                          <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">الأستاذ ياسين</h2>
-                          <p className="text-blue-100 text-lg md:text-xl leading-relaxed mb-8 font-medium">
-                              "بعد 10 سنوات في ميدان التعليم، أدركت أن المشكلة ليست في صعوبة المواد، بل في غياب المنهجية والتوجيه الصحيح. أسست منصة تلميذ لتكون الجسر الذي يعبر بكم من التخبط إلى الوضوح، ومن التعثر إلى التفوق."
-                          </p>
-                          <div className="flex flex-wrap justify-center lg:justify-start gap-6">
-                              <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="text-green-400" />
-                                  <span>مستشار تربوي معتمد</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="text-green-400" />
-                                  <span>خبير في التفوق الدراسي</span>
-                              </div>
-                          </div>
-                      </div>
-                      <div className="flex-1 relative">
-                          <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-white rounded-full p-2 shadow-2xl">
+                  <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
+                      {/* Photo */}
+                      <div className="shrink-0 relative">
+                          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1.5 bg-gradient-to-br from-primary to-royal shadow-lg">
                               <img 
                                 src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                                 alt="الأستاذ ياسين" 
-                                className="w-full h-full object-cover rounded-full border-4 border-blue-50"
+                                className="w-full h-full object-cover rounded-full border-4 border-white"
                               />
                           </div>
-                          <div className="absolute bottom-4 right-1/4 bg-white text-royal p-4 rounded-2xl shadow-lg transform rotate-6 animate-float hidden md:block">
-                              <Award size={32} />
+                          <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-white p-2 rounded-full shadow-md border-4 border-white">
+                              <Award size={20} />
+                          </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 text-center md:text-right">
+                          <div className="mb-4">
+                              <h3 className="text-2xl font-bold text-gray-900">الأستاذ ياسين</h3>
+                              <span className="text-primary font-bold text-sm block mt-1">مؤسس منصة تلميذ & مستشار تربوي</span>
+                          </div>
+
+                          <div className="space-y-4 text-gray-600 leading-relaxed font-medium">
+                              <p>
+                                  "بعد مسيرة امتدت لأكثر من 10 سنوات في ميدان التربية والتكوين، أدركت أن الفجوة الحقيقية ليست في المناهج، بل في طريقة التعامل معها. أسست 'تلميذ' لتكون البوصلة التي توجه الطلاب نحو اكتشاف قدراتهم الكامنة."
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                  خبير معتمد في استراتيجيات التعلم السريع والتوجيه المدرسي. ساعد آلاف الطلاب على تجاوز عقبات التحصيل الدراسي وتحقيق نتائج استثنائية من خلال منهجيات علمية حديثة.
+                              </p>
+                          </div>
+
+                          {/* Badges/Tags */}
+                          <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
+                              <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold">
+                                  <CheckCircle2 size={14} />
+                                  <span>+10 سنوات خبرة</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-lg text-xs font-bold">
+                                  <CheckCircle2 size={14} />
+                                  <span>مستشار معتمد</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-yellow-400 bg-yellow-50 px-3 py-1.5 rounded-lg text-xs font-bold">
+                                  <Star size={14} fill="currentColor" />
+                                  <span>تقييم ممتاز</span>
+                              </div>
                           </div>
                       </div>
                   </div>
