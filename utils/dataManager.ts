@@ -195,7 +195,150 @@ const SEED_DATA = {
         status: 'published',
         views: 850
     },
-    // Other posts...
+    {
+      id: '5',
+      title: "طريقة كورنيل: كيف تكتب ملخصات لا تنسى؟",
+      category: "تقنيات",
+      date: "10 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1517842645767-c639042777db?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "تعلم طريقة كورنيل لتدوين الملاحظات، الطريقة الأكثر فعالية لتلخيص الدروس ومراجعتها.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>يعاني الكثير من الطلاب من فوضى الملاحظات. تكتب الدرس في القسم، وعند المراجعة تجد نفسك أمام "طلاسم" غير مفهومة. الحل؟ <strong>طريقة كورنيل (Cornell Method)</strong>.</p>
+            
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">كيف تقسم ورقتك؟</h3>
+            <p>خذ ورقة عادية وقسمها إلى 3 أقسام رئيسية:</p>
+            <ul class="list-disc list-inside space-y-3">
+                <li><strong>العمود الأيمن (عمود المراجعة):</strong> مساحة صغيرة (حوالي 5 سم) لكتابة الكلمات المفتاحية والأسئلة الرئيسية.</li>
+                <li><strong>العمود الأيسر (عمود الملاحظات):</strong> المساحة الأكبر، تكتب فيها شرح الدرس، الأفكار، والرسوم البيانية أثناء الحصة.</li>
+                <li><strong>الخلاصة (في الأسفل):</strong> مستطيل في أسفل الورقة لكتابة ملخص مكثف للدرس في جملتين أو ثلاث.</li>
+            </ul>
+
+            <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-2xl mt-6">
+                <h4 class="font-bold text-yellow-800 mb-2">سر الفعالية: The 5 R's</h4>
+                <ol class="list-decimal list-inside text-sm text-yellow-900 font-medium space-y-1">
+                    <li><strong>Record:</strong> سجل الملاحظات في العمود الكبير.</li>
+                    <li><strong>Reduce:</strong> لخص الأفكار في العمود الصغير بعد الحصة.</li>
+                    <li><strong>Recite:</strong> غط العمود الكبير وحاول استرجاع المعلومات باستخدام الكلمات المفتاحية فقط.</li>
+                    <li><strong>Reflect:</strong> فكر في المعلومات واربطها بمعارفك السابقة.</li>
+                    <li><strong>Review:</strong> راجع مذكراتك أسبوعياً لمدة 10 دقائق.</li>
+                </ol>
+            </div>
+        </div>
+      `,
+      author: { name: "سارة العلمي", avatar: IMAGES.AVATARS.SARA },
+      status: 'published',
+      views: 1100
+    },
+    {
+      id: '6',
+      title: "النوم والذاكرة: لماذا السهر هو عدوك الأول؟",
+      category: "الصحة والدراسة",
+      date: "12 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1541781777621-af1187546367?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "اكتشف العلاقة العلمية بين النوم وترسيخ المعلومات في الذاكرة، وكيف تنظم نومك.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>"سأسهر الليلة لأراجع كل شيء!"... هذه الجملة هي بداية الكارثة لأي طالب. الاعتقاد بأن تقليص ساعات النوم يوفر وقتاً للمراجعة هو خطأ علمي فادح.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">ماذا يحدث لعقلك وأنت نائم؟</h3>
+            <p>أثناء النوم، وبالتحديد في مرحلة REM (حركة العين السريعة)، يقوم الدماغ بعملية "Hconsolidation" أو ترسيخ الذاكرة. إنه ينقل المعلومات من الذاكرة قصيرة المدى (التي تختفي بسرعة) إلى الذاكرة طويلة المدى.</p>
+
+            <div class="grid md:grid-cols-2 gap-4 mt-6">
+               <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                   <h4 class="font-bold text-red-700 mb-2">قلة النوم تسبب:</h4>
+                   <ul class="list-disc list-inside text-sm text-red-600">
+                       <li>ضعف التركيز وتشتت الانتباه.</li>
+                       <li>صعوبة استرجاع المعلومات.</li>
+                       <li>زيادة التوتر والقلق.</li>
+                   </ul>
+               </div>
+               <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                   <h4 class="font-bold text-green-700 mb-2">النوم الكافي يمنحك:</h4>
+                   <ul class="list-disc list-inside text-sm text-green-600">
+                       <li>سرعة بديهة وحل المشكلات.</li>
+                       <li>ذاكرة حديدية.</li>
+                       <li>استقرار عاطفي ونفسي.</li>
+                   </ul>
+               </div>
+            </div>
+
+            <p class="font-bold mt-4 text-center text-primary">نصيحة: احرص على النوم لمدة 7-8 ساعات، خاصة ليلة الامتحان.</p>
+        </div>
+      `,
+      author: { name: "د. كريم", avatar: IMAGES.AVATARS.KARIM },
+      status: 'published',
+      views: 1450
+    },
+    {
+      id: '7',
+      title: "كيف تختار تخصصك الجامعي دون ندم؟",
+      category: "توجيه",
+      date: "15 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "خطوات عملية لاكتشاف شغفك واختيار المسار الدراسي الذي يناسب سوق الشغل وقدراتك.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>اختيار التخصص الجامعي هو واحد من أهم القرارات في حياتك. الكثير من الطلاب يختارون بناءً على "المعدل" فقط أو "رغبة الوالدين"، وينتهي بهم الأمر بدراسة مجال لا يحبونه.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">معادلة "إيكيجاي" للاختيار الصحيح:</h3>
+            <p>للاختيار الصحيح، حاول أن تجد التقاطع بين 4 دوائر:</p>
+            <ol class="list-decimal list-inside space-y-2 font-medium">
+                <li><strong>ما تحبه:</strong> (الشغف) ما هي المواد التي تستمتع بها؟</li>
+                <li><strong>ما تجيده:</strong> (الموهبة) ما هي المهارات التي تتقنها بسهولة؟</li>
+                <li><strong>ما يحتاجه العالم:</strong> (الفرص) هل هناك طلب في سوق الشغل؟</li>
+                <li><strong>ما يُدفع لك لأجله:</strong> (المهنة) هل يمكنك كسب عيش كريم منه؟</li>
+            </ol>
+
+            <div class="bg-gray-100 p-6 rounded-2xl mt-6">
+                <h4 class="font-bold text-gray-800 mb-2">خطوات عملية:</h4>
+                <ul class="space-y-2 text-sm">
+                    <li>✅ قم باختبارات تحليل الشخصية والميول المهنية.</li>
+                    <li>✅ تحدث مع طلاب يدرسون التخصصات التي تفكر فيها.</li>
+                    <li>✅ ابحث في مواقع التوظيف عن المهن المطلوبة مستقبلاً.</li>
+                </ul>
+            </div>
+        </div>
+      `,
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
+      status: 'published',
+      views: 2100
+    },
+    {
+      id: '8',
+      title: "عقدة الرياضيات: كيف تتصالح مع الأرقام؟",
+      category: "نصائح",
+      date: "18 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "نصائح للتغلب على الخوف من الرياضيات وفهمها بشكل مبسط ومنطقي.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>"أنا أدبي، لا أفهم الرياضيات!"... هذا معتقد خاطئ يبرمج عقلك على الفشل قبل المحاولة. الرياضيات ليست وحشاً، بل هي لغة منطقية تحتاج فقط إلى طريقة صحيحة لفك شفرتها.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">كيف تتغلب على "فوبيا الرياضيات"؟</h3>
+            
+            <ul class="space-y-4">
+                <li class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <strong class="text-primary block mb-1">1. ابدأ من الأساسيات:</strong>
+                    الرياضيات بناء تراكمي. لا يمكنك فهم الدوال دون فهم المعادلات من الدرجة الأولى. لا تخجل من العودة لدروس السنوات الماضية لسد الثغرات.
+                </li>
+                <li class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <strong class="text-primary block mb-1">2. الممارسة ثم الممارسة:</strong>
+                    لا يمكن تعلم الرياضيات بـ "المشاهدة" فقط. يجب أن تمسك القلم وتحل التمارين بيدك وتخطئ وتصحح.
+                </li>
+                <li class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <strong class="text-primary block mb-1">3. افهم "لماذا":</strong>
+                    لا تحفظ القواعد، بل حاول فهم المنطق وراءها. عندما تفهم "لماذا" تعمل القاعدة، لن تنساها أبداً.
+                </li>
+            </ul>
+
+            <p class="mt-6">تذكر: كل مسألة رياضية هي لغز ممتع ينتظر الحل، وليست عقاباً!</p>
+        </div>
+      `,
+      author: { name: "محمد التازي", avatar: IMAGES.AVATARS.MOHAMED },
+      status: 'published',
+      views: 950
+    }
   ] as BlogPost[],
   STUDENTS: [
     { 

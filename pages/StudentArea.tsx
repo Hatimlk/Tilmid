@@ -382,6 +382,14 @@ export const StudentArea: React.FC = () => {
                             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                         </div>
                     </div>
+
+                    <button 
+                        onClick={handleLogout} 
+                        className="p-2.5 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                        title="تسجيل الخروج"
+                    >
+                        <LogOut size={20} />
+                    </button>
                 </div>
             </div>
         </header>

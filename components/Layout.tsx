@@ -13,6 +13,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isStudentArea = location.pathname.startsWith('/student-area');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +40,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </main>
       
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isStudentArea && <Footer />}
       
       {/* Floating Action Buttons Container */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-4 items-center">
