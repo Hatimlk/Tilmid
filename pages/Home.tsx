@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MAIN_SERVICES, INSTAGRAM_REELS } from '../constants';
+import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost, SuccessStory } from '../types';
 import { Link } from 'react-router-dom';
@@ -84,7 +85,7 @@ export const Home: React.FC = () => {
                 
                 {/* Main Image */}
                 <img 
-                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                  src={IMAGES.HERO.HOME_MAIN} 
                   alt="Students Learning" 
                   className="relative rounded-[2rem] lg:rounded-[3rem] shadow-2xl w-full object-cover h-[300px] sm:h-[450px] lg:h-[600px] border-4 border-white"
                 />
@@ -243,7 +244,7 @@ export const Home: React.FC = () => {
                  {/* Main Image Container */}
                  <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] border-white">
                      <img 
-                       src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                       src={IMAGES.ABOUT.FOUNDER}
                        alt="الأستاذ ياسين" 
                        className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
                      />

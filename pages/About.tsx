@@ -2,6 +2,7 @@
 import React from 'react';
 import { Play, Target, Eye, Heart, Shield, Zap, Users, Award, CheckCircle2, Brain, Quote, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { IMAGES } from '../constants/images';
 
 export const About: React.FC = () => {
   return (
@@ -37,7 +38,7 @@ export const About: React.FC = () => {
             <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white bg-gray-900 aspect-video group animate-fade-in-up animate-delay-300">
                 {/* Placeholder Image for Video */}
                 <img 
-                    src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" 
+                    src={IMAGES.ABOUT.VIDEO_COVER} 
                     alt="Tilmid Presentation" 
                     className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500"
                 />
@@ -99,7 +100,7 @@ export const About: React.FC = () => {
                   <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-tr from-primary to-royal rounded-[3rem] rotate-3 opacity-10"></div>
                       <img 
-                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                        src={IMAGES.ABOUT.TEAM} 
                         alt="Team Meeting" 
                         className="relative rounded-[3rem] shadow-2xl border-4 border-white w-full transform hover:scale-105 transition-transform duration-700"
                       />
@@ -166,7 +167,7 @@ export const About: React.FC = () => {
                       <div className="shrink-0 relative">
                           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1.5 bg-gradient-to-br from-primary to-royal shadow-lg">
                               <img 
-                                src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                                src={IMAGES.ABOUT.FOUNDER} 
                                 alt="الأستاذ ياسين" 
                                 className="w-full h-full object-cover rounded-full border-4 border-white"
                               />

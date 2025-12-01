@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Search, Calendar, ChevronLeft, ChevronRight, User, Sparkles, BookOpen, ArrowUpRight, Clock, CheckCircle2, Hash } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost } from '../types';
+import { IMAGES } from '../constants/images';
 
 export const Blog: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,7 +18,7 @@ export const Blog: React.FC = () => {
     // --- SEO CONFIGURATION ---
     const title = "المدونة التعليمية - تلميذ | نصائح، توجيه، وطرق مراجعة";
     const description = "اكتشف أحدث المقالات التعليمية، نصائح التوجيه المدرسي، تقنيات الحفظ والمراجعة، واستراتيجيات التفوق الدراسي على منصة تلميذ.";
-    const image = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"; // Generic Education Image
+    const image = IMAGES.BLOG.DEFAULT_SEO;
     const url = window.location.href;
 
     document.title = title;
