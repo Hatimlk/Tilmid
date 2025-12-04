@@ -338,6 +338,138 @@ const SEED_DATA = {
       author: { name: "محمد التازي", avatar: IMAGES.AVATARS.MOHAMED },
       status: 'published',
       views: 950
+    },
+    {
+      id: '9',
+      title: "الجامعة أم المدارس العليا؟ دليلك الشامل للاختيار",
+      category: "توجيه",
+      date: "20 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "مقارنة مفصلة بين نظام الدراسة في الجامعات (Facultés) والمدارس العليا (Grandes Écoles) لمساعدتك في اتخاذ القرار.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>بعد البكالوريا، يجد الطالب نفسه أمام مفترق طرق كبير: هل أختار الجامعة (الاستقطاب المفتوح) أم أقاتل من أجل المدارس العليا (الاستقطاب المحدود)؟</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">1. المدارس العليا والمعاهد (Grandes Écoles):</h3>
+            <ul class="list-disc list-inside space-y-2 mb-4">
+                <li><strong>الولوج:</strong> يتطلب انتقاء أولياً (Seuil) ثم مباراة كتابية وشفوية أحياناً.</li>
+                <li><strong>نظام الدراسة:</strong> حضور إلزامي، عدد طلبة محدود في القسم، تأطير قريب من الأساتذة.</li>
+                <li><strong>الآفاق:</strong> دبلومات مطلوبة بكثرة في سوق الشغل، تكوين مهني وعملي أكثر.</li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">2. الجامعة (Faculté):</h3>
+            <ul class="list-disc list-inside space-y-2 mb-4">
+                <li><strong>الولوج:</strong> مفتوح لجميع الحاصلين على البكالوريا (حسب التوزيع الجغرافي).</li>
+                <li><strong>نظام الدراسة:</strong> حرية أكبر، مدرجات مكتظة، يتطلب انضباطاً ذاتياً كبيراً (Auto-discipline).</li>
+                <li><strong>الآفاق:</strong> تفتح آفاقاً في البحث العلمي، التعليم، ويمكن الولوج منها للمدارس العليا عبر "الجسور" (Passerelles).</li>
+            </ul>
+
+            <div class="bg-blue-50 p-6 rounded-2xl mt-6 border border-blue-100">
+                <h4 class="font-bold text-primary mb-2">الخلاصة:</h4>
+                <p>إذا كنت طالباً يحتاج إلى التأطير والمتابعة، فالمدارس العليا أفضل. أما إذا كنت مستقلاً وقادراً على البحث الذاتي، فالجامعة قد تكون مكاناً للإبداع والتميز.</p>
+            </div>
+        </div>
+      `,
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
+      status: 'published',
+      views: 1850
+    },
+    {
+      id: '10',
+      title: "كيف يتم حساب عتبة الانتقاء (Seuil) في المدارس العليا؟",
+      category: "توجيه",
+      date: "22 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "شرح مبسط لطريقة حساب المعدل الانتقائي للمدارس العليا مثل ENCG, ENSA, FMP.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>كثيراً ما يسمع التلاميذ كلمة "Seuil" أو عتبة الانتقاء، لكن القليل منهم يفهم كيف يتم حسابها بالضبط. هذا الفهم ضروري لتعرف حظوظك في القبول.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">القاعدة العامة (75% - 25%):</h3>
+            <p>أغلب المدارس العليا في المغرب تعتمد المعادلة التالية لحساب معدل الانتقاء الأولي:</p>
+            <div class="bg-gray-100 p-4 rounded-xl text-center font-bold text-lg my-4 font-mono dir-ltr">
+                (Note National × 0.75) + (Note Régional × 0.25)
+            </div>
+            <p>هذا يعني أن نقطة الامتحان الوطني تشكل 75% من معدل الانتقاء، بينما الجهوي يشكل 25%. المراقبة المستمرة غالباً لا تحتسب في الانتقاء الأولي لهذه المدارس.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">استثناءات هامة:</h3>
+            <ul class="list-disc list-inside space-y-2">
+                <li><strong>FMP (كليات الطب):</strong> تعتمد نفس الصيغة (75% وطني + 25% جهوي).</li>
+                <li><strong>CPGE (الأقسام التحضيرية):</strong> لها معادلة معقدة خاصة تعتمد على مواد التخصص ومعاملات الترجيح.</li>
+                <li><strong>EST / FST:</strong> تعتمد أيضاً بشكل كبير على المعادلة أعلاه مع بعض الاختلافات الطفيفة حسب المسلك.</li>
+            </ul>
+
+            <div class="bg-yellow-50 p-6 rounded-2xl mt-6 border border-yellow-200">
+                <h4 class="font-bold text-yellow-800 mb-2">نصيحة:</h4>
+                <p>لا تعتمد على "Seuil" السنوات الماضية كمعيار ثابت، فهو يتغير كل سنة حسب صعوبة الامتحانات ومعدلات التلاميذ.</p>
+            </div>
+        </div>
+      `,
+      author: { name: "سارة العلمي", avatar: IMAGES.AVATARS.SARA },
+      status: 'published',
+      views: 2300
+    },
+    {
+      id: '11',
+      title: "آفاق التكوين المهني (OFPPT): هل هو خيار جيد؟",
+      category: "توجيه",
+      date: "25 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "تصحيح المفاهيم الخاطئة حول التكوين المهني والفرص الحقيقية التي يقدمها في سوق الشغل.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>للأسف، لا يزال البعض ينظر للتكوين المهني (OFPPT) نظرة دونية، ويعتبره ملاذاً "للفاشلين". هذه نظرة قديمة وخاطئة تماماً في عصرنا الحالي.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">لماذا تختار التكوين المهني؟</h3>
+            <ul class="list-disc list-inside space-y-3">
+                <li><strong>مدة تكوين قصيرة:</strong> سنتان فقط (Technicien Spécialisé) وتكون جاهزاً لسوق الشغل.</li>
+                <li><strong>تكوين تطبيقي 100%:</strong> تتعلم "الصنعة" والمهارات اليدوية والتقنية المطلوبة مباشرة في الشركات.</li>
+                <li><strong>طلب مرتفع:</strong> الشركات اليوم تبحث عن "تقنيين" أكفاء أكثر من بحثها عن حاملي الإجازات النظرية.</li>
+                <li><strong>آفاق المتابعة:</strong> يمكنك بعد الحصول على الدبلوم إكمال دراستك في الإجازة المهنية (Licence Pro) ومدارس المهندسين.</li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">تخصصات واعدة:</h3>
+            <p>هناك تخصصات مطلوبة جداً مثل: تطوير البرمجيات (Dev Digital)، التشخيص الإلكتروني للسيارات، اللوجستيك، والذكاء الاصطناعي.</p>
+
+            <div class="bg-green-50 p-6 rounded-2xl mt-6 border border-green-200">
+                <h4 class="font-bold text-green-800 mb-2">خلاصة القول:</h4>
+                <p>الدبلوم هو "مفتاح"، لكن كفاءتك هي التي تفتح الباب. خريج تكوين مهني متميز أفضل بألف مرة من خريج جامعة "شبح".</p>
+            </div>
+        </div>
+      `,
+      author: { name: "محمد التازي", avatar: IMAGES.AVATARS.MOHAMED },
+      status: 'published',
+      views: 1600
+    },
+    {
+      id: '12',
+      title: "الدراسة في الخارج: من أين تبدأ؟",
+      category: "توجيه",
+      date: "28 شتنبر 2023",
+      image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "خطوات التخطيط للدراسة بالخارج، الوثائق المطلوبة، وكيفية التحضير اللغوي والمادي.",
+      content: `
+        <div class="space-y-6 text-gray-700 leading-relaxed">
+            <p>الدراسة في الخارج حلم يراود الكثيرين، لكنه يتطلب تخطيطاً مبكراً وجدية. "بغيت نمشي لبرا" ليست خطة، بل أمنية تحتاج لخطوات عملية.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">الخطوة الأولى: اللغة (TCF/IELTS)</h3>
+            <p>قبل أي شيء، يجب أن تثبت إتقانك للغة البلد المضيف. بالنسبة لفرنسا، يجب اجتياز TCF والحصول على مستوى B2 على الأقل لضمان حظوظ جيدة. ابدأ التحضير في الصيف!</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">الخطوة الثانية: المشروع الدراسي</h3>
+            <p>يجب أن تقنع القنصلية والجامعة بأن لديك هدفاً واضحاً. لماذا هذا التخصص؟ ولماذا في هذا البلد؟ وماذا ستفعل بعد التخرج؟ رسالة التحفيز (Lettre de motivation) حاسمة هنا.</p>
+
+            <h3 class="text-2xl font-bold text-gray-900 mt-6">الجانب المادي (الضمانة):</h3>
+            <p>الدراسة في الخارج مكلفة. يجب أن تثبت قدرتك المالية (Blochage) لتغطية مصاريف العيش. هناك منح دراسية لكن المنافسة عليها شديدة.</p>
+
+            <div class="bg-indigo-50 p-6 rounded-2xl mt-6 border border-indigo-100">
+                <h4 class="font-bold text-indigo-800 mb-2">تنبيه هام:</h4>
+                <p>الإجراءات (Campus France مثلاً) تبدأ مبكراً جداً (من شهر نونبر/دجنبر). لا تنتظر حتى نهاية السنة الدراسية!</p>
+            </div>
+        </div>
+      `,
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
+      status: 'published',
+      views: 2500
     }
   ] as BlogPost[],
   STUDENTS: [

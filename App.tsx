@@ -9,6 +9,7 @@ import { StudentArea } from './pages/StudentArea';
 import { CoachingOffer } from './pages/CoachingOffer';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { BacSimulator } from './pages/BacSimulator';
 import { About } from './pages/About';
 import { dataManager } from './utils/dataManager';
 import { Facebook, Twitter, Linkedin, Link as LinkIcon, Share2, CheckCircle2, Bookmark } from 'lucide-react';
@@ -442,6 +443,7 @@ function App() {
           <Route path="/coaching-offer" element={<CoachingOffer />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/bac-simulator" element={<BacSimulator />} />
         </Routes>
       </Layout>
     </HashRouter>
