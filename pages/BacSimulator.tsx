@@ -1,12 +1,14 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Calculator, Calendar, Clock, Award, AlertTriangle, CheckCircle2, RotateCcw, BookOpen } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Calculator, Calendar, Clock, Award, AlertTriangle, CheckCircle2, RotateCcw, BookOpen, Flag, Zap } from 'lucide-react';
 
 const Countdown: React.FC<{ targetDate: Date; title: string; color: string; icon: any }> = ({ targetDate, title, color, icon: Icon }) => {
   
-  // Logic to calculate time difference
   const calculateTimeLeft = useCallback(() => {
-    const difference = +targetDate - +new Date();
+    const now = new Date().getTime();
+    const target = targetDate.getTime();
+    const difference = target - now;
+    
     let timeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
     if (difference > 0) {
@@ -20,25 +22,43 @@ const Countdown: React.FC<{ targetDate: Date; title: string; color: string; icon
     return timeLeft;
   }, [targetDate]);
 
-  // Initialize state with the immediate calculation
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [currentProgress, setCurrentProgress] = useState(0);
 
   useEffect(() => {
-    // Update immediately on mount in case of slight delay
-    setTimeLeft(calculateTimeLeft());
+    const update = () => {
+      // 1. Update Time
+      const time = calculateTimeLeft();
+      setTimeLeft(time);
 
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
+      // 2. Update Progress Bar
+      const examTime = targetDate.getTime();
+      const now = Date.now();
+      
+      // Assume school year starts Sept 1st before the exam
+      const year = targetDate.getFullYear();
+      const schoolStart = new Date(year - 1, 8, 1).getTime(); 
+      
+      const total = examTime - schoolStart;
+      const elapsed = now - schoolStart;
+      const percent = Math.min(Math.max((elapsed / total) * 100, 0), 100);
+      setCurrentProgress(percent);
+    };
 
+    update();
+    const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
-  }, [calculateTimeLeft]);
+  }, [calculateTimeLeft, targetDate]);
 
-  // Extract tailwind class for text color from bg color (rough approximation)
   const textColor = color.replace('bg-', 'text-');
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] transition-all duration-300">
+    <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
+      <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-green-50 px-2 py-1 rounded-full border border-green-100">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">مباشر</span>
+      </div>
+
       <div className={`absolute top-0 right-0 w-40 h-40 ${color} opacity-5 rounded-full -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-700`}></div>
       
       <div className="relative z-10">
@@ -49,7 +69,7 @@ const Countdown: React.FC<{ targetDate: Date; title: string; color: string; icon
             <h3 className="text-lg font-bold text-gray-900">{title}</h3>
         </div>
         
-        <div className="grid grid-cols-4 gap-3 text-center" dir="ltr">
+        <div className="grid grid-cols-4 gap-3 text-center mb-8" dir="ltr">
           {[
               { label: 'Days', value: timeLeft.days },
               { label: 'Hours', value: timeLeft.hours },
@@ -57,21 +77,43 @@ const Countdown: React.FC<{ targetDate: Date; title: string; color: string; icon
               { label: 'Secs', value: timeLeft.seconds }
           ].map((item, i) => (
               <div key={i} className="flex flex-col items-center">
-                  <div className="bg-gray-50 w-full rounded-2xl py-3 border border-gray-100 group-hover:border-gray-200 transition-colors">
-                    <span className={`block text-2xl lg:text-3xl font-black ${i === 0 ? textColor : 'text-gray-800'} tabular-nums`}>
+                  <div className="bg-gray-50 w-full rounded-2xl py-3 border border-gray-100 group-hover:border-gray-200 transition-colors relative overflow-hidden">
+                    <span className={`block text-2xl lg:text-3xl font-black ${i === 0 ? textColor : 'text-gray-800'} tabular-nums relative z-10`}>
                         {String(item.value).padStart(2, '0')}
                     </span>
+                    {i === 3 && <div className="absolute bottom-0 left-0 h-0.5 bg-primary/20 w-full animate-progress-fast"></div>}
                   </div>
                   <span className="text-[10px] text-gray-400 font-bold uppercase mt-2 tracking-wider">{item.label}</span>
               </div>
           ))}
         </div>
+
+        <div className="space-y-2">
+            <div className="flex justify-between items-end text-[10px] font-black uppercase tracking-tighter">
+                <span className="text-gray-400">بداية الموسم</span>
+                <span className={textColor}>تقدم السنة الدراسية: {currentProgress.toFixed(1)}%</span>
+                <span className="text-gray-400">يوم الامتحان</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
+                <div 
+                    className={`h-full rounded-full transition-all duration-1000 ease-out ${color} relative`}
+                    style={{ width: `${currentProgress}%` }}
+                >
+                    <div className="absolute top-0 right-0 w-4 h-full bg-white/30 animate-shimmer"></div>
+                </div>
+            </div>
+        </div>
         
-        <div className="mt-6 text-center">
-            <span className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+        <div className="mt-6 flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
                 <Calendar size={14} />
-                تاريخ الامتحان: {targetDate.toLocaleDateString('fr-FR')}
+                {targetDate.toLocaleDateString('fr-FR')}
             </span>
+            <div className="flex gap-1">
+                {[1,2,3].map(dot => (
+                    <div key={dot} className={`w-1 h-1 rounded-full ${color} opacity-20`}></div>
+                ))}
+            </div>
         </div>
       </div>
     </div>
@@ -79,18 +121,11 @@ const Countdown: React.FC<{ targetDate: Date; title: string; color: string; icon
 };
 
 export const BacSimulator: React.FC = () => {
-  // Calculation State
-  const [grades, setGrades] = useState({
-    regional: '',
-    controleContinu: '',
-    national: ''
-  });
-  
+  const [grades, setGrades] = useState({ regional: '', controleContinu: '', national: '' });
   const [result, setResult] = useState<number | null>(null);
   const [mention, setMention] = useState<{ text: string; color: string; bg: string; icon: any; advice: string } | null>(null);
 
   const calculateBac = () => {
-    // Convert comma to dot for flexible input
     const reg = parseFloat(grades.regional.replace(',', '.'));
     const cc = parseFloat(grades.controleContinu.replace(',', '.'));
     const nat = parseFloat(grades.national.replace(',', '.'));
@@ -105,54 +140,21 @@ export const BacSimulator: React.FC = () => {
         return;
     }
 
-    // Formula: (Regional * 0.25) + (Contrôle Continu * 0.25) + (National * 0.5)
     const finalScore = (reg * 0.25) + (cc * 0.25) + (nat * 0.5);
     setResult(finalScore);
 
-    // Determine Mention
     if (finalScore < 10) {
-        setMention({ 
-            text: 'راسب / استدراكية', 
-            color: 'text-red-600', 
-            bg: 'bg-red-50',
-            icon: AlertTriangle,
-            advice: 'لا تيأس! الدورة الاستدراكية فرصة ثانية. ركز على المواد الأساسية وضاعف مجهودك.'
-        });
+        setMention({ text: 'راسب / استدراكية', color: 'text-red-600', bg: 'bg-red-50', icon: AlertTriangle, advice: 'لا تيأس! الدورة الاستدراكية فرصة ثانية. ركز على المواد الأساسية وضاعف مجهودك.' });
     } else if (finalScore < 12) {
-        setMention({ 
-            text: 'مقبول', 
-            color: 'text-orange-600', 
-            bg: 'bg-orange-50',
-            icon: CheckCircle2,
-            advice: 'مبارك النجاح! نتيجتك مقبولة، لكن يمكنك دائماً تحسين مهاراتك للمرحلة القادمة.'
-        });
+        setMention({ text: 'مقبول', color: 'text-orange-600', bg: 'bg-orange-50', icon: CheckCircle2, advice: 'مبارك النجاح! نتيجتك مقبولة، لكن يمكنك دائماً تحسين مهاراتك للمرحلة القادمة.' });
     } else if (finalScore < 14) {
-        setMention({ 
-            text: 'مستحسن', 
-            color: 'text-blue-600', 
-            bg: 'bg-blue-50',
-            icon: Award,
-            advice: 'نتيجة جيدة! تفتح لك أبواباً عديدة. استعد جيداً لاختياراتك الجامعية.'
-        });
+        setMention({ text: 'مستحسن', color: 'text-blue-600', bg: 'bg-blue-50', icon: Award, advice: 'نتيجة جيدة! تفتح لك أبواباً عديدة. استعد جيداً لاختياراتك الجامعية.' });
     } else if (finalScore < 16) {
-        setMention({ 
-            text: 'حسن', 
-            color: 'text-purple-600', 
-            bg: 'bg-purple-50',
-            icon: Award,
-            advice: 'عمل ممتاز! هذه النتيجة تمنحك فرصاً قوية في المدارس العليا.'
-        });
+        setMention({ text: 'حسن', color: 'text-purple-600', bg: 'bg-purple-50', icon: Award, advice: 'عمل ممتاز! هذه النتيجة تمنحك فرصاً قوية في المدارس العليا.' });
     } else {
-        setMention({ 
-            text: 'حسن جداً', 
-            color: 'text-emerald-600', 
-            bg: 'bg-emerald-50',
-            icon: Award,
-            advice: 'أداء استثنائي! أنت من النخبة. الآفاق مفتوحة أمامك بالكامل.'
-        });
+        setMention({ text: 'حسن جداً', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: Award, advice: 'أداء استثنائي! أنت من النخبة. الآفاق مفتوحة أمامك بالكامل.' });
     }
     
-    // Scroll to result on mobile
     setTimeout(() => {
         document.getElementById('result-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
@@ -164,45 +166,58 @@ export const BacSimulator: React.FC = () => {
       setMention(null);
   };
 
-  // Dates for exams (Setting generic future dates for 2025)
-  const nationalExamDate = new Date('2025-06-10T08:00:00'); 
-  const regionalExamDate = new Date('2025-06-02T08:00:00');
+  // Logic to ensure countdown is ALWAYS active by rolling over to next year if date passed
+  const getExamDate = (month: number, day: number) => {
+    const now = new Date();
+    let year = now.getFullYear();
+    let target = new Date(year, month, day, 8, 0);
+    
+    // If exam for this year is already in the past, point to next year
+    if (target.getTime() < now.getTime()) {
+      target = new Date(year + 1, month, day, 8, 0);
+    }
+    return target;
+  };
+
+  const nationalExamDate = useMemo(() => getExamDate(5, 10), []); // June 10
+  const regionalExamDate = useMemo(() => getExamDate(5, 2), []);  // June 2
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pt-28 pb-20 font-sans selection:bg-primary/20 selection:text-primary">
         <div className="container mx-auto px-4 lg:px-8">
             
-            {/* Header */}
             <div className="text-center mb-16 max-w-4xl mx-auto">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-primary font-bold text-sm mb-6 shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-blue-50 animate-fade-in-up">
-                    <Calculator size={18} />
-                    <span>أدوات التلميذ</span>
+                    <Zap size={18} fill="currentColor" />
+                    <span>عداد الوقت المباشر للامتحانات</span>
                 </div>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 mb-6 leading-tight animate-fade-in-up animate-delay-100">
                     حساب معدل البكالوريا <br className="hidden md:block"/>
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-royal">والعد التنازلي للامتحانات</span>
                 </h1>
                 <p className="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed animate-fade-in-up animate-delay-200">
-                    أداة دقيقة لحساب معدلك المتوقع بناءً على المعاملات الرسمية، مع عداد زمني يجعلك على دراية دائمة بالوقت المتبقي للامتحان.
+                    تابع تقدمك الزمني نحو "يوم الحسم" واستخدم محاكي النقط للتخطيط لهدفك الدراسي بدقة.
                 </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
                 
-                {/* Left Column: Countdowns */}
                 <div className="lg:col-span-5 space-y-6 animate-fade-in-up animate-delay-300">
-                    <div className="flex items-center gap-3 mb-2 px-2">
-                        <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
-                            <Clock size={20} />
+                    <div className="flex items-center justify-between mb-2 px-2">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
+                                <Clock size={20} />
+                            </div>
+                            <h2 className="text-xl font-extrabold text-slate-900">العداد الزمني</h2>
                         </div>
-                        <h2 className="text-xl font-extrabold text-slate-900">الوقت المتبقي للامتحانات</h2>
+                        <div className="text-[10px] font-bold text-slate-400 bg-white px-2 py-1 rounded-md shadow-sm border border-gray-100">تحديث تلقائي</div>
                     </div>
                     
                     <Countdown 
                         targetDate={nationalExamDate} 
                         title="الامتحان الوطني (2 باك)" 
                         color="bg-red-500" 
-                        icon={Award}
+                        icon={Flag}
                     />
                     
                     <Countdown 
@@ -212,23 +227,34 @@ export const BacSimulator: React.FC = () => {
                         icon={BookOpen}
                     />
 
-                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-[2rem] border border-yellow-100 mt-6 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                    <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-10 -mt-10"></div>
                         <div className="relative z-10">
-                            <h4 className="font-bold text-yellow-800 mb-3 flex items-center gap-2 text-lg">
-                                <Award size={22} className="text-yellow-600" /> نصيحة ذهبية
+                            <h4 className="font-bold text-indigo-300 mb-4 flex items-center gap-2 text-lg">
+                                <Award size={22} /> محطات هامة قادمة
                             </h4>
-                            <p className="text-yellow-900/80 text-base leading-relaxed font-medium">
-                                "الوقت كالسيف، إن لم تقطعه قطعك". ابدأ المراجعة الآن ولا تنتظر اللحظة الأخيرة. تنظيم وقتك هو مفتاح نجاحك.
-                            </p>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-xs">03/10</div>
+                                    <div>
+                                        <p className="text-sm font-bold">العطلة البينية القادمة</p>
+                                        <p className="text-[10px] text-white/50">فرصة ذهبية للمراجعة</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-xs">05/15</div>
+                                    <div>
+                                        <p className="text-sm font-bold">الامتحانات التجريبية</p>
+                                        <p className="text-[10px] text-white/50">اختبار حقيقي للمستوى</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column: Simulator */}
                 <div className="lg:col-span-7 animate-fade-in-up animate-delay-400">
                     <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] border border-gray-100 p-8 lg:p-12 relative overflow-hidden">
-                        {/* Decorative background */}
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-blue-400 to-royal"></div>
                         <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary opacity-[0.03] rounded-full blur-3xl"></div>
                         
@@ -239,16 +265,12 @@ export const BacSimulator: React.FC = () => {
                                 </div>
                                 محاكي النقط
                             </h2>
-                            <button 
-                                onClick={resetForm} 
-                                className="text-sm font-bold text-gray-400 hover:text-primary flex items-center gap-2 transition-colors px-4 py-2 rounded-xl hover:bg-gray-50"
-                            >
+                            <button onClick={resetForm} className="text-sm font-bold text-gray-400 hover:text-primary flex items-center gap-2 transition-colors px-4 py-2 rounded-xl hover:bg-gray-50">
                                 <RotateCcw size={16} /> إعادة تعيين
                             </button>
                         </div>
 
                         <div className="space-y-6 relative z-10">
-                            {/* Input Field Component */}
                             {[
                                 { label: 'الامتحان الجهوي (25%)', key: 'regional', color: 'blue' },
                                 { label: 'المراقبة المستمرة (25%)', key: 'controleContinu', color: 'purple' },
@@ -275,49 +297,35 @@ export const BacSimulator: React.FC = () => {
                             ))}
 
                             <div className="pt-4">
-                                <button 
-                                    onClick={calculateBac}
-                                    className="w-full py-5 bg-slate-900 text-white font-extrabold rounded-2xl hover:bg-primary shadow-xl hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] text-xl flex items-center justify-center gap-3 relative overflow-hidden group"
-                                >
+                                <button onClick={calculateBac} className="w-full py-5 bg-slate-900 text-white font-extrabold rounded-2xl hover:bg-primary shadow-xl hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] text-xl flex items-center justify-center gap-3 relative overflow-hidden group">
                                     <span className="relative z-10 flex items-center gap-2">
                                         <Calculator size={24} />
                                         احسب النتيجة الآن
                                     </span>
-                                    {/* Button Shine Effect */}
                                     <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-blob transition-all duration-1000"></div>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Result Display */}
                         {result !== null && mention && (
                             <div id="result-card" className="mt-12 animate-in zoom-in slide-in-from-bottom-4 duration-500">
                                 <div className={`text-center p-8 lg:p-10 rounded-[2.5rem] ${mention.bg} border-2 ${mention.color.replace('text-', 'border-').replace('600', '100')} relative overflow-hidden`}>
-                                    {/* Background Icon */}
                                     <mention.icon size={200} className={`absolute -right-10 -bottom-10 opacity-5 ${mention.color}`} />
-                                    
                                     <p className="text-gray-500 font-extrabold mb-4 uppercase tracking-widest text-sm">النتيجة النهائية</p>
-                                    
                                     <div className="relative inline-block">
                                         <div className={`text-6xl lg:text-8xl font-black mb-6 tracking-tighter ${mention.color} drop-shadow-sm`}>
                                             {result.toFixed(2)}
                                         </div>
-                                        <div className="absolute -top-4 -right-8 bg-white shadow-sm border border-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500 transform rotate-12">
-                                            / 20
-                                        </div>
+                                        <div className="absolute -top-4 -right-8 bg-white shadow-sm border border-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500 transform rotate-12">/ 20</div>
                                     </div>
-
                                     <div className="flex justify-center mb-8">
                                         <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-lg bg-white shadow-md ${mention.color}`}>
                                             <mention.icon size={24} strokeWidth={2.5} />
                                             {mention.text}
                                         </div>
                                     </div>
-
                                     <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 mx-auto max-w-lg">
-                                        <p className="text-gray-700 font-medium leading-relaxed">
-                                            {mention.advice}
-                                        </p>
+                                        <p className="text-gray-700 font-medium leading-relaxed">{mention.advice}</p>
                                     </div>
                                 </div>
                             </div>
