@@ -13,6 +13,203 @@ const KEYS = {
 const SEED_DATA = {
   POSTS: [
     {
+      id: 'future-jobs-1',
+      title: "مهن المستقبل: ما هي التخصصات الأكثر طلباً في سوق الشغل المغربي والعالمي؟",
+      category: "توجيه مهني",
+      date: "28 مايو 2024",
+      image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "العالم يتغير بسرعة! اكتشف التخصصات التي ستضمن لك وظيفة مرموقة في السنوات العشر القادمة وكيف تستعد لها من الآن.",
+      content: `<div class="space-y-8 text-gray-700 leading-relaxed">
+        <p class="text-lg font-medium text-slate-800">بزاف ديال التلاميذ كيسولوني: "أستاذ، شنو هي أحسن شعبة فيها الخدمة؟". الجواب مشي هو اسم الشعبة، بل هو **القيمة المضافة** اللي غاتعطيها للسوق. إليك خريطة المجالات الأكثر نمواً:</p>
+        
+        <!-- Diagram: Future Job Sectors -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-10">
+           <div class="p-6 bg-blue-900 text-white rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform">
+              <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/20 rounded-full"></div>
+              <h4 class="font-black text-xl mb-2 flex items-center gap-2">🤖 الذكاء الاصطناعي</h4>
+              <p class="text-[10px] opacity-80 leading-relaxed">برمجة، تحليل بيانات، وأمن سيبراني. هاد المجال هو "بترول" العصر الحديث.</p>
+              <div class="mt-4 flex items-center gap-2">
+                 <div class="h-1.5 flex-grow bg-white/10 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-400 w-[95%]"></div>
+                 </div>
+                 <span class="text-[10px] font-bold">نمو 95%</span>
+              </div>
+           </div>
+
+           <div class="p-6 bg-emerald-900 text-white rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform">
+              <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-500/20 rounded-full"></div>
+              <h4 class="font-black text-xl mb-2 flex items-center gap-2">🌱 الطاقة الخضراء</h4>
+              <p class="text-[10px] opacity-80 leading-relaxed">المغرب رائد في الطاقات المتجددة. مهندسين وتقنيين في الهيدروجين والرياح مطلوبين بزاف.</p>
+              <div class="mt-4 flex items-center gap-2">
+                 <div class="h-1.5 flex-grow bg-white/10 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-400 w-[85%]"></div>
+                 </div>
+                 <span class="text-[10px] font-bold">نمو 85%</span>
+              </div>
+           </div>
+
+           <div class="p-6 bg-purple-900 text-white rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform">
+              <div class="absolute -right-4 -top-4 w-20 h-20 bg-purple-500/20 rounded-full"></div>
+              <h4 class="font-black text-xl mb-2 flex items-center gap-2">🏥 الرعاية الصحية</h4>
+              <p class="text-[10px] opacity-80 leading-relaxed">الطب، التمريض، والتقنيات الطبية. الصحة ديما غاتكون أولوية قصوى.</p>
+              <div class="mt-4 flex items-center gap-2">
+                 <div class="h-1.5 flex-grow bg-white/10 rounded-full overflow-hidden">
+                    <div class="h-full bg-purple-400 w-[80%]"></div>
+                 </div>
+                 <span class="text-[10px] font-bold">نمو 80%</span>
+              </div>
+           </div>
+
+           <div class="p-6 bg-orange-900 text-white rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform">
+              <div class="absolute -right-4 -top-4 w-20 h-20 bg-orange-500/20 rounded-full"></div>
+              <h4 class="font-black text-xl mb-2 flex items-center gap-2">📣 التسويق الرقمي</h4>
+              <p class="text-[10px] opacity-80 leading-relaxed">أي بيزنيس دابا محتاج يبان فـ الأنترنت. صناعة المحتوى والتسويق هي لغة التجارة اليوم.</p>
+              <div class="mt-4 flex items-center gap-2">
+                 <div class="h-1.5 flex-grow bg-white/10 rounded-full overflow-hidden">
+                    <div class="h-full bg-orange-400 w-[75%]"></div>
+                 </div>
+                 <span class="text-[10px] font-bold">نمو 75%</span>
+              </div>
+           </div>
+        </div>
+
+        <h3 class="text-2xl font-black text-slate-900 underline decoration-primary decoration-4 underline-offset-8">1. مهارات أهم من الشهادة</h3>
+        <p>الشركات الكبرى (مثل Google و Amazon) ما بقاتش كتشوف غير "الدبلوم". ولات كتقلب على <b>Soft Skills</b>:</p>
+        
+        <div class="bg-gray-50 p-6 rounded-[2rem] border border-gray-200">
+           <ul class="space-y-4">
+              <li class="flex gap-4 items-center">
+                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-primary italic">01</div>
+                 <p class="font-bold">التعلم المستمر (Self-Learning): القدرة على تعلم أدوات جديدة بوحدك.</p>
+              </li>
+              <li class="flex gap-4 items-center">
+                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-primary italic">02</div>
+                 <p class="font-bold">حل المشكلات (Problem Solving): كيفاش كتصرف فاش كتوقع فـ عائق تقني.</p>
+              </li>
+              <li class="flex gap-4 items-center">
+                 <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-primary italic">03</div>
+                 <p class="font-bold">إتقان اللغات: الفرنسية ضرورية للمغرب، والإنجليزية ضرورية للعالم.</p>
+              </li>
+           </ul>
+        </div>
+
+        <div class="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-200">
+          <h4 class="font-black text-primary mb-4 flex items-center gap-2">
+            <span>💡</span> كلمة من الأستاذ ياسين:
+          </h4>
+          <p class="text-blue-900 font-medium">
+            "ما تختارش تخصص غير حيت صاحبك دار لوفيه. اختار تخصص كايجمع بين 3 حاجات: كتحبو، كتطير فيه، والسوق مستعد يخلصك عليه. هادي هي قاعدة النجاح فـ 2024."
+          </p>
+        </div>
+      </div>`,
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
+      status: 'published',
+      views: 7200
+    },
+    {
+      id: 'post-bac-1',
+      title: "ما بعد البكالوريا: كيف تختار مسارك الجامعي دون الوقوع في 'فخ' التسرع؟",
+      category: "توجيه جامعي",
+      date: "25 مايو 2024",
+      image: "https://images.unsplash.com/photo-1523050853063-bd8012fec040?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      excerpt: "اجتياز البكالوريا هو مجرد البداية. اكتشف خارطة الطريق الشاملة لاختيار المدارس والمعاهد العليا التي تناسب طموحاتك وقدراتك.",
+      content: `<div class="space-y-8 text-gray-700 leading-relaxed">
+        <p class="text-lg font-medium text-slate-800">مبروك الباك! دابا بدات الرحلة الحقيقية. أكبر خطأ كيديروه التلاميذ هو كيتسجلو فـ أي حاجة جات قدامهم بلا تفكير. إليك **خارطة طريق النجاح الجامعي**: </p>
+        
+        <!-- Diagram: Post-Bac Path Flow -->
+        <div class="bg-indigo-900 p-8 rounded-[2.5rem] text-white my-10 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+          <h4 class="text-center font-black mb-8 text-blue-300 uppercase tracking-widest text-sm">المراحل الـ 4 الحاسمة</h4>
+          <div class="flex flex-col md:flex-row gap-4 items-stretch">
+            <div class="flex-1 bg-white/10 p-4 rounded-2xl border border-white/10 text-center">
+              <span class="block text-2xl mb-2">🎓</span>
+              <span class="block font-bold text-xs">النتائج</span>
+              <p class="text-[10px] text-gray-400 mt-1">حساب المعدلات المرجعية</p>
+            </div>
+            <div class="flex items-center justify-center text-blue-400 hidden md:flex">←</div>
+            <div class="flex-1 bg-white/10 p-4 rounded-2xl border border-white/10 text-center">
+              <span class="block text-2xl mb-2">📑</span>
+              <span class="block font-bold text-xs">الترشيح</span>
+              <p class="text-[10px] text-gray-400 mt-1">اختيار المنصات (Massar, Tawjihi...)</p>
+            </div>
+            <div class="flex items-center justify-center text-blue-400 hidden md:flex">←</div>
+            <div class="flex-1 bg-white/10 p-4 rounded-2xl border border-white/10 text-center border-blue-400/50 bg-blue-500/10">
+              <span class="block text-2xl mb-2">📝</span>
+              <span class="block font-bold text-xs">المباريات</span>
+              <p class="text-[10px] text-gray-400 mt-1">الاستعداد للاختبارات الكتابية</p>
+            </div>
+            <div class="flex items-center justify-center text-blue-400 hidden md:flex">←</div>
+            <div class="flex-1 bg-white/10 p-4 rounded-2xl border border-white/10 text-center">
+              <span class="block text-2xl mb-2">✅</span>
+              <span class="block font-bold text-xs">التأكيد</span>
+              <p class="text-[10px] text-gray-400 mt-1">وضع شهادة الباك الأصلية</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-black text-slate-900">1. فهم أنواع المؤسسات التعليمية</h3>
+        <p>لازم تعرف الفرق باش ماتوحلش من بعد. إليك مقارنة سريعة:</p>
+        
+        <div class="overflow-hidden rounded-3xl border border-slate-200 shadow-sm">
+          <table class="w-full text-right">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="p-4 font-black text-slate-700">المؤسسة</th>
+                <th class="p-4 font-black text-slate-700">نظام الدراسة</th>
+                <th class="p-4 font-black text-slate-700">الآفاق</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="p-4 font-bold text-primary">المدارس العليا (ENSA, ENCG...)</td>
+                <td class="p-4 text-sm">محدودة المقاعد، نظام صارم</td>
+                <td class="p-4 text-sm">سوق الشغل المباشر / مقاولات</td>
+              </tr>
+              <tr class="bg-blue-50/30">
+                <td class="p-4 font-bold text-purple-600">الكليات (الجامعة)</td>
+                <td class="p-4 text-sm">استقطاب مفتوح، نظام LMD</td>
+                <td class="p-4 text-sm">البحث العلمي / التعليم / المباريات</td>
+              </tr>
+              <tr>
+                <td class="p-4 font-bold text-emerald-600">المعاهد التقنية (BTS, ISTA)</td>
+                <td class="p-4 text-sm">تطبيقي، مدة قصيرة (سنتين)</td>
+                <td class="p-4 text-sm">تقني متخصص / إدماج سريع</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-yellow-50 p-8 rounded-[2.5rem] border border-yellow-200">
+          <h4 class="font-black text-yellow-800 mb-4 flex items-center gap-2">
+            <span>💡</span> نصيحة الأستاذ ياسين الذهبية:
+          </h4>
+          <p class="text-yellow-900 font-medium">
+            "ما تحقر حتى مدرسة. دفع لكلشي اللي عندك فيه الحق. لوائح الانتظار (Listes d'attente) هي اللي كطلع فيها العجب فـ اللحظات الأخيرة. خلي ديما عندك Plan B و Plan C."
+          </p>
+        </div>
+
+        <h3 class="text-2xl font-black text-slate-900">2. مصفوفة الاختيار (Decision Matrix)</h3>
+        <p>قبل ما تقيد، جاوب على هاد 3 أسئلة:</p>
+        <ul class="space-y-4">
+          <li class="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0 font-bold">1</div>
+            <p><b>هل نقطتي تسمح؟</b> شوف العتبات (Seuils) ديال السنوات الـ 3 اللي فاتت باش تاخد فكرة.</p>
+          </li>
+          <li class="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div class="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center shrink-0 font-bold">2</div>
+            <p><b>هل أحب هذا المجال?</b> القراية مورا الباك صعيبة، إلى ماكنتيش كتبغي التخصص غادي تمل فـ السيمانة الأولى.</p>
+          </li>
+          <li class="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0 font-bold">3</div>
+            <p><b>أين سأكون بعد 5 سنوات؟</b> شوف سوق الشغل، واش هاد المهنة مطلوبة ولا لا.</p>
+          </li>
+        </ul>
+      </div>`,
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
+      status: 'published',
+      views: 5800
+    },
+    {
       id: 'conf-1',
       title: "الثقة في النفس: كيف تبني 'عقلية الوحش' قبل الامتحانات؟",
       category: "تطوير الذات",
