@@ -1,340 +1,300 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Calculator, Calendar, Clock, Award, AlertTriangle, CheckCircle2, RotateCcw, BookOpen, Flag, Zap } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Calculator, Award, AlertTriangle, CheckCircle2, RotateCcw, Zap, Target, TrendingUp, Star, ChevronLeft } from 'lucide-react';
 
-const Countdown: React.FC<{ targetDate: Date; title: string; color: string; icon: any }> = ({ targetDate, title, color, icon: Icon }) => {
-  
-  const calculateTimeLeft = useCallback(() => {
-    const now = new Date().getTime();
-    const target = targetDate.getTime();
-    const difference = target - now;
-    
-    let timeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+const RequirementCard: React.FC<{ goal: string; required: number; color: string; label: string; isHighlight?: boolean }> = ({ goal, required, color, label, isHighlight }) => {
+  const isPossible = required <= 20;
+  const isAlreadyAchieved = required <= 0;
 
-    if (difference > 0) {
-      timeLeft = {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    }
-    return timeLeft;
-  }, [targetDate]);
-
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-  const [currentProgress, setCurrentProgress] = useState(0);
-
-  useEffect(() => {
-    const update = () => {
-      // 1. Update Time
-      const time = calculateTimeLeft();
-      setTimeLeft(time);
-
-      // 2. Update Progress Bar
-      const examTime = targetDate.getTime();
-      const now = Date.now();
-      
-      // Assume school year starts Sept 1st before the exam
-      const year = targetDate.getFullYear();
-      const schoolStart = new Date(year - 1, 8, 1).getTime(); 
-      
-      const total = examTime - schoolStart;
-      const elapsed = now - schoolStart;
-      const percent = Math.min(Math.max((elapsed / total) * 100, 0), 100);
-      setCurrentProgress(percent);
-    };
-
-    update();
-    const timer = setInterval(update, 1000);
-    return () => clearInterval(timer);
-  }, [calculateTimeLeft, targetDate]);
-
-  const textColor = color.replace('bg-', 'text-');
+  const colorClasses: Record<string, string> = {
+    emerald: 'border-emerald-100 bg-white hover:border-emerald-300 text-emerald-600 bg-emerald-50',
+    blue: 'border-blue-100 bg-white hover:border-blue-300 text-blue-600 bg-blue-50',
+    purple: 'border-purple-100 bg-white hover:border-purple-300 text-purple-600 bg-purple-50',
+    orange: 'border-orange-100 bg-white hover:border-orange-300 text-orange-600 bg-orange-50',
+    primary: 'border-primary/20 bg-primary/5 hover:border-primary/40 text-primary bg-primary/10'
+  };
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
-      <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-green-50 px-2 py-1 rounded-full border border-green-100">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-          <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">مباشر</span>
+    <div className={`p-6 rounded-[2.5rem] border-2 transition-all duration-300 ${isHighlight ? 'ring-4 ring-primary/10 shadow-xl' : ''} ${isPossible ? colorClasses[color].split(' ').slice(0,3).join(' ') : 'bg-gray-50 border-gray-200 opacity-60'}`}>
+      <div className="flex justify-between items-start mb-4">
+        <span className={`text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full ${isPossible ? colorClasses[color].split(' ').slice(3).join(' ') : 'bg-gray-200 text-gray-500'}`}>
+          معدل {goal}
+        </span>
+        {isPossible && !isAlreadyAchieved && (
+            <span className="text-[10px] font-bold text-gray-400">نقطة الوطني</span>
+        )}
       </div>
-
-      <div className={`absolute top-0 right-0 w-40 h-40 ${color} opacity-5 rounded-full -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-700`}></div>
       
-      <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-6">
-            <div className={`p-3 rounded-2xl ${color} bg-opacity-10 ${textColor}`}>
-                <Icon size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-        </div>
-        
-        <div className="grid grid-cols-4 gap-3 text-center mb-8" dir="ltr">
-          {[
-              { label: 'Days', value: timeLeft.days },
-              { label: 'Hours', value: timeLeft.hours },
-              { label: 'Mins', value: timeLeft.minutes },
-              { label: 'Secs', value: timeLeft.seconds }
-          ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center">
-                  <div className="bg-gray-50 w-full rounded-2xl py-3 border border-gray-100 group-hover:border-gray-200 transition-colors relative overflow-hidden">
-                    <span className={`block text-2xl lg:text-3xl font-black ${i === 0 ? textColor : 'text-gray-800'} tabular-nums relative z-10`}>
-                        {String(item.value).padStart(2, '0')}
-                    </span>
-                    {i === 3 && <div className="absolute bottom-0 left-0 h-0.5 bg-primary/20 w-full animate-progress-fast"></div>}
-                  </div>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase mt-2 tracking-wider">{item.label}</span>
-              </div>
-          ))}
-        </div>
-
-        <div className="space-y-2">
-            <div className="flex justify-between items-end text-[10px] font-black uppercase tracking-tighter">
-                <span className="text-gray-400">بداية الموسم</span>
-                <span className={textColor}>تقدم السنة الدراسية: {currentProgress.toFixed(1)}%</span>
-                <span className="text-gray-400">يوم الامتحان</span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-50">
-                <div 
-                    className={`h-full rounded-full transition-all duration-1000 ease-out ${color} relative`}
-                    style={{ width: `${currentProgress}%` }}
-                >
-                    <div className="absolute top-0 right-0 w-4 h-full bg-white/30 animate-shimmer"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div className="mt-6 flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                <Calendar size={14} />
-                {targetDate.toLocaleDateString('fr-FR')}
+      <div className="text-center py-2">
+        {isAlreadyAchieved ? (
+          <div className="space-y-1">
+            <span className="text-2xl font-black text-emerald-500">تم الضمان! 🎉</span>
+            <p className="text-[10px] text-gray-400 font-bold">تحقق الهدف مسبقاً</p>
+          </div>
+        ) : isPossible ? (
+          <div className="flex flex-col items-center">
+            <span className={`text-5xl font-black ${required > 16 ? 'text-orange-500' : isHighlight ? 'text-primary' : colorClasses[color].split(' ').find(c => c.startsWith('text-'))} tracking-tighter tabular-nums`}>
+              {required.toFixed(2)}
             </span>
-            <div className="flex gap-1">
-                {[1,2,3].map(dot => (
-                    <div key={dot} className={`w-1 h-1 rounded-full ${color} opacity-20`}></div>
-                ))}
-            </div>
-        </div>
+            <span className="text-xs font-bold text-gray-400 mt-1">/ 20</span>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <span className="text-xl font-black text-red-400">غير ممكن ⚠️</span>
+            <p className="text-[10px] text-gray-400 font-bold">يتطلب أكثر من 20/20</p>
+          </div>
+        )}
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-50 text-center">
+         <p className="text-xs font-bold text-gray-500">{label}</p>
       </div>
     </div>
   );
 };
 
 export const BacSimulator: React.FC = () => {
-  const [grades, setGrades] = useState({ regional: '', controleContinu: '', national: '' });
-  const [result, setResult] = useState<number | null>(null);
-  const [mention, setMention] = useState<{ text: string; color: string; bg: string; icon: any; advice: string } | null>(null);
+  const [grades, setGrades] = useState({ regional: '', controleContinu: '', targetAverage: '14' });
+  const [showResults, setShowResults] = useState(false);
 
-  const calculateBac = () => {
-    const reg = parseFloat(grades.regional.replace(',', '.'));
-    const cc = parseFloat(grades.controleContinu.replace(',', '.'));
-    const nat = parseFloat(grades.national.replace(',', '.'));
-
-    if (isNaN(reg) || isNaN(cc) || isNaN(nat)) {
-        alert('المرجو إدخال جميع النقط بشكل صحيح');
-        return;
-    }
-
-    if ([reg, cc, nat].some(g => g < 0 || g > 20)) {
-        alert('النقط يجب أن تكون بين 0 و 20');
-        return;
-    }
-
-    const finalScore = (reg * 0.25) + (cc * 0.25) + (nat * 0.5);
-    setResult(finalScore);
-
-    if (finalScore < 10) {
-        setMention({ text: 'راسب / استدراكية', color: 'text-red-600', bg: 'bg-red-50', icon: AlertTriangle, advice: 'لا تيأس! الدورة الاستدراكية فرصة ثانية. ركز على المواد الأساسية وضاعف مجهودك.' });
-    } else if (finalScore < 12) {
-        setMention({ text: 'مقبول', color: 'text-orange-600', bg: 'bg-orange-50', icon: CheckCircle2, advice: 'مبارك النجاح! نتيجتك مقبولة، لكن يمكنك دائماً تحسين مهاراتك للمرحلة القادمة.' });
-    } else if (finalScore < 14) {
-        setMention({ text: 'مستحسن', color: 'text-blue-600', bg: 'bg-blue-50', icon: Award, advice: 'نتيجة جيدة! تفتح لك أبواباً عديدة. استعد جيداً لاختياراتك الجامعية.' });
-    } else if (finalScore < 16) {
-        setMention({ text: 'حسن', color: 'text-purple-600', bg: 'bg-purple-50', icon: Award, advice: 'عمل ممتاز! هذه النتيجة تمنحك فرصاً قوية في المدارس العليا.' });
-    } else {
-        setMention({ text: 'حسن جداً', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: Award, advice: 'أداء استثنائي! أنت من النخبة. الآفاق مفتوحة أمامك بالكامل.' });
-    }
+  const calculateRequired = (targetTotal: number) => {
+    const reg = parseFloat(grades.regional.replace(',', '.')) || 0;
+    const cc = parseFloat(grades.controleContinu.replace(',', '.')) || 0;
     
+    // GA = (Reg * 0.25) + (CC * 0.25) + (National * 0.50)
+    // National = (GA - (Reg * 0.25 + CC * 0.25)) / 0.50
+    const currentPoints = (reg * 0.25) + (cc * 0.25);
+    const needed = (targetTotal - currentPoints) / 0.5;
+    return needed;
+  };
+
+  const results = useMemo(() => {
+    if (!showResults) return null;
+    const customTarget = parseFloat(grades.targetAverage) || 10;
+    return {
+      custom: calculateRequired(customTarget),
+      pass: calculateRequired(10),
+      mustahsan: calculateRequired(12),
+      hassan: calculateRequired(14),
+      veryGood: calculateRequired(16)
+    };
+  }, [grades, showResults]);
+
+  const handleCalculate = (e: React.FormEvent) => {
+    e.preventDefault();
+    const reg = parseFloat(grades.regional);
+    const cc = parseFloat(grades.controleContinu);
+    const target = parseFloat(grades.targetAverage);
+
+    if (isNaN(reg) || isNaN(cc) || isNaN(target)) {
+      alert('المرجو إدخال النقط والمعدل المستهدف بشكل صحيح');
+      return;
+    }
+    setShowResults(true);
     setTimeout(() => {
-        document.getElementById('result-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('results-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
-  const resetForm = () => {
-      setGrades({ regional: '', controleContinu: '', national: '' });
-      setResult(null);
-      setMention(null);
+  const reset = () => {
+    setGrades({ regional: '', controleContinu: '', targetAverage: '14' });
+    setShowResults(false);
   };
-
-  // Logic to ensure countdown is ALWAYS active by rolling over to next year if date passed
-  const getExamDate = (month: number, day: number) => {
-    const now = new Date();
-    let year = now.getFullYear();
-    let target = new Date(year, month, day, 8, 0);
-    
-    // If exam for this year is already in the past, point to next year
-    if (target.getTime() < now.getTime()) {
-      target = new Date(year + 1, month, day, 8, 0);
-    }
-    return target;
-  };
-
-  const nationalExamDate = useMemo(() => getExamDate(5, 10), []); // June 10
-  const regionalExamDate = useMemo(() => getExamDate(5, 2), []);  // June 2
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pt-28 pb-20 font-sans selection:bg-primary/20 selection:text-primary">
-        <div className="container mx-auto px-4 lg:px-8">
-            
-            <div className="text-center mb-16 max-w-4xl mx-auto">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-primary font-bold text-sm mb-6 shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-blue-50 animate-fade-in-up">
-                    <Zap size={18} fill="currentColor" />
-                    <span>عداد الوقت المباشر للامتحانات</span>
-                </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 mb-6 leading-tight animate-fade-in-up animate-delay-100">
-                    حساب معدل البكالوريا <br className="hidden md:block"/>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-royal">والعد التنازلي للامتحانات</span>
-                </h1>
-                <p className="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed animate-fade-in-up animate-delay-200">
-                    تابع تقدمك الزمني نحو "يوم الحسم" واستخدم محاكي النقط للتخطيط لهدفك الدراسي بدقة.
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-                
-                <div className="lg:col-span-5 space-y-6 animate-fade-in-up animate-delay-300">
-                    <div className="flex items-center justify-between mb-2 px-2">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
-                                <Clock size={20} />
-                            </div>
-                            <h2 className="text-xl font-extrabold text-slate-900">العداد الزمني</h2>
-                        </div>
-                        <div className="text-[10px] font-bold text-slate-400 bg-white px-2 py-1 rounded-md shadow-sm border border-gray-100">تحديث تلقائي</div>
-                    </div>
-                    
-                    <Countdown 
-                        targetDate={nationalExamDate} 
-                        title="الامتحان الوطني (2 باك)" 
-                        color="bg-red-500" 
-                        icon={Flag}
-                    />
-                    
-                    <Countdown 
-                        targetDate={regionalExamDate} 
-                        title="الامتحان الجهوي (1 باك)" 
-                        color="bg-blue-500" 
-                        icon={BookOpen}
-                    />
-
-                    <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-10 -mt-10"></div>
-                        <div className="relative z-10">
-                            <h4 className="font-bold text-indigo-300 mb-4 flex items-center gap-2 text-lg">
-                                <Award size={22} /> محطات هامة قادمة
-                            </h4>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-xs">03/10</div>
-                                    <div>
-                                        <p className="text-sm font-bold">العطلة البينية القادمة</p>
-                                        <p className="text-[10px] text-white/50">فرصة ذهبية للمراجعة</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-xs">05/15</div>
-                                    <div>
-                                        <p className="text-sm font-bold">الامتحانات التجريبية</p>
-                                        <p className="text-[10px] text-white/50">اختبار حقيقي للمستوى</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="lg:col-span-7 animate-fade-in-up animate-delay-400">
-                    <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] border border-gray-100 p-8 lg:p-12 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-blue-400 to-royal"></div>
-                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary opacity-[0.03] rounded-full blur-3xl"></div>
-                        
-                        <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4">
-                            <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                                <div className="p-3 bg-blue-50 rounded-2xl text-primary">
-                                    <Calculator size={24} />
-                                </div>
-                                محاكي النقط
-                            </h2>
-                            <button onClick={resetForm} className="text-sm font-bold text-gray-400 hover:text-primary flex items-center gap-2 transition-colors px-4 py-2 rounded-xl hover:bg-gray-50">
-                                <RotateCcw size={16} /> إعادة تعيين
-                            </button>
-                        </div>
-
-                        <div className="space-y-6 relative z-10">
-                            {[
-                                { label: 'الامتحان الجهوي (25%)', key: 'regional', color: 'blue' },
-                                { label: 'المراقبة المستمرة (25%)', key: 'controleContinu', color: 'purple' },
-                                { label: 'الامتحان الوطني (50%)', key: 'national', color: 'emerald' }
-                            ].map((field, idx) => (
-                                <div key={idx} className="group">
-                                    <label className="block text-sm font-extrabold text-gray-500 mb-2 mr-1">{field.label}</label>
-                                    <div className="relative transition-all duration-300 transform group-focus-within:-translate-y-1">
-                                        <input 
-                                            type="number" 
-                                            min="0" max="20" 
-                                            step="0.01"
-                                            value={grades[field.key as keyof typeof grades]}
-                                            onChange={(e) => setGrades({...grades, [field.key]: e.target.value})}
-                                            className={`w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-5 font-black text-2xl outline-none focus:border-${field.color}-500 focus:bg-white focus:shadow-lg focus:shadow-${field.color}-500/10 transition-all text-left dir-ltr text-slate-800 placeholder-gray-300`}
-                                            placeholder="00.00"
-                                        />
-                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-end pointer-events-none">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Score</span>
-                                            <span className="text-xs font-bold text-gray-300">/ 20</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            <div className="pt-4">
-                                <button onClick={calculateBac} className="w-full py-5 bg-slate-900 text-white font-extrabold rounded-2xl hover:bg-primary shadow-xl hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] text-xl flex items-center justify-center gap-3 relative overflow-hidden group">
-                                    <span className="relative z-10 flex items-center gap-2">
-                                        <Calculator size={24} />
-                                        احسب النتيجة الآن
-                                    </span>
-                                    <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-blob transition-all duration-1000"></div>
-                                </button>
-                            </div>
-                        </div>
-
-                        {result !== null && mention && (
-                            <div id="result-card" className="mt-12 animate-in zoom-in slide-in-from-bottom-4 duration-500">
-                                <div className={`text-center p-8 lg:p-10 rounded-[2.5rem] ${mention.bg} border-2 ${mention.color.replace('text-', 'border-').replace('600', '100')} relative overflow-hidden`}>
-                                    <mention.icon size={200} className={`absolute -right-10 -bottom-10 opacity-5 ${mention.color}`} />
-                                    <p className="text-gray-500 font-extrabold mb-4 uppercase tracking-widest text-sm">النتيجة النهائية</p>
-                                    <div className="relative inline-block">
-                                        <div className={`text-6xl lg:text-8xl font-black mb-6 tracking-tighter ${mention.color} drop-shadow-sm`}>
-                                            {result.toFixed(2)}
-                                        </div>
-                                        <div className="absolute -top-4 -right-8 bg-white shadow-sm border border-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500 transform rotate-12">/ 20</div>
-                                    </div>
-                                    <div className="flex justify-center mb-8">
-                                        <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-lg bg-white shadow-md ${mention.color}`}>
-                                            <mention.icon size={24} strokeWidth={2.5} />
-                                            {mention.text}
-                                        </div>
-                                    </div>
-                                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 mx-auto max-w-lg">
-                                        <p className="text-gray-700 font-medium leading-relaxed">{mention.advice}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-            </div>
+      <div className="container mx-auto px-4 lg:px-8">
+        
+        <div className="text-center mb-16 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-primary font-bold text-sm mb-6 shadow-sm border border-blue-50">
+            <Target size={18} className="animate-pulse" />
+            <span>محاكي أهداف البكالوريا الذكي</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
+            شحال خاصني نجيب <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-royal font-black text-5xl md:text-7xl tracking-tighter">في الوطني؟</span>
+          </h1>
+          <p className="text-gray-500 text-lg md:text-xl leading-relaxed">
+            حدد معدلك العام المنشود، وأدخل نقطك الحالية، وسنخبرك بالضبط بالمجهود المطلوب منك في الامتحان الوطني.
+          </p>
         </div>
+
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white rounded-[3.5rem] shadow-2xl shadow-blue-900/5 border border-white p-8 md:p-12 relative overflow-hidden mb-12 group">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-blue-400 to-royal"></div>
+            
+            <form onSubmit={handleCalculate} className="space-y-10">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+                {/* Regional Input */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-500 mr-1">
+                    <Award size={18} className="text-blue-500" />
+                    <label className="text-sm font-extrabold uppercase tracking-wide">الامتحان الجهوي (25%)</label>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="number" step="0.01" min="0" max="20" required
+                      value={grades.regional}
+                      onChange={(e) => setGrades({...grades, regional: e.target.value})}
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black text-3xl outline-none focus:border-blue-500 focus:bg-white focus:shadow-xl focus:shadow-blue-500/10 transition-all text-left dir-ltr"
+                      placeholder="00.00"
+                    />
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold">/ 20</div>
+                  </div>
+                </div>
+
+                {/* Continuous Assessment Input */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-500 mr-1">
+                    <TrendingUp size={18} className="text-purple-500" />
+                    <label className="text-sm font-extrabold uppercase tracking-wide">المراقبة المستمرة (25%)</label>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="number" step="0.01" min="0" max="20" required
+                      value={grades.controleContinu}
+                      onChange={(e) => setGrades({...grades, controleContinu: e.target.value})}
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black text-3xl outline-none focus:border-purple-500 focus:bg-white focus:shadow-xl focus:shadow-purple-500/10 transition-all text-left dir-ltr"
+                      placeholder="00.00"
+                    />
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold">/ 20</div>
+                  </div>
+                </div>
+
+                {/* Target Average Choice */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-500 mr-1">
+                    <Star size={18} className="text-yellow-500" fill="currentColor" />
+                    <label className="text-sm font-extrabold uppercase tracking-wide">المعدل العام المستهدف</label>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="number" step="0.1" min="10" max="20" required
+                      value={grades.targetAverage}
+                      onChange={(e) => setGrades({...grades, targetAverage: e.target.value})}
+                      className="w-full bg-blue-50 border-2 border-primary/20 rounded-2xl px-6 py-5 font-black text-3xl outline-none focus:border-primary focus:bg-white focus:shadow-xl focus:shadow-primary/10 transition-all text-left dir-ltr text-primary"
+                      placeholder="14.0"
+                    />
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/30 font-bold">Goal</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <button type="submit" className="flex-grow py-6 bg-slate-900 text-white font-extrabold rounded-3xl hover:bg-primary shadow-xl hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] text-xl flex items-center justify-center gap-3 group">
+                   <Calculator size={28} className="group-hover:rotate-12 transition-transform" />
+                   احسب النقطة المطلوبة
+                </button>
+                <button type="button" onClick={reset} className="px-10 py-6 bg-gray-50 text-gray-400 font-bold rounded-3xl hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+                   <RotateCcw size={20} />
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {showResults && results && (
+            <div id="results-area" className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-12">
+               
+               {/* Highlighted Custom Goal */}
+               <div className="bg-white rounded-[3.5rem] p-10 border-4 border-primary/10 shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                  <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
+                     <div className="text-center md:text-right">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full font-black text-xs uppercase tracking-widest mb-6">
+                            <Star size={14} fill="currentColor" />
+                            هدفك الشخصي المختار
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-4">
+                          لتحقيق معدل <span className="text-primary">{grades.targetAverage}</span> <br className="hidden md:block" />
+                          خاصك تجيب في الوطني:
+                        </h2>
+                     </div>
+                     <div className="shrink-0 flex flex-col items-center bg-slate-900 px-12 py-10 rounded-[3rem] text-white shadow-2xl transform hover:scale-105 transition-transform">
+                        <span className={`text-7xl font-black tracking-tighter ${results.custom > 20 ? 'text-red-400' : 'text-white'}`}>
+                            {results.custom > 20 ? '!!' : results.custom.toFixed(2)}
+                        </span>
+                        <div className="h-px w-full bg-white/20 my-4"></div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                           {results.custom > 20 ? 'معدل مستحيل حالياً' : 'نقطة الامتحان الوطني'}
+                        </p>
+                        {results.custom > 20 && <p className="text-[10px] text-red-300 mt-2 font-medium">يتطلب أكثر من 20/20</p>}
+                     </div>
+                  </div>
+               </div>
+
+               {/* Comparative Goals Grid */}
+               <div>
+                  <div className="flex items-center gap-4 mb-8 px-4">
+                      <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><Zap size={24} fill="currentColor" /></div>
+                      <div>
+                        <h2 className="text-2xl font-black text-slate-900">مقارنة مع باقي الميزات</h2>
+                        <p className="text-sm font-bold text-slate-400">إليك ما تحتاجه للوصول إلى العتبات الرسمية:</p>
+                      </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <RequirementCard goal="10/20" required={results.pass} color="emerald" label="عتبة النجاح" />
+                      <RequirementCard goal="12/20" required={results.mustahsan} color="blue" label="ميزة مستحسن" />
+                      <RequirementCard goal="14/20" required={results.hassan} color="purple" label="ميزة حسن" />
+                      <RequirementCard goal="16/20" required={results.veryGood} color="orange" label="ميزة حسن جداً" />
+                  </div>
+               </div>
+
+               {/* Action Plan */}
+               <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+                  <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
+                    <div className="lg:col-span-2">
+                       <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
+                         <TrendingUp className="text-primary" size={32} />
+                         كيفاش توصل لهاد النتيجة؟
+                       </h3>
+                       <p className="text-slate-300 text-lg leading-relaxed font-medium mb-8">
+                         تذكر أن الامتحان الوطني يشكل <span className="text-white font-bold underline decoration-primary decoration-4">50% من المعدل العام</span>. هادشي كيعني أن أي مجهود إضافي في الوطني كيتدوبل مفعوله في النتيجة النهائية. التركيز التام هو مفتاحك دابا.
+                       </p>
+                       <div className="flex flex-wrap gap-4">
+                          <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-2xl border border-white/10 text-sm font-bold hover:bg-white/20 transition-colors">
+                             <CheckCircle2 size={18} className="text-emerald-400" /> مراجعة ذكية
+                          </div>
+                          <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-2xl border border-white/10 text-sm font-bold hover:bg-white/20 transition-colors">
+                             <CheckCircle2 size={18} className="text-emerald-400" /> تمارين مكثفة
+                          </div>
+                          <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-2xl border border-white/10 text-sm font-bold hover:bg-white/20 transition-colors">
+                             <CheckCircle2 size={18} className="text-emerald-400" /> تتبع يومي
+                          </div>
+                       </div>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-md rounded-[3rem] p-10 border border-white/10 text-center relative group">
+                       <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-5 transition-opacity rounded-[3rem]"></div>
+                       <Award size={72} className="mx-auto mb-6 text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)] animate-bounce-slow" />
+                       <h4 className="text-2xl font-black mb-3">أنت قدها!</h4>
+                       <p className="text-xs text-slate-400 font-bold tracking-wide leading-relaxed">
+                         مئات التلاميذ بدأوا بمعدلات جهوي أقل، ولكن بفضل الوطني والالتزام حققوا أحلامهم.
+                       </p>
+                    </div>
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {/* Footer Warning */}
+          <div className="mt-16 p-8 bg-blue-50/50 rounded-[3rem] border border-blue-100 flex flex-col md:flex-row items-center gap-8 backdrop-blur-sm">
+              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm text-primary shrink-0 flex items-center justify-center">
+                <AlertTriangle size={32} />
+              </div>
+              <div className="text-center md:text-right">
+                <h4 className="text-lg font-black text-slate-900 mb-1">توضيح منهجي</h4>
+                <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                  تمت برمجة هذا المحاكي وفقاً للصيغة الرسمية المعتمدة (25% جهوي، 25% مراقبة مستمرة، 50% وطني). النتائج هي مؤشرات حسابية لتوجيه مسار مراجعتك ورفع سقف طموحك.
+                </p>
+              </div>
+              <div className="hidden lg:block mr-auto">
+                 <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="p-4 bg-white rounded-2xl shadow-sm text-slate-400 hover:text-primary hover:shadow-md transition-all">
+                    <RotateCcw size={20} />
+                 </button>
+              </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
