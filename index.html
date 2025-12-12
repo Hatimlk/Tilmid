@@ -1,9 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>تلميذ - Tilmid | رفيقك نحو التفوق</title>
+    <title>تلميذ - Tilmid | رفيقك نحو التفوق والتوجيه المدرسي الذكي</title>
+    <meta name="description" content="منصة تلميذ - رفيقك نحو التفوق الدراسي. نقدم توجيهاً مدرسياً متمبراً، تقنيات حفظ ذكية، ومواكبة نفسية شاملة لتلاميذ البكالوريا والطلاب في المغرب لتحقيق أفضل النتائج." />
+    <meta name="keywords" content="تلميذ, توجيه مدرسي, باكالوريا, تقنيات المراجعة, تنظيم الوقت, دراسة ذكية, المغرب, تفوق دراسي" />
+    <link rel="canonical" href="https://tilmide.ma/" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,10 +30,6 @@
             lineHeight: {
               'relaxed': '1.8',
             },
-            letterSpacing: {
-              normal: '0.015em',
-              wide: '0.03em',
-            },
             animation: {
               'blob': 'blob 7s infinite',
               'bounce-slow': 'bounce 3s infinite',
@@ -42,55 +43,32 @@
     <style>
       body {
         font-family: 'Tajawal', sans-serif;
-        letter-spacing: 0.015em; /* Global letter spacing */
+        font-display: swap;
+        letter-spacing: 0.015em;
       }
       html {
         scroll-behavior: smooth;
       }
-
-      /* Ensure all paragraphs have good readability defaults */
       p {
         line-height: 1.8;
       }
-      
-      /* Custom Animations */
       @keyframes blob {
         0% { transform: translate(0px, 0px) scale(1); }
         33% { transform: translate(30px, -50px) scale(1.1); }
         66% { transform: translate(-20px, 20px) scale(0.9); }
         100% { transform: translate(0px, 0px) scale(1); }
       }
-      
       @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
       }
-
       @keyframes float {
         0% { transform: translateY(0px); }
         50% { transform: translateY(-20px); }
         100% { transform: translateY(0px); }
       }
-
-      .animate-delay-100 { animation-delay: 100ms; }
-      .animate-delay-200 { animation-delay: 200ms; }
-      .animate-delay-300 { animation-delay: 300ms; }
-      .animate-delay-400 { animation-delay: 400ms; }
-      
-      /* Hide scrollbar for cleaner UI in some containers */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
   <script type="importmap">
 {
