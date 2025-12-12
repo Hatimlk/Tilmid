@@ -5,7 +5,7 @@ import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost, SuccessStory } from '../types';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Instagram, Quote, ArrowLeftIcon, Zap, CheckCircle2, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe } from 'lucide-react';
 
 const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
     const [days, setDays] = useState<number>(0);
@@ -29,7 +29,7 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
             </div>
             <div className="text-right">
                 <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-0.5">{label}</p>
-                <p className="text-sm font-black text-white mb-1">يوماً متبقياً</p>
+                <div className="text-sm font-black text-white mb-1">يوماً متبقياً</div>
                 <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                     <span className="text-[10px] font-bold text-green-400">مباشر الآن</span>
@@ -79,7 +79,7 @@ export const Home: React.FC = () => {
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.15] text-slate-900 tracking-tight">
                 تلميـذ رفيقك <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-royal">
-                  نحو قمة التفوق
+                  نحو قمة التفوق الدراسي
                 </span>
               </h1>
               
@@ -103,12 +103,12 @@ export const Home: React.FC = () => {
               <div className="relative z-10 group">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-royal/20 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative bg-white p-3 rounded-[3.5rem] shadow-2xl border border-slate-100 transform hover:rotate-1 transition-transform duration-500">
-                    <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement" className="rounded-[3rem] w-full object-cover h-[350px] sm:h-[500px] lg:h-[600px]" />
+                    <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="rounded-[3rem] w-full object-cover h-[350px] sm:h-[500px] lg:h-[600px]" loading="eager" />
                     <div className="absolute -bottom-6 -right-6 bg-white p-5 rounded-3xl shadow-2xl border border-slate-50 animate-float hidden md:flex items-center gap-4">
                         <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center"><TrendingUp size={24}/></div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">معدل النجاح</p>
-                            <p className="text-xl font-black text-slate-900">+98% سنوياً</p>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase">معدل النجاح</div>
+                            <div className="text-xl font-black text-slate-900">+98% سنوياً</div>
                         </div>
                     </div>
                 </div>
@@ -118,30 +118,26 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Modern Exam Countdown Banner (Exact Match to Screenshot) */}
+      {/* Modern Exam Countdown Banner */}
       <section className="relative z-30 -mt-14 lg:-mt-20 px-4">
           <div className="container mx-auto max-w-7xl">
               <div className="bg-[#0f172a] rounded-[4rem] px-8 py-6 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/5">
-                {/* Visual Glow */}
                 <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
 
-                {/* Right Text Header (Positioned Right in RTL) */}
                 <div className="text-right shrink-0 lg:max-w-[250px]">
                     <div className="flex items-center justify-center lg:justify-start gap-2 text-[#38bdf8] font-black text-[11px] uppercase tracking-widest mb-2">
                         <Zap size={16} fill="currentColor" className="animate-pulse" />
                         <span>مباشر: عداد الامتحانات</span>
                     </div>
                     <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight">يوم الحسم يقترب!</h2>
-                    <p className="text-gray-500 text-[11px] mt-1.5 font-bold italic opacity-80 leading-relaxed">استعد جيداً، لم يتبق الكثير</p>
+                    <p className="text-gray-500 text-[11px] mt-1.5 font-bold italic opacity-80 leading-relaxed">استعد جيداً للوطني والجهوي</p>
                 </div>
 
-                {/* Cards Group - Center */}
                 <div className="flex flex-col md:flex-row gap-4 lg:gap-6 flex-grow w-full">
                     <DayCard date={nationalDate} label="الوطني (2 باك)" />
                     <DayCard date={regionalDate} label="الجهوي (1 باك)" />
                 </div>
 
-                {/* CTA - Left (Positioned Left in RTL) */}
                 <Link to="/bac-simulator" className="bg-white text-[#0f172a] px-10 py-5 rounded-[2.5rem] font-black text-lg flex items-center gap-3 hover:bg-primary hover:text-white transition-all shadow-xl hover:shadow-primary/20 shrink-0 group/btn transform active:scale-95 w-full lg:w-auto justify-center">
                     <span>احسب معدلك</span>
                     <ArrowLeftIcon size={22} className="group-hover:-translate-x-1 transition-transform" />
@@ -228,10 +224,10 @@ export const Home: React.FC = () => {
                <div className="relative z-10 group">
                  <div className="absolute -inset-1 bg-gradient-to-tr from-primary to-royal rounded-[3.5rem] opacity-20 blur-xl group-hover:opacity-40 transition-opacity"></div>
                  <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-[8px] border-white ring-1 ring-slate-100">
-                     <img src={IMAGES.ABOUT.FOUNDER} alt="الأستاذ ياسين" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" />
+                     <img src={IMAGES.ABOUT.FOUNDER} alt="الأستاذ ياسين مؤسس تلميذ" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" loading="lazy" />
                  </div>
                  <div className="absolute bottom-8 -right-4 lg:-right-8 bg-white p-5 rounded-3xl shadow-2xl flex items-center gap-4 border border-slate-50 animate-float">
-                    <div className="bg-blue-600 text-white p-3 rounded-2xl"><Instagram size={24} /></div>
+                    <div className="bg-blue-600 text-white p-3 rounded-2xl"><Star size={24} /></div>
                     <div>
                        <span className="block text-2xl font-black text-slate-900 leading-none mb-1" dir="ltr">+90K</span>
                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">متابع حقيقي</span>
@@ -243,26 +239,51 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Internal & External Links Section for SEO */}
+      <section className="py-20 bg-white border-t border-gray-100">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <TrendingUp size={24} className="text-primary" /> روابط تعليمية هامة
+              </h2>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <li><Link to="/blog?category=توجيه" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ArrowLeft size={14} /> مقالات التوجيه المدرسي</Link></li>
+                <li><Link to="/blog?category=تقنيات" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ArrowLeft size={14} /> طرق الحفظ السريع</Link></li>
+                <li><Link to="/bac-simulator" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ArrowLeft size={14} /> حساب نقاط البكالوريا</Link></li>
+                <li><Link to="/program/tilmid" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ArrowLeft size={14} /> برنامج تلميذ للنجاح</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Globe size={24} className="text-royal" /> مصادر خارجية موثوقة
+              </h2>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <li><a href="https://massarservice.men.gov.ma/" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ExternalLink size={14} /> فضاء متمدرس (مسار)</a></li>
+                <li><a href="https://www.tawjihi.ma" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ExternalLink size={14} /> منصة توجيهي الرسمية</a></li>
+                <li><a href="https://www.men.gov.ma" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ExternalLink size={14} /> وزارة التربية الوطنية</a></li>
+                <li><a href="https://www.cursussup.gov.ma" target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-primary flex items-center gap-2 font-medium"><ExternalLink size={14} /> التعليم العالي بالمغرب</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Media & Reels Section */}
-      <section id="media" className="py-32 bg-white relative overflow-hidden">
+      <section id="media" className="py-32 bg-slate-900 relative overflow-hidden">
         <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
           <div className="max-w-3xl mx-auto mb-20 space-y-6">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-purple-100">
-                  <Instagram size={18} />
-                  <span>جديدنا على وسائل التواصل</span>
-              </div>
-              <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-                  الأكثر مشاهدة على <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">تلميذ</span> 🔥
+              <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
+                  الأكثر مشاهدة على تلميذ 🔥
               </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
             {INSTAGRAM_REELS.map((reel, idx) => (
-              <div key={reel.id} className="group relative flex flex-col items-center animate-fade-in-up" style={{ animationDelay: `${idx * 150}ms` }}>
-                 <div className="relative w-full max-w-[320px] bg-slate-900 rounded-[3rem] p-3 shadow-2xl ring-1 ring-slate-800 transform transition-all duration-500 hover:-translate-y-4 hover:rotate-1">
-                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 bg-slate-900 rounded-b-2xl z-20"></div>
+              <div key={reel.id} className="group relative flex flex-col items-center">
+                 <div className="relative w-full max-w-[320px] bg-slate-800 rounded-[3rem] p-3 shadow-2xl ring-1 ring-slate-700 transform transition-all duration-500 hover:-translate-y-4">
                      <div className="relative overflow-hidden rounded-[2.5rem] bg-black aspect-[9/16] w-full">
-                        <iframe src={`https://www.instagram.com/reel/${reel.reelId}/embed/`} className="w-full h-full border-0" allowFullScreen title={reel.title} scrolling="no"></iframe>
+                        <iframe src={`https://www.instagram.com/reel/${reel.reelId}/embed/`} className="w-full h-full border-0" allowFullScreen title={reel.title} scrolling="no" loading="lazy"></iframe>
                      </div>
                  </div>
               </div>
@@ -275,21 +296,17 @@ export const Home: React.FC = () => {
       <section className="py-24 bg-slate-50">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-20 space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-yellow-600 font-bold text-sm shadow-sm border border-yellow-50">
-              <Star size={16} className="fill-yellow-500 text-yellow-500" />
-              <span>شهادات حية</span>
-            </div>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900">تلاميذنا هم فخرنا الحقيقي</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {successStories.map((story) => (
-              <div key={story.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden">
+              <div key={story.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
                  <div className="absolute -top-6 -left-6 text-slate-50 group-hover:text-blue-50 transition-colors pointer-events-none transform -rotate-12"><Quote size={120} fill="currentColor" /></div>
                  <div className="relative z-10">
                    <div className="flex items-center gap-5 mb-8">
                       <div className="w-16 h-16 rounded-2xl p-0.5 bg-gradient-to-br from-primary to-royal shadow-lg">
-                         <img src={story.image} alt={story.name} className="w-full h-full object-cover rounded-[0.9rem] border-2 border-white" />
+                         <img src={story.image} alt={story.name} className="w-full h-full object-cover rounded-[0.9rem] border-2 border-white" loading="lazy" />
                       </div>
                       <div>
                          <h3 className="font-black text-xl text-slate-900">{story.name}</h3>
@@ -309,7 +326,6 @@ export const Home: React.FC = () => {
           <div className="container mx-auto px-4">
               <div className="bg-slate-900 rounded-[3.5rem] p-10 lg:p-20 text-center relative overflow-hidden shadow-2xl">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-royal/20 opacity-40"></div>
-                  <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                   
                   <div className="relative z-10 space-y-8 max-w-4xl mx-auto">
                       <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight">جاهز لتبدأ رحلة النجاح معنا؟</h2>
