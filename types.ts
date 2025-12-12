@@ -22,13 +22,31 @@ export interface BlogPost {
   category: string;
   image: string;
   excerpt: string;
-  content?: string; // Full HTML content
+  content?: string;
   status?: 'published' | 'draft';
   views?: number;
   author?: {
     name: string;
     avatar: string;
   };
+}
+
+export interface StudyResource {
+  id: string;
+  title: string;
+  subject: string;
+  type: 'summary' | 'exam' | 'formula';
+  fileSize: string;
+  downloadCount: number;
+  iconName: string;
+}
+
+export interface TimetableTask {
+  id: string;
+  subject: string;
+  startTime: string;
+  endTime: string;
+  day: string;
 }
 
 export interface VideoReel {
@@ -65,7 +83,7 @@ export interface Student {
   id: string;
   name: string;
   username: string;
-  password?: string; // Optional for frontend display, required for logic
+  password?: string;
   grade: string;
   joinDate: string;
   avatar?: string;
@@ -73,7 +91,7 @@ export interface Student {
   stats?: {
     studyHours: number;
     commitmentRate: number;
-    weeklyProgress: number[]; // Array of 7 numbers (0-100) for chart
+    weeklyProgress: number[];
   };
 }
 
