@@ -6,6 +6,7 @@ import {
   Brain
 } from 'lucide-react';
 import { ServiceFeature, VideoReel, ProgramData, BlogPost } from './types';
+import { IMAGES } from './constants/images';
 
 export const NAV_ITEMS = [
   { label: "الرئيسية", href: "/" },
@@ -92,7 +93,7 @@ export const TAWJIH_DATA: ProgramData = {
     },
     {
       title: 'مواكبة شخصية لفتح أفضل الفرص الدراسية',
-      description: 'كل تلميذ كيستافد من استشارات فردية كاتضمن ليه يختار أحسن الخيارات التعليمية اللي تفتح ليه آفاق مستقبلية واسعة.'
+      description: 'كل تلميذ كيستافد من استشارات فردية كاتضمن ليه يختار أحسن الخيارات التعليمية اللي تفتح ليه آفاق مستقبيلة واسعة.'
     },
     {
       title: 'متابعة دقيقة للوائح الرئيسية ولوائح الانتظار',
@@ -180,7 +181,7 @@ export const BLOG_POSTS: BlogPost[] = [
       date: "1 شتنبر 2023",
       image: "https://picsum.photos/800/600?random=1",
       excerpt: "تعرف على كيفية استخدام تقنية بومودورو لزيادة الإنتاجية.",
-      author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
       status: 'published',
       views: 1205
     },
@@ -191,7 +192,7 @@ export const BLOG_POSTS: BlogPost[] = [
       date: "3 شتنبر 2023",
       image: "https://picsum.photos/800/600?random=2",
       excerpt: "استراتيجية ميردر للمذاكرة الفعالة والحفظ السريع.",
-      author: { name: "سارة العلمي", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
       status: 'published',
       views: 980
     },
@@ -202,7 +203,7 @@ export const BLOG_POSTS: BlogPost[] = [
       date: "4 شتنبر 2023",
       image: "https://picsum.photos/800/600?random=3",
       excerpt: "كيف تبدأ بأصعب المهام في يومك لتضمن النجاح.",
-      author: { name: "الأستاذ ياسين", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+      author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
       status: 'published',
       views: 1500
     },
@@ -213,7 +214,7 @@ export const BLOG_POSTS: BlogPost[] = [
         date: "5 شتنبر 2023",
         image: "https://picsum.photos/800/600?random=4",
         excerpt: "نظام كانبان الياباني لتنظيم المهام الدراسية.",
-        author: { name: "محمد التازي", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+        author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
         status: 'published',
         views: 850
     }
