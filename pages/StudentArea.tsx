@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  BookOpen, Clock, Calendar, Star, Download, PlayCircle, User, ChevronRight, 
-  LogOut, Lock, AlertCircle, X, Check, Video, FileText, 
-  Play, Key, Activity, TrendingUp, Plus, Eye, MessageSquare, Send,
-  LayoutDashboard, Library, Film, Bell, GraduationCap, Flame, Moon, Sun, 
-  ArrowRight, MessageCircle, BookText, FileSpreadsheet, FileCode, DownloadCloud, Sparkles, Trophy, Target
+  Clock, Calendar, Download, PlayCircle, User, ChevronRight, 
+  LogOut, AlertCircle, X, FileText, 
+  Play, Activity, Plus, LayoutDashboard, Library, Film, 
+  Sparkles, Trophy, Target, MessageCircle, BookText, FileSpreadsheet, FileCode, DownloadCloud, Flame, GraduationCap
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
-import { Appointment, StudyResource, TimetableTask } from '../types';
+import { StudyResource, TimetableTask } from '../types';
+import { IMAGES } from '../constants/images';
 
 const DAYS = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
 
@@ -106,7 +106,9 @@ export const StudentArea: React.FC = () => {
             <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
                 <div className="text-center mb-10 relative z-10">
-                    <div className="w-20 h-20 bg-primary text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20 transform rotate-3"><GraduationCap size={40}/></div>
+                    <div className="w-40 h-auto mx-auto mb-8">
+                        <img src={IMAGES.LOGOS.OFFICIAL} alt="Tilmid Logo" className="w-full h-auto" />
+                    </div>
                     <h2 className="text-3xl font-black text-slate-900 tracking-tight">مرحباً بك مجدداً</h2>
                     <p className="text-slate-500 font-bold mt-2">سجل دخولك لمتابعة رحلة التفوق</p>
                 </div>
@@ -132,8 +134,10 @@ export const StudentArea: React.FC = () => {
         {/* Modern Glass Header */}
         <header className="bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20"><GraduationCap size={22}/></div>
-                <div>
+                <div className="h-14 w-auto">
+                    <img src={IMAGES.LOGOS.OFFICIAL} alt="Logo" className="h-full w-auto object-contain" />
+                </div>
+                <div className="border-r-2 border-slate-100 pr-4">
                     <span className="font-black text-slate-900 block leading-tight">مساحة التميز</span>
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">{user.grade}</span>
                 </div>
@@ -149,7 +153,7 @@ export const StudentArea: React.FC = () => {
 
         <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
             
-            {/* Nav Tabs - Desktop & Mobile Friendly */}
+            {/* Nav Tabs */}
             <div className="flex gap-2 overflow-x-auto no-scrollbar mb-12 bg-white p-2 rounded-3xl border border-slate-100 w-fit mx-auto shadow-xl shadow-slate-200/50">
                 {[
                     {id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard},
@@ -177,8 +181,13 @@ export const StudentArea: React.FC = () => {
                              <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -ml-32 -mb-32"></div>
                              
                              <div className="relative z-10">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-blue-200 font-bold text-xs mb-6 border border-white/10">
-                                    <Sparkles size={14} className="text-yellow-400"/> برنامج التميز مفعل
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-blue-200 font-bold text-xs border border-white/10">
+                                        <Sparkles size={14} className="text-yellow-400"/> برنامج التميز مفعل
+                                    </div>
+                                    <div className="h-10 opacity-40 hover:opacity-100 transition-opacity">
+                                        <img src={IMAGES.LOGOS.WHITE} alt="White Logo" className="h-full w-auto" />
+                                    </div>
                                 </div>
                                 <h2 className="text-4xl lg:text-6xl font-black mb-6 leading-tight">أهلاً {user.name.split(' ')[0]}! 🔥</h2>
                                 <p className="text-blue-100 text-lg lg:text-xl opacity-80 mb-10 max-w-xl leading-relaxed">
@@ -362,7 +371,7 @@ export const StudentArea: React.FC = () => {
 
         {/* Task Modal */}
         {showTaskModal && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
                 <div className="bg-white p-10 rounded-[3.5rem] shadow-2xl w-full max-w-md animate-in zoom-in-95 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
                     <div className="flex justify-between items-center mb-10 relative z-10">

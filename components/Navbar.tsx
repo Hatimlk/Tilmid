@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
-import { Menu, X, ChevronDown, GraduationCap } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
 import { Link, useLocation } from 'react-router-dom';
+import { IMAGES } from '../constants/images';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,7 +63,7 @@ export const Navbar: React.FC = () => {
           onClick={() => mobile && setIsOpen(false)}
           className={`
             ${mobile ? 'block w-full text-center mt-4' : ''} 
-            px-6 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-blue-600 transition-all shadow-md hover:shadow-lg
+            px-8 py-3 bg-primary text-white rounded-full font-bold hover:bg-blue-600 transition-all shadow-md hover:shadow-lg
           `}
         >
           {item.label}
@@ -94,20 +96,21 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-sm z-50 border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50 border-b border-gray-100">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24 lg:h-32 transition-all duration-300">
           
-          {/* Logo */}
+          {/* Logo - Upscaled Significantly */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="bg-primary p-2 rounded-xl text-white">
-               <GraduationCap size={28} />
-            </div>
-            <span className="text-2xl font-bold text-primary tracking-tight">تلميـذ</span>
+            <img 
+              src={IMAGES.LOGOS.OFFICIAL} 
+              alt="Tilmid Logo" 
+              className="h-16 lg:h-24 w-auto object-contain transition-all hover:scale-105 duration-300" 
+            />
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 font-medium">
+          <nav className="hidden md:flex items-center gap-10 font-bold text-lg">
             {NAV_ITEMS.map((item) => (
               <NavLink key={item.label} item={item} />
             ))}
@@ -118,15 +121,15 @@ export const Navbar: React.FC = () => {
             className="md:hidden p-2 text-gray-600 hover:text-primary transition-colors"
             onClick={toggleMenu}
           >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
+            {isOpen ? <X size={32} /> : <Menu size={32} />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="md:hidden absolute top-20 left-0 right-0 bg-white border-t border-gray-100 shadow-xl min-h-screen p-4">
-          <nav className="flex flex-col space-y-2">
+        <div className="md:hidden absolute top-24 left-0 right-0 bg-white border-t border-gray-100 shadow-xl min-h-screen p-6">
+          <nav className="flex flex-col space-y-4 font-bold text-xl">
             {NAV_ITEMS.map((item) => (
               <NavLink key={item.label} item={item} mobile />
             ))}
