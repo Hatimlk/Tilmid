@@ -29,14 +29,14 @@ export const Navbar: React.FC = () => {
         <div className={`relative ${mobile ? 'w-full' : ''}`}>
           <button
             onClick={() => toggleDropdown(item.label)}
-            className={`flex items-center gap-1 w-full ${mobile ? 'py-3 px-4 hover:bg-gray-50' : 'hover:text-primary transition-colors'}`}
+            className={`flex items-center gap-1 w-full ${mobile ? 'py-4 px-6 hover:bg-gray-50' : 'hover:text-primary transition-colors'}`}
           >
             {item.label}
             <ChevronDown size={16} className={`transition-transform ${dropdownOpen === item.label ? 'rotate-180' : ''}`} />
           </button>
           
           {dropdownOpen === item.label && (
-            <div className={`${mobile ? 'bg-gray-50 pl-4' : 'absolute top-full right-0 mt-2 w-48 bg-white shadow-xl rounded-lg py-2 border border-gray-100 z-50'}`}>
+            <div className={`${mobile ? 'bg-gray-50 pl-4' : 'absolute top-full right-0 mt-2 w-48 bg-white shadow-xl rounded-2xl py-2 border border-gray-100 z-50'}`}>
               {item.subItems?.map((sub) => (
                 <Link
                   key={sub.label}
@@ -45,7 +45,7 @@ export const Navbar: React.FC = () => {
                     setDropdownOpen(null);
                     if (mobile) setIsOpen(false);
                   }}
-                  className="block px-4 py-2 text-sm hover:bg-blue-50 hover:text-primary transition-colors text-gray-700"
+                  className="block px-6 py-3 text-sm hover:bg-blue-50 hover:text-primary transition-colors text-gray-700 font-bold"
                 >
                   {sub.label}
                 </Link>
@@ -62,8 +62,8 @@ export const Navbar: React.FC = () => {
           to={item.href}
           onClick={() => mobile && setIsOpen(false)}
           className={`
-            ${mobile ? 'block w-full text-center mt-4' : ''} 
-            px-8 py-3 bg-primary text-white rounded-full font-bold hover:bg-blue-600 transition-all shadow-md hover:shadow-lg
+            ${mobile ? 'block w-full text-center mt-6 py-4' : 'px-8 py-3.5'} 
+            bg-primary text-white rounded-full font-black hover:bg-blue-600 transition-all shadow-lg hover:shadow-primary/20
           `}
         >
           {item.label}
@@ -71,13 +71,12 @@ export const Navbar: React.FC = () => {
       );
     }
 
-    // Handle hash links on homepage differently
     if (item.href.startsWith('/#')) {
        return (
         <a
           href={item.href.substring(1)}
           onClick={() => mobile && setIsOpen(false)}
-           className={`block ${mobile ? 'py-3 px-4 hover:bg-gray-50' : 'hover:text-primary transition-colors'} ${isActive ? 'text-primary font-bold' : 'text-gray-700'}`}
+           className={`block ${mobile ? 'py-4 px-6 hover:bg-gray-50' : 'hover:text-primary transition-colors'} ${isActive ? 'text-primary font-black' : 'text-slate-700 font-bold'}`}
         >
            {item.label}
         </a>
@@ -88,7 +87,7 @@ export const Navbar: React.FC = () => {
       <Link
         to={item.href}
         onClick={() => mobile && setIsOpen(false)}
-        className={`block ${mobile ? 'py-3 px-4 hover:bg-gray-50' : 'hover:text-primary transition-colors'} ${isActive ? 'text-primary font-bold' : 'text-gray-700'}`}
+        className={`block ${mobile ? 'py-4 px-6 hover:bg-gray-50' : 'hover:text-primary transition-colors'} ${isActive ? 'text-primary font-black text-xl' : 'text-slate-700 font-bold'}`}
       >
         {item.label}
       </Link>
@@ -96,21 +95,21 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm z-50 border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-xl shadow-sm z-50 border-b border-gray-100">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-24 lg:h-32 transition-all duration-300">
+        <div className="flex items-center justify-between h-24 lg:h-28 transition-all">
           
-          {/* Logo - Upscaled Significantly */}
-          <Link to="/" className="flex items-center gap-2">
+          {/* Official Logo - Larger & Balanced */}
+          <Link to="/" className="flex items-center">
             <img 
               src={IMAGES.LOGOS.OFFICIAL} 
               alt="Tilmid Logo" 
-              className="h-16 lg:h-24 w-auto object-contain transition-all hover:scale-105 duration-300" 
+              className="h-14 lg:h-18 w-auto object-contain transition-transform hover:scale-105 duration-300" 
             />
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-10 font-bold text-lg">
+          {/* Desktop Nav - Optimized Spacing */}
+          <nav className="hidden md:flex items-center gap-10">
             {NAV_ITEMS.map((item) => (
               <NavLink key={item.label} item={item} />
             ))}
@@ -118,7 +117,7 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden p-2 text-gray-600 hover:text-primary transition-colors"
+            className="md:hidden p-3 text-slate-600 hover:text-primary hover:bg-blue-50 rounded-2xl transition-all"
             onClick={toggleMenu}
           >
             {isOpen ? <X size={32} /> : <Menu size={32} />}
@@ -128,8 +127,8 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="md:hidden absolute top-24 left-0 right-0 bg-white border-t border-gray-100 shadow-xl min-h-screen p-6">
-          <nav className="flex flex-col space-y-4 font-bold text-xl">
+        <div className="md:hidden absolute top-24 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl min-h-screen p-6 animate-in slide-in-from-top duration-300">
+          <nav className="flex flex-col space-y-2">
             {NAV_ITEMS.map((item) => (
               <NavLink key={item.label} item={item} mobile />
             ))}
