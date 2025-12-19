@@ -1,5 +1,9 @@
 
 export const IMAGES = {
+  LOGOS: {
+    OFFICIAL: 'https://res.cloudinary.com/do4mapb11/image/upload/v1766146135/Logo-Tilmid_wyhz1m.png',
+    WHITE: 'https://res.cloudinary.com/do4mapb11/image/upload/v1766146135/WhiteLogo-Tilmid_bc8jmy.png'
+  },
   HERO: {
     // Main Hero Image on Home Page
     HOME_MAIN: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',

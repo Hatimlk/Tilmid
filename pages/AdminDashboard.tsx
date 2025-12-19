@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, LayoutDashboard, FilePlus, LogOut, Trash2, Eye, 
-  CheckCircle, Plus, Users, Calendar, 
-  Search, PenTool, Bold, Italic, Settings,
-  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, Mail, ChevronLeft, TrendingUp, Filter, MoreHorizontal, FileText
+  CheckCircle, Users, Calendar, 
+  Search, PenTool, Settings,
+  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText
 } from 'lucide-react';
 import { ADMIN_CREDENTIALS, CUSTOM_POSTS_KEY, BLOG_POSTS, GLOBAL_APPOINTMENTS_KEY, STUDENT_ACCOUNTS, GLOBAL_STUDENTS_KEY } from '../constants';
 import { BlogPost, Appointment, Student } from '../types';
+import { IMAGES } from '../constants/images';
 
 // --- SUB COMPONENTS ---
 
@@ -113,7 +114,7 @@ export const AdminDashboard: React.FC = () => {
   // Modal States
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Partial<Student>>({ name: '', username: '', grade: '2 باكالوريا', status: 'active' });
-  const [viewStudent, setViewStudent] = useState<Student | null>(null); // For "View Profile"
+  const [viewStudent, setViewStudent] = useState<Student | null>(null); 
   
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [newBooking, setNewBooking] = useState<Partial<Appointment>>({ status: 'confirmed', type: 'live', date: '', time: '' });
@@ -139,15 +140,12 @@ export const AdminDashboard: React.FC = () => {
     const auth = localStorage.getItem('tilmid_admin_auth');
     if (auth === 'true') setIsAuthenticated(true);
 
-    // 1. Load Posts
     const storedPosts = localStorage.getItem(CUSTOM_POSTS_KEY);
     if (storedPosts) setCustomPosts(JSON.parse(storedPosts));
 
-    // 2. Load Appointments
     const storedAppointments = localStorage.getItem(GLOBAL_APPOINTMENTS_KEY);
     if (storedAppointments) setAppointments(JSON.parse(storedAppointments));
 
-    // 3. Load Students (Seed with mock data if empty)
     const storedStudents = localStorage.getItem(GLOBAL_STUDENTS_KEY);
     if (storedStudents) {
       setStudents(JSON.parse(storedStudents));
@@ -166,7 +164,6 @@ export const AdminDashboard: React.FC = () => {
       localStorage.setItem(GLOBAL_STUDENTS_KEY, JSON.stringify(initialStudents));
     }
 
-    // Click outside handler for notifications
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
@@ -176,8 +173,6 @@ export const AdminDashboard: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
 
   }, []);
-
-  // --- ACTIONS ---
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,14 +196,13 @@ export const AdminDashboard: React.FC = () => {
       if (tab === 'posts') resetPostForm();
   };
 
-  // --- POST CRUD ---
   const handleSavePost = (e: React.FormEvent) => {
     e.preventDefault();
     const postToSave: BlogPost = {
       ...newPost,
       id: newPost.id || `custom-${Date.now()}`,
       date: newPost.date || new Date().toLocaleDateString('ar-MA', { year: 'numeric', month: 'long', day: 'numeric' }),
-      author: { name: 'الإدارة', avatar: 'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff' },
+      author: { name: 'الإدارة', avatar: IMAGES.AVATARS.DEFAULT_USER },
       image: newPost.image || 'https://picsum.photos/800/600'
     };
 
@@ -244,7 +238,6 @@ export const AdminDashboard: React.FC = () => {
     setIsEditingPost(false);
   };
 
-  // --- STUDENT CRUD ---
   const handleOpenStudentModal = (student?: Student) => {
     if (student) {
       setCurrentStudent(student);
@@ -299,7 +292,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  // --- APPOINTMENT CRUD ---
   const handleOpenAppointmentModal = () => {
     setNewBooking({ 
         status: 'confirmed', 
@@ -349,7 +341,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  // --- HELPER FOR ACTIVITY FEED ---
   const getActivityFeed = () => {
       const apps = appointments.map(a => ({ type: 'appointment', date: a.date, title: a.title, user: a.studentName, id: a.id }));
       const posts = customPosts.map(p => ({ type: 'post', date: p.date, title: p.title, user: 'الإدارة', id: p.id }));
@@ -366,8 +357,8 @@ export const AdminDashboard: React.FC = () => {
         <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center p-4 font-sans">
             <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white/50 backdrop-blur-xl animate-in zoom-in-95">
                 <div className="text-center mb-10">
-                    <div className="w-24 h-24 bg-gradient-to-br from-primary to-royal rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-white shadow-xl shadow-blue-500/30 transform rotate-3 hover:rotate-6 transition-transform duration-500">
-                        <Shield size={48} />
+                    <div className="w-48 h-auto mx-auto mb-10 transition-transform hover:scale-105 duration-500">
+                        <img src={IMAGES.LOGOS.OFFICIAL} alt="Tilmid Logo" className="w-full h-auto" />
                     </div>
                     <h1 className="text-3xl font-black text-slate-800 tracking-tight">بوابة الإدارة</h1>
                     <p className="text-slate-500 mt-2 font-medium">الوصول الآمن للمسؤولين فقط</p>
@@ -388,9 +379,6 @@ export const AdminDashboard: React.FC = () => {
                     {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2"><XCircle size={18} /> {error}</div>}
                     <button className="w-full py-4 bg-primary text-white font-extrabold rounded-2xl hover:bg-royal transition-all shadow-lg shadow-blue-500/30 text-lg hover:-translate-y-1 active:scale-[0.98]">تسجيل الدخول</button>
                 </form>
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center text-xs font-bold text-slate-400">
-                    <p>demo: admin / admin123</p>
-                </div>
             </div>
         </div>
      );
@@ -410,9 +398,8 @@ export const AdminDashboard: React.FC = () => {
             ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
         `}>
             <div className="flex items-center justify-between mb-12 px-2 pt-2">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-tr from-primary to-blue-400 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-lg shadow-blue-500/20">T</div>
-                    <div><h2 className="font-bold text-xl tracking-tight">لوحة التحكم</h2><p className="text-xs text-slate-400 font-medium">v2.0.1 (Beta)</p></div>
+                <div className="h-12 lg:h-14 w-auto">
+                    <img src={IMAGES.LOGOS.WHITE} alt="Logo" className="h-full w-auto" />
                 </div>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400 hover:text-white transition-colors"><X size={28} /></button>
             </div>
@@ -448,14 +435,10 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 
                 <div className="flex items-center gap-4 lg:gap-6">
-                    {/* Settings Icon */}
                     <div onClick={() => setShowSettings(true)} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-blue-50 rounded-xl cursor-pointer transition-all hidden sm:flex">
                         <Settings size={22} />
                     </div>
-
                     <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
-
-                    {/* User Profile */}
                     <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setShowSettings(true)}>
                        <div className="relative">
                           <div className="w-11 h-11 rounded-full bg-gradient-to-r from-primary to-royal flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white ring-2 ring-gray-100 group-hover:ring-primary/20 transition-all">
@@ -468,8 +451,6 @@ export const AdminDashboard: React.FC = () => {
                           <p className="text-[11px] text-slate-500 font-bold mt-0.5">Super Admin</p>
                        </div>
                     </div>
-
-                    {/* Notification Bell */}
                     <div className="relative" ref={notifRef}>
                         <button 
                             onClick={() => setShowNotifications(!showNotifications)}
@@ -478,8 +459,6 @@ export const AdminDashboard: React.FC = () => {
                             <span className="absolute top-3 right-3.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white group-hover:scale-110 transition-transform"></span>
                             <Bell size={22} />
                         </button>
-                        
-                        {/* Dropdown */}
                         {showNotifications && (
                             <div className="absolute top-full left-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 animate-in fade-in slide-in-from-top-4 z-50">
                                 <div className="flex justify-between items-center px-4 py-3 border-b border-gray-50 mb-1">
@@ -510,8 +489,6 @@ export const AdminDashboard: React.FC = () => {
             </header>
 
             <div className="p-6 lg:p-10 max-w-[1600px] mx-auto">
-                
-                {/* --- OVERVIEW TAB --- */}
                 {activeTab === 'overview' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -520,8 +497,6 @@ export const AdminDashboard: React.FC = () => {
                             <StatCard label="مواعيد معلقة" val={appointments.filter(a => a.status === 'pending').length} icon={Clock} color="bg-amber-500" />
                             <StatCard label="المواعيد المؤكدة" val={appointments.filter(a => a.status === 'confirmed').length} icon={CheckCircle} color="bg-emerald-500" trend="+8%" />
                         </div>
-                        
-                        {/* Charts & Activity */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                             <div className="xl:col-span-2 bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
                                 <div className="flex justify-between items-center mb-8">
@@ -547,10 +522,8 @@ export const AdminDashboard: React.FC = () => {
                                             <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg whitespace-nowrap">{item.date}</span>
                                         </div>
                                     ))}
-                                    {getActivityFeed().length === 0 && <p className="text-slate-400 text-center py-10 font-medium">لا يوجد نشاط حديث.</p>}
                                 </div>
                             </div>
-                            
                             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col h-full">
                                 <h3 className="font-extrabold text-xl mb-8 text-slate-900">توزيع الطلاب</h3>
                                 <div className="flex-grow flex items-center justify-center">
@@ -615,7 +588,6 @@ export const AdminDashboard: React.FC = () => {
                                 </button>
                              </form>
                         </div>
-                        
                         <div className="lg:col-span-2 space-y-6 order-1 lg:order-2">
                             <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
                                 <div className="p-8 border-b border-gray-100 flex items-center justify-between">
@@ -651,7 +623,6 @@ export const AdminDashboard: React.FC = () => {
                                                     </td>
                                                 </tr>
                                             ))}
-                                            {customPosts.length === 0 && <tr><td colSpan={4} className="p-16 text-center text-slate-400 font-bold bg-slate-50/50">لا توجد مقالات مضافة يدوياً. ابدأ بالكتابة الآن! ✍️</td></tr>}
                                         </tbody>
                                     </table>
                                 </div>
@@ -666,69 +637,30 @@ export const AdminDashboard: React.FC = () => {
                          <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-white">
                             <div className="relative w-full max-w-lg group">
                                 <Search size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-                                <input 
-                                  type="text" 
-                                  placeholder="بحث عن طالب (الاسم، اسم المستخدم)..." 
-                                  value={studentSearch}
-                                  onChange={(e) => setStudentSearch(e.target.value)}
-                                  className="w-full pl-4 pr-14 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner focus:shadow-lg focus:shadow-blue-500/5" 
-                                />
-                                {studentSearch && <button onClick={() => setStudentSearch('')} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"><X size={18} /></button>}
+                                <input type="text" placeholder="بحث عن طالب..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="w-full pl-4 pr-14 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner" />
                             </div>
-                            <div className="flex flex-wrap justify-center items-center gap-4 w-full md:w-auto">
-                                <span className="bg-slate-100 px-4 py-2 rounded-xl text-slate-500 text-xs font-bold border border-slate-200"> {filteredStudents.length} طالب مسجل </span>
-                                <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-primary shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all w-full md:w-auto justify-center group">
-                                    <UserPlus size={18} className="group-hover:scale-110 transition-transform" /> 
-                                    <span>إضافة طالب جديد</span>
-                                </button>
-                            </div>
+                            <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-primary shadow-lg transition-all w-full md:w-auto justify-center group"><UserPlus size={18} /> إضافة طالب</button>
                          </div>
                          <div className="overflow-x-auto">
                              <table className="w-full text-right min-w-[900px]">
-                                <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase tracking-wider border-b border-slate-100">
-                                    <tr>
-                                        <th className="p-6">بيانات الطالب</th>
-                                        <th className="p-6">معلومات الدخول</th>
-                                        <th className="p-6">المستوى</th>
-                                        <th className="p-6">الحالة</th>
-                                        <th className="p-6 text-center">تحكم</th>
-                                    </tr>
+                                <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase border-b border-slate-100">
+                                    <tr><th className="p-6">بيانات الطالب</th><th className="p-6">المعرف</th><th className="p-6">المستوى</th><th className="p-6">الحالة</th><th className="p-6 text-center">تحكم</th></tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {filteredStudents.map(student => (
                                         <tr key={student.id} className="hover:bg-blue-50/40 transition-colors group">
                                             <td className="p-6">
                                                 <div className="flex items-center gap-4 cursor-pointer" onClick={() => setViewStudent(student)}>
-                                                    <div className="w-12 h-12 rounded-full p-0.5 border-2 border-slate-100 overflow-hidden shadow-sm group-hover:border-primary transition-colors bg-white">
-                                                        <img src={student.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`} className="w-full h-full object-cover" alt="" />
-                                                    </div>
-                                                    <div>
-                                                        <span className="block font-bold text-slate-900 text-base group-hover:text-primary transition-colors">{student.name}</span>
-                                                        <span className="text-xs text-slate-400 font-medium">تم الانضمام: {student.joinDate}</span>
-                                                    </div>
+                                                    <div className="w-12 h-12 rounded-full p-0.5 border-2 border-slate-100 overflow-hidden bg-white"><img src={student.avatar} className="w-full h-full object-cover" alt="" /></div>
+                                                    <div><span className="block font-bold text-slate-900">{student.name}</span><span className="text-xs text-slate-400">{student.joinDate}</span></div>
                                                 </div>
                                             </td>
-                                            <td className="p-6">
-                                                <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg select-all" dir="ltr">{student.username}</span>
-                                            </td>
-                                            <td className="p-6"><span className="text-sm font-bold text-slate-600 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-300"></div>{student.grade}</span></td>
+                                            <td className="p-6"><span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg" dir="ltr">{student.username}</span></td>
+                                            <td className="p-6"><span className="text-sm font-bold text-slate-600">{student.grade}</span></td>
                                             <td className="p-6"><StatusBadge status={student.status} /></td>
-                                            <td className="p-6">
-                                                <div className="flex items-center justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => setViewStudent(student)} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="عرض"><Eye size={18} /></button>
-                                                    <button onClick={() => handleOpenStudentModal(student)} className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل"><Edit size={18} /></button>
-                                                    <button onClick={() => toggleStudentStatus(student.id)} className={`p-2 rounded-lg transition-colors ${student.status === 'active' ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-500 hover:bg-emerald-50'}`} title={student.status === 'active' ? 'تجميد' : 'تنشيط'}>{student.status === 'active' ? <Ban size={18} /> : <Unlock size={18} />}</button>
-                                                    <button onClick={() => deleteStudent(student.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف"><Trash2 size={18} /></button>
-                                                </div>
-                                            </td>
+                                            <td className="p-6"><div className="flex items-center justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity"><button onClick={() => setViewStudent(student)} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"><Eye size={18} /></button><button onClick={() => handleOpenStudentModal(student)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button><button onClick={() => toggleStudentStatus(student.id)} className={`p-2 rounded-lg transition-colors ${student.status === 'active' ? 'text-amber-500' : 'text-emerald-500'}`}>{student.status === 'active' ? <Ban size={18} /> : <Unlock size={18} />}</button><button onClick={() => deleteStudent(student.id)} className="p-2 text-red-400 hover:text-red-600"><Trash2 size={18} /></button></div></td>
                                         </tr>
                                     ))}
-                                    {filteredStudents.length === 0 && (
-                                        <tr><td colSpan={5} className="p-20 text-center text-slate-400 font-bold">
-                                            <div className="mb-4 bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto"><Search size={32} /></div>
-                                            لم يتم العثور على طلاب مطابقين للبحث.
-                                        </td></tr>
-                                    )}
                                 </tbody>
                              </table>
                          </div>
@@ -739,260 +671,40 @@ export const AdminDashboard: React.FC = () => {
                 {activeTab === 'appointments' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
                         <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                             <div>
-                                 <h3 className="text-xl font-extrabold text-slate-900">إدارة المواعيد</h3>
-                                 <p className="text-slate-500 text-sm font-medium">تتبع وتنظيم جلسات التوجيه</p>
-                             </div>
-                             <button onClick={handleOpenAppointmentModal} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 hover:shadow-orange-500/40 transition-all"><CalendarPlus size={20} /> حجز موعد جديد</button>
+                             <div><h3 className="text-xl font-extrabold text-slate-900">إدارة المواعيد</h3><p className="text-slate-500 text-sm">تتبع وتنظيم جلسات التوجيه</p></div>
+                             <button onClick={handleOpenAppointmentModal} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg transition-all"><CalendarPlus size={20} /> حجز موعد جديد</button>
                         </div>
-                        
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                            {/* Pending Column */}
-                            <div className="flex flex-col h-full">
-                                <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-3 text-lg px-2">
-                                    <span className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></span>
-                                    طلبات قيد الانتظار 
-                                    <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-0.5 rounded-full">{appointments.filter(a => a.status === 'pending').length}</span>
-                                </h3>
-                                <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow min-h-[500px]">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="flex flex-col h-full"><h3 className="font-extrabold text-slate-900 mb-4 px-2">قيد الانتظار</h3>
+                                <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow">
                                     <div className="space-y-4 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
                                         {appointments.filter(a => a.status === 'pending').map(app => (
-                                            <div key={app.id} className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-amber-200 group">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold shadow-inner">
-                                                            {app.date.split('-')[2]}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="font-bold text-slate-900 text-sm mb-0.5">{app.title}</h4>
-                                                            <p className="text-xs text-slate-500 font-bold bg-slate-50 px-2 py-0.5 rounded w-fit">{app.studentName}</p>
-                                                        </div>
-                                                    </div>
-                                                    <button onClick={() => deleteAppointment(app.id)} className="text-slate-300 hover:text-red-500 transition-colors"><X size={18}/></button>
-                                                </div>
-                                                
-                                                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                                    <span className="flex items-center gap-1.5"><Calendar size={14} className="text-amber-500" /> {app.date}</span>
-                                                    <span className="w-px h-3 bg-slate-300"></span>
-                                                    <span className="flex items-center gap-1.5"><Clock size={14} className="text-amber-500" /> {app.time}</span>
-                                                </div>
-
-                                                <div className="flex gap-3">
-                                                    <button onClick={() => updateAppointmentStatus(app.id, 'confirmed')} className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"><Check size={16} /> قبول</button>
-                                                    <button onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="flex-1 py-3 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"><Ban size={16} /> رفض</button>
-                                                </div>
+                                            <div key={app.id} className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-amber-200">
+                                                <div className="flex justify-between items-start mb-4"><div><h4 className="font-bold text-slate-900 text-sm">{app.title}</h4><p className="text-xs text-slate-500">{app.studentName}</p></div><button onClick={() => deleteAppointment(app.id)} className="text-slate-300 hover:text-red-500"><X size={18}/></button></div>
+                                                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100"><span>{app.date}</span><span className="w-px h-3 bg-slate-300"></span><span>{app.time}</span></div>
+                                                <div className="flex gap-3"><button onClick={() => updateAppointmentStatus(app.id, 'confirmed')} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2">قبول</button><button onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="flex-1 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-bold">رفض</button></div>
                                             </div>
                                         ))}
-                                        {appointments.filter(a => a.status === 'pending').length === 0 && (
-                                            <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20 opacity-60">
-                                                <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4"><Check size={32} /></div>
-                                                <p className="font-bold">لا توجد طلبات معلقة</p>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
-                            
-                            {/* Confirmed Column */}
-                            <div className="flex flex-col h-full">
-                                <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-3 text-lg px-2">
-                                    <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
-                                    المواعيد القادمة
-                                    <span className="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-0.5 rounded-full">{appointments.filter(a => a.status === 'confirmed').length}</span>
-                                </h3>
-                                <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow min-h-[500px]">
+                            <div className="flex flex-col h-full"><h3 className="font-extrabold text-slate-900 mb-4 px-2">المواعيد القادمة</h3>
+                                <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow">
                                     <div className="space-y-3 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
                                         {appointments.filter(a => a.status === 'confirmed').map(app => (
-                                            <div key={app.id} className="bg-white p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all border border-transparent hover:border-emerald-100 flex items-center justify-between group">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex flex-col items-center justify-center font-bold border border-emerald-100">
-                                                        <span className="text-lg leading-none">{app.date.split('-')[2]}</span>
-                                                        <span className="text-[10px] uppercase opacity-70">شهر {app.date.split('-')[1]}</span>
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-slate-900 text-sm mb-1">{app.title}</h4>
-                                                        <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
-                                                            <span className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded"><Users size={12}/> {app.studentName}</span>
-                                                            <span className="flex items-center gap-1"><Clock size={12}/> {app.time}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => deleteAppointment(app.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
-                                                </div>
+                                            <div key={app.id} className="bg-white p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                                                <div className="flex items-center gap-4"><div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-bold">{app.date.split('-')[2]}</div><div><h4 className="font-bold text-slate-900 text-sm mb-1">{app.title}</h4><p className="text-xs text-slate-500">{app.studentName} • {app.time}</p></div></div>
+                                                <button onClick={() => deleteAppointment(app.id)} className="p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={18} /></button>
                                             </div>
                                         ))}
-                                        {appointments.filter(a => a.status === 'confirmed').length === 0 && (
-                                            <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20 opacity-60">
-                                                <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4"><Calendar size={32} /></div>
-                                                <p className="font-bold">الجدول فارغ</p>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
-
             </div>
         </main>
-
-        {/* --- MODALS --- */}
-        
-        {/* Student View Profile Modal (Read Only) */}
-        {viewStudent && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-0 animate-in zoom-in-95 duration-300 relative overflow-hidden">
-                    <div className="h-32 bg-gradient-to-r from-primary to-royal relative">
-                        <button onClick={() => setViewStudent(null)} className="absolute top-6 left-6 p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-colors z-10"><X size={20}/></button>
-                    </div>
-                    
-                    <div className="px-8 pb-8 -mt-16 text-center">
-                        <div className="w-32 h-32 rounded-full p-1.5 bg-white shadow-xl mx-auto relative z-10 mb-4">
-                            <img src={viewStudent.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${viewStudent.username}`} alt="Profile" className="w-full h-full object-cover rounded-full bg-slate-100" />
-                            <div className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-4 border-white ${viewStudent.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-                        </div>
-                        
-                        <h3 className="text-2xl font-black text-slate-900 mb-1">{viewStudent.name}</h3>
-                        <p className="text-slate-500 font-mono font-bold text-sm bg-slate-50 px-3 py-1 rounded-lg w-fit mx-auto mb-6">@{viewStudent.username}</p>
-
-                        <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="bg-blue-50 p-5 rounded-3xl border border-blue-100">
-                                <div className="text-primary mb-2 flex justify-center"><Clock size={28} /></div>
-                                <h4 className="text-3xl font-black text-slate-900 mb-1">{viewStudent.stats?.studyHours || 0}</h4>
-                                <p className="text-xs text-blue-600 font-bold uppercase tracking-wider">ساعات الدراسة</p>
-                            </div>
-                            <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100">
-                                <div className="text-emerald-500 mb-2 flex justify-center"><Activity size={28} /></div>
-                                <h4 className="text-3xl font-black text-slate-900 mb-1">{viewStudent.stats?.commitmentRate || 0}%</h4>
-                                <p className="text-xs text-emerald-600 font-bold uppercase tracking-wider">معدل الالتزام</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                            <div className="flex justify-between items-end h-24 gap-3 px-2 mb-4">
-                                {(viewStudent.stats?.weeklyProgress || [30, 50, 40, 70, 50, 80, 60]).map((h, i) => (
-                                    <div key={i} className="flex-1 w-full bg-slate-200 rounded-t-lg relative overflow-hidden group">
-                                        <div className="absolute bottom-0 w-full bg-primary group-hover:bg-royal transition-colors" style={{ height: `${h}%` }}></div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase px-1">
-                                <span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Settings Modal */}
-        {showSettings && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-                <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
-                    <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-xl font-extrabold text-slate-900">إعدادات الحساب</h3>
-                        <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={20}/></button>
-                    </div>
-                    <div className="space-y-6">
-                        <div>
-                            <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">اسم المسؤول</label>
-                            <input type="text" value={adminName} onChange={e => setAdminName(e.target.value)} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary font-bold text-slate-800 transition-all" />
-                        </div>
-                        <div className="pt-2">
-                            <button onClick={() => { alert('تم حفظ الإعدادات'); setShowSettings(false); }} className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-royal shadow-lg shadow-blue-500/20 transition-transform active:scale-[0.98]">حفظ التغييرات</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Student Modal */}
-        {showStudentModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-             <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300 border border-white/50">
-                <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-extrabold flex items-center gap-3 text-slate-900">
-                        <div className={`p-3 rounded-2xl ${currentStudent.id ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                            {currentStudent.id ? <Edit size={22} /> : <UserPlus size={22} />}
-                        </div>
-                        {currentStudent.id ? 'تعديل بيانات الطالب' : 'إضافة طالب جديد'}
-                    </h3>
-                    <button onClick={() => setShowStudentModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"><X size={24}/></button>
-                </div>
-                <form onSubmit={handleSaveStudent} className="space-y-5">
-                   <div>
-                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">الاسم الكامل</label>
-                       <input required type="text" value={currentStudent.name || ''} onChange={e => setCurrentStudent({...currentStudent, name: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-800" placeholder="مثال: أحمد التلميذ" />
-                   </div>
-                   <div>
-                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">اسم المستخدم</label>
-                       <input required type="text" value={currentStudent.username || ''} onChange={e => setCurrentStudent({...currentStudent, username: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all font-mono font-bold text-sm text-slate-800" placeholder="ahmed123" dir="ltr" />
-                   </div>
-                   <div>
-                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">المستوى الدراسي</label>
-                       <div className="relative">
-                           <select value={currentStudent.grade || '2 باكالوريا'} onChange={e => setCurrentStudent({...currentStudent, grade: e.target.value})} className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary bg-white font-bold text-slate-800 appearance-none cursor-pointer">
-                               <option>2 باكالوريا</option><option>1 باكالوريا</option><option>جذع مشترك</option>
-                           </select>
-                           <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><ChevronLeft size={18} className="-rotate-90" /></div>
-                       </div>
-                   </div>
-                   <div className="flex gap-3 pt-4">
-                      <button type="submit" className="flex-1 bg-primary text-white py-4 rounded-2xl font-bold hover:bg-royal shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:scale-[0.98]">حفظ البيانات</button>
-                      <button type="button" onClick={() => setShowStudentModal(false)} className="px-6 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">إلغاء</button>
-                   </div>
-                </form>
-             </div>
-          </div>
-        )}
-
-        {/* Appointment Modal */}
-        {showAppointmentModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-             <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-300">
-                <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-extrabold flex items-center gap-3 text-slate-900">
-                        <div className="p-3 bg-amber-50 text-amber-500 rounded-2xl"><CalendarPlus size={24} /></div>
-                        حجز موعد جديد
-                    </h3>
-                    <button onClick={() => setShowAppointmentModal(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"><X size={24}/></button>
-                </div>
-                <form onSubmit={handleSaveAppointment} className="space-y-5">
-                   <div>
-                        <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">الطالب</label>
-                        <div className="relative">
-                            <select required value={newBooking.studentName || ''} onChange={e => setNewBooking({...newBooking, studentName: e.target.value})} className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-slate-800 appearance-none cursor-pointer">
-                               <option value="">اختر الطالب...</option>
-                               {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                            </select>
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><ChevronLeft size={18} className="-rotate-90" /></div>
-                        </div>
-                   </div>
-                   <div>
-                       <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">عنوان الموعد</label>
-                       <input required type="text" value={newBooking.title || ''} onChange={e => setNewBooking({...newBooking, title: e.target.value})} placeholder="مثال: حصة دعم رياضيات" className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-slate-800" />
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                       <div>
-                           <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">التاريخ</label>
-                           <input required type="date" value={newBooking.date || ''} onChange={e => setNewBooking({...newBooking, date: e.target.value})} className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-sm text-slate-800" />
-                       </div>
-                       <div>
-                           <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">الوقت</label>
-                           <input required type="time" value={newBooking.time || ''} onChange={e => setNewBooking({...newBooking, time: e.target.value})} className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white outline-none focus:border-amber-500 transition-all font-bold text-sm text-slate-800" />
-                       </div>
-                   </div>
-                   <div className="flex gap-3 pt-4">
-                      <button type="submit" className="flex-1 bg-amber-500 text-white py-4 rounded-2xl font-bold hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5 active:scale-[0.98]">تأكيد الحجز</button>
-                      <button type="button" onClick={() => setShowAppointmentModal(false)} className="px-6 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">إلغاء</button>
-                   </div>
-                </form>
-             </div>
-          </div>
-        )}
-
     </div>
   );
 };
