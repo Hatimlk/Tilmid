@@ -26,7 +26,7 @@ const SEED_STORIES: SuccessStory[] = [
 
 export const dataManager = {
   init: () => {
-    // Seed Blog Posts
+    // Seed Blog Posts - Ensure readingTime is present
     if (!localStorage.getItem(KEYS.POSTS)) {
         localStorage.setItem(KEYS.POSTS, JSON.stringify(BLOG_POSTS));
     }

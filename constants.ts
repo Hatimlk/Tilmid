@@ -179,44 +179,48 @@ export const BLOG_POSTS: BlogPost[] = [
       title: "هاد التقنية غادي تنفعك إلى كنتي كاتعاني من التسويف",
       category: "تقنية POMODORO",
       date: "1 شتنبر 2023",
-      image: "https://picsum.photos/800/600?random=1",
+      image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       excerpt: "تعرف على كيفية استخدام تقنية بومودورو لزيادة الإنتاجية.",
       author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
       status: 'published',
-      views: 1205
+      views: 1205,
+      readingTime: "4 min"
     },
     {
       id: '2',
       title: "هاد التقنية كاتقوليك إلى بغيتي تكون سبع مرحبا بيك",
       category: "تقنية MURDER",
       date: "3 شتنبر 2023",
-      image: "https://picsum.photos/800/600?random=2",
+      image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       excerpt: "استراتيجية ميردر للمذاكرة الفعالة والحفظ السريع.",
       author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
       status: 'published',
-      views: 980
+      views: 980,
+      readingTime: "6 min"
     },
     {
       id: '3',
       title: "تخيل فرضو عليك تاكل ضفدع أو يتم قتلك",
       category: "تقنية أكل الضفدع",
       date: "4 شتنبر 2023",
-      image: "https://picsum.photos/800/600?random=3",
+      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       excerpt: "كيف تبدأ بأصعب المهام في يومك لتضمن النجاح.",
       author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
       status: 'published',
-      views: 1500
+      views: 1500,
+      readingTime: "5 min"
     },
     {
         id: '4',
         title: "من أكثر التقنيات الرائعة ولي غادي تخليك منظم",
         category: "تقنية كانبان",
         date: "5 شتنبر 2023",
-        image: "https://picsum.photos/800/600?random=4",
+        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
         excerpt: "نظام كانبان الياباني لتنظيم المهام الدراسية.",
         author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
         status: 'published',
-        views: 850
+        views: 850,
+        readingTime: "3 min"
     }
 ];
 

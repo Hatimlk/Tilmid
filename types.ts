@@ -25,6 +25,7 @@ export interface BlogPost {
   content?: string;
   status?: 'published' | 'draft';
   views?: number;
+  readingTime?: string;
   author?: {
     name: string;
     avatar: string;
