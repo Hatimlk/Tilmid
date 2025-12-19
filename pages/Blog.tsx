@@ -267,6 +267,7 @@ export const Blog: React.FC = () => {
                     <img 
                       src={post.image} 
                       alt={post.title} 
+                      loading="lazy"
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
                     />
                     
@@ -278,10 +279,10 @@ export const Blog: React.FC = () => {
                        </span>
                     </div>
 
-                    {/* Quick Read Time Overlay on Hover */}
-                    <div className="absolute bottom-4 left-4 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                        <span className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                            <Clock size={12} /> 5 د قراءة
+                    {/* READING TIME BADGE - Requested Feature */}
+                    <div className="absolute bottom-4 left-4 z-20 translate-y-2 opacity-100 transition-all duration-300">
+                        <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/20 uppercase tracking-wider">
+                            <Clock size={12} className="text-yellow-400" /> {post.readingTime || '5 min'}
                         </span>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, useParams } from 'react-router-dom';
+import { HashRouter, Routes, Route, useParams, Link } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { ProgramDetails } from './pages/ProgramDetails';
@@ -12,7 +12,10 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { BacSimulator } from './pages/BacSimulator';
 import { About } from './pages/About';
 import { dataManager } from './utils/dataManager';
-import { Facebook, Twitter, Linkedin, Link as LinkIcon, Share2, CheckCircle2, Bookmark } from 'lucide-react';
+import { 
+  Facebook, Twitter, Linkedin, Link as LinkIcon, Share2, CheckCircle2, Bookmark, 
+  Clock, Calendar, User, ChevronLeft, ChevronRight, List, Mail, Send, Sparkles 
+} from 'lucide-react';
 
 // Placeholder for Contact/Booking page
 const Contact = () => (
@@ -84,10 +87,9 @@ const updateCanonical = (url: string) => {
   link.setAttribute('href', url);
 };
 
-// BlogPost Placeholder
+// BlogPost Component - Redesigned with Sidebar
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
-  
   const post = dataManager.getPosts().find(p => p.id === id);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -103,86 +105,15 @@ const BlogPost = () => {
   React.useEffect(() => {
     if (post) {
       const currentUrl = window.location.href;
-
-      // 1. Title
       document.title = `${post.title} - مدونة تلميذ`;
-
-      // 2. Canonical URL
       updateCanonical(currentUrl);
-
-      // 3. Meta Description
       updateMeta('description', post.excerpt);
       updateMeta('keywords', `${post.category}, تعليم, دراسة, توجيه مدرسي, ${post.title.split(' ').slice(0,3).join(', ')}`);
-
-      // 4. Open Graph (Social Media)
       updateMeta('', post.title, 'og:title');
       updateMeta('', post.excerpt, 'og:description');
       updateMeta('', post.image, 'og:image');
       updateMeta('', currentUrl, 'og:url');
       updateMeta('', 'article', 'og:type');
-      updateMeta('', post.category, 'article:section');
-      if (post.date) updateMeta('', post.date, 'article:published_time');
-
-      // 5. Twitter Card
-      updateMeta('twitter:card', 'summary_large_image');
-      updateMeta('twitter:title', post.title);
-      updateMeta('twitter:description', post.excerpt);
-      updateMeta('twitter:image', post.image);
-      updateMeta('twitter:creator', '@tilmid_official'); // Mock handle
-
-      // 6. Schema.org (JSON-LD) with ISO Date Parsing
-      // Attempt to parse Arabic date "1 شتنبر 2023" to "2023-09-01"
-      let isoDate = new Date().toISOString(); 
-      try {
-          const arabicMonths = ["يناير", "فبراير", "مارس", "أبريل", "ماي", "يونيو", "يوليوز", "غشت", "شتنبر", "أكتوبر", "نونبر", "دجنبر"];
-          const dateParts = post.date.split(' ');
-          if (dateParts.length === 3) {
-              const day = dateParts[0].padStart(2, '0');
-              const monthIndex = arabicMonths.indexOf(dateParts[1]);
-              const year = dateParts[2];
-              if (monthIndex > -1) {
-                  isoDate = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${day}`;
-              }
-          }
-      } catch (e) {
-          console.warn("Date parsing failed, using current date for schema fallback.");
-      }
-
-      const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": post.title,
-        "image": [post.image],
-        "datePublished": isoDate, 
-        "dateModified": isoDate,
-        "author": {
-          "@type": "Person",
-          "name": post.author?.name || "فريق تلميذ"
-        },
-        "publisher": {
-           "@type": "Organization",
-           "name": "Tilmid",
-           "logo": {
-             "@type": "ImageObject",
-             "url": "https://tilmide.ma/logo.png"
-           }
-        },
-        "description": post.excerpt,
-        "articleBody": post.content ? post.content.replace(/<[^>]*>?/gm, '') : post.excerpt, // Strip HTML for schema body
-        "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": currentUrl
-        }
-      };
-
-      let script = document.querySelector('#article-schema');
-      if (!script) {
-        script = document.createElement('script');
-        script.id = 'article-schema';
-        script.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify(schemaData);
     }
   }, [post]);
 
@@ -194,33 +125,9 @@ const BlogPost = () => {
       const progress = (scrollPosition / totalHeight) * 100;
       setScrollProgress(progress);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleBookmark = () => {
-    const user = localStorage.getItem('tilmid_user');
-    if (!user) {
-      alert('المرجو تسجيل الدخول في مساحة الطالب لحفظ المقال.');
-      return;
-    }
-
-    if (!id) return;
-
-    const bookmarks = JSON.parse(localStorage.getItem('tilmid_bookmarks') || '[]');
-    let newBookmarks;
-    
-    if (bookmarks.includes(id)) {
-      newBookmarks = bookmarks.filter((bId: string) => bId !== id);
-      setIsBookmarked(false);
-    } else {
-      newBookmarks = [...bookmarks, id];
-      setIsBookmarked(true);
-    }
-    
-    localStorage.setItem('tilmid_bookmarks', JSON.stringify(newBookmarks));
-  };
 
   if (!post) {
     return (
@@ -237,191 +144,173 @@ const BlogPost = () => {
   const handleShare = (platform: string) => {
     let url = '';
     switch (platform) {
-      case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-        break;
-      case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-        break;
-      case 'linkedin':
-        url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-        break;
+      case 'facebook': url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`; break;
+      case 'twitter': url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`; break;
+      case 'linkedin': url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`; break;
     }
     window.open(url, '_blank', 'width=600,height=400');
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    alert('تم نسخ رابط المقال بنجاح');
-  };
-
   return (
     <>
-      {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 h-1.5 bg-gray-200 w-full z-[60]">
-        <div 
-          className="h-full bg-gradient-to-r from-primary to-royal transition-all duration-100 ease-out"
-          style={{ width: `${scrollProgress}%` }}
-        ></div>
+      <div className="fixed top-0 left-0 h-1.5 bg-gray-100 w-full z-[60]">
+        <div className="h-full bg-gradient-to-r from-primary to-royal transition-all duration-100" style={{ width: `${scrollProgress}%` }}></div>
       </div>
 
-      <div className="container mx-auto py-12 px-4 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <div className="flex items-center gap-3">
-              <span className="text-primary font-bold bg-blue-50 px-4 py-1.5 rounded-full text-sm inline-block">
-                {post.category}
-              </span>
-              <button 
-                onClick={handleBookmark}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold transition-all border ${
-                  isBookmarked 
-                    ? 'bg-primary text-white border-primary' 
-                    : 'bg-white text-gray-500 border-gray-200 hover:border-primary hover:text-primary'
-                }`}
-              >
-                <Bookmark size={16} fill={isBookmarked ? "currentColor" : "none"} />
-                {isBookmarked ? 'محفوظ' : 'حفظ'}
-              </button>
-            </div>
-            <p className="text-gray-500 flex items-center gap-2 text-sm">
-               <span>نشر في {post.date}</span>
-            </p>
+      <div className="bg-gray-50/50 min-h-screen pt-12 pb-20 font-sans">
+        <div className="container mx-auto px-4 lg:px-8">
+          
+          {/* Breadcrumbs */}
+          <div className="max-w-7xl mx-auto mb-10">
+              <nav className="flex items-center gap-2 text-xs font-bold text-gray-400">
+                  <Link to="/" className="hover:text-primary transition-colors">الرئيسية</Link>
+                  <ChevronLeft size={14} />
+                  <Link to="/blog" className="hover:text-primary transition-colors">المدونة</Link>
+                  <ChevronLeft size={14} />
+                  <span className="text-primary truncate max-w-[200px]">{post.title}</span>
+              </nav>
           </div>
 
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-8">
-            {post.title}
-          </h1>
-          
-          <div className="relative aspect-video w-full mb-12 rounded-2xl overflow-hidden shadow-lg">
-            <img 
-              src={post.image} 
-              alt={post.title} 
-              className="w-full h-full object-cover" 
-            />
-          </div>
-          
-          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-            <p className="text-xl font-medium text-gray-900 mb-8 border-r-4 border-primary pr-4 bg-gray-50 p-6 rounded-r-xl">
-              {post.excerpt}
-            </p>
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            {/* If custom content exists, render it, otherwise fallback to standard template */}
-            {post.content ? (
-                <div dangerouslySetInnerHTML={{ __html: post.content }} />
-            ) : (
-                <div className="space-y-8">
-                <p>
-                    يواجه العديد من الطلاب تحديات كبيرة في تنظيم وقتهم وزيادة إنتاجيتهم الدراسية. في هذا المقال، سنتطرق بعمق إلى هذا الموضوع الحيوي ونشرح كيفية تحويل هذه التحديات إلى فرص للنجاح والتفوق. إن الفهم العميق لهذه الاستراتيجيات لا يساعد فقط في اجتياز الامتحانات، بل يبني عادات نجاح تستمر مدى الحياة.
-                </p>
-
-                <section>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-8 bg-primary rounded-full"></span>
-                    لماذا تعتبر هذه الخطوة حاسمة؟
-                    </h2>
-                    <p>
-                    أثبتت الدراسات الحديثة في علم النفس التربوي أن الطلاب الذين يتبعون منهجيات مدروسة بدلاً من "الدراسة العشوائية" يحققون نتائج أفضل بنسبة تتجاوز 40% مع بذل جهد أقل. السر لا يكمن في عدد الساعات التي تقضيها أمام الكتب، بل في "جودة" تلك الساعات وكيفية استثمار طاقة عقلك بذكاء.
-                    </p>
-                </section>
-
-                <section>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-8 bg-royal rounded-full"></span>
-                    خطوات عملية للتطبيق الفوري
-                    </h2>
-                    <p className="mb-4">لتحقيق أقصى استفادة، ننصحك باتباع هذه الخطوات العملية:</p>
-                    <div className="grid gap-4">
-                    <div className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm flex gap-4">
-                        <div className="bg-blue-100 text-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">1</div>
-                        <div>
-                        <h4 className="font-bold text-gray-900 mb-1">التخطيط المسبق</h4>
-                        <p className="text-sm text-gray-600">لا تبدأ يومك دون خطة واضحة. حدد 3 مهام رئيسية تريد إنجازها.</p>
-                        </div>
-                    </div>
-                    <div className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm flex gap-4">
-                        <div className="bg-blue-100 text-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">2</div>
-                        <div>
-                        <h4 className="font-bold text-gray-900 mb-1">تقسيم المهام الكبيرة</h4>
-                        <p className="text-sm text-gray-600">جزّء الدروس الطويلة إلى وحدات صغيرة (Chunking) لتسهيل الهضم العقلي للمعلومة.</p>
-                        </div>
-                    </div>
-                    <div className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm flex gap-4">
-                        <div className="bg-blue-100 text-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">3</div>
-                        <div>
-                        <h4 className="font-bold text-gray-900 mb-1">المراجعة النشطة</h4>
-                        <p className="text-sm text-gray-600">استخدم تقنيات الاسترجاع بدلاً من القراءة السلبية المتكررة.</p>
-                        </div>
-                    </div>
-                    </div>
-                </section>
-
-                <section className="bg-gray-50 p-6 rounded-2xl border border-gray-100 my-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">💡 مثال تطبيقي:</h3>
-                    <p className="italic text-gray-600">
-                    "لنقل أن لديك امتحاناً في مادة التاريخ بعد أسبوع. بدلاً من قراءة الكتاب كاملاً دفعة واحدة، قم بتطبيق هذه التقنية: خصص اليوم الأول لرسم خريطة ذهنية للعصور، واليوم الثاني لحفظ التواريخ باستخدام البطاقات التعليمية (Flashcards)، وهكذا..."
-                    </p>
-                </section>
-
-                <section>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">نصائح إضافية للنجاح</h2>
-                    <ul className="space-y-3 text-gray-700">
-                    <li className="flex items-start gap-3">
-                        <CheckCircle2 className="text-green-500 mt-1 shrink-0" size={20} />
-                        <span><strong>ابتعد عن المشتتات:</strong> ضع هاتفك في غرفة أخرى أثناء جلسات التركيز العميق.</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle2 className="text-green-500 mt-1 shrink-0" size={20} />
-                        <span><strong>كافئ نفسك:</strong> اربط إنجاز المهام بمكافآت صغيرة (راحة، وجبة خفيفة، تصفح سريع).</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <CheckCircle2 className="text-green-500 mt-1 shrink-0" size={20} />
-                        <span><strong>النوم الكافي:</strong> الذاكرة تترسخ أثناء النوم، لذا لا تضحي بساعات نومك.</span>
-                    </li>
-                    </ul>
-                </section>
-
-                <p className="text-lg font-medium text-primary mt-8">
-                    تذكر دائماً أن الرحلة نحو التفوق تبدأ بخطوة صغيرة ولكن مستمرة. طبق ما تعلمته اليوم وشاركونا نتائجكم!
-                </p>
+            {/* Main Article Content */}
+            <div className="lg:col-span-8">
+              <article className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                {/* Header Image */}
+                <div className="relative aspect-video w-full">
+                  <img src={post.image} alt={post.title} className="w-full h-full object-cover" loading="eager" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div className="absolute bottom-6 right-6">
+                    <span className="bg-primary text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg">{post.category}</span>
+                  </div>
                 </div>
-            )}
-          </div>
 
-          {/* Social Share Section */}
-          <div className="mt-12 pt-8 border-t border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Share2 size={22} className="text-primary" />
-              شارك المقال مع أصدقائك
-            </h3>
-            <div className="flex flex-wrap gap-4">
-              <button 
-                onClick={() => handleShare('facebook')}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1877F2] text-white font-bold hover:opacity-90 transition-opacity shadow-lg shadow-blue-200"
-              >
-                <Facebook size={20} /> Facebook
-              </button>
-              <button 
-                onClick={() => handleShare('twitter')}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1DA1F2] text-white font-bold hover:opacity-90 transition-opacity shadow-lg shadow-sky-200"
-              >
-                <Twitter size={20} /> Twitter
-              </button>
-              <button 
-                onClick={() => handleShare('linkedin')}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0A66C2] text-white font-bold hover:opacity-90 transition-opacity shadow-lg shadow-blue-200"
-              >
-                <Linkedin size={20} /> LinkedIn
-              </button>
-              <button 
-                onClick={handleCopyLink}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-colors"
-              >
-                <LinkIcon size={20} /> نسخ الرابط
-              </button>
+                <div className="p-8 lg:p-12">
+                   <div className="flex flex-wrap items-center gap-6 text-xs font-bold text-gray-400 mb-8 border-b border-gray-50 pb-6">
+                      <div className="flex items-center gap-2"><Calendar size={16} className="text-primary" /> {post.date}</div>
+                      <div className="flex items-center gap-2"><Clock size={16} className="text-primary" /> {post.readingTime || '5 min read'}</div>
+                      <div className="flex items-center gap-2"><User size={16} className="text-primary" /> {post.author?.name}</div>
+                   </div>
+
+                   <h1 className="text-3xl lg:text-5xl font-black text-slate-900 leading-tight mb-8">{post.title}</h1>
+                   
+                   <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed space-y-8">
+                      <p className="text-xl font-medium text-slate-600 bg-slate-50 p-8 rounded-3xl border-r-8 border-primary italic">
+                        "{post.excerpt}"
+                      </p>
+
+                      <div className="space-y-6">
+                        <h2 id="section-1" className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                           <div className="w-2 h-8 bg-primary rounded-full"></div> لماذا هذه الخطوة حاسمة؟
+                        </h2>
+                        <p>تعتبر إدارة الوقت وتحديد الأهداف حجر الزاوية في مسيرة أي تلميذ ناجح. الفارق الجوهري بين التلميذ المتفوق وغيره ليس في عدد ساعات الدراسة، بل في "جودة" و"ذكاء" هذه الساعات.</p>
+                      </div>
+
+                      <div className="space-y-6">
+                        <h2 id="section-2" className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                           <div className="w-2 h-8 bg-royal rounded-full"></div> خطوات عملية للتطبيق الفوري
+                        </h2>
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+                           {[
+                             {t: "التخطيط المسبق", d: "ابدأ يومك بخريطة واضحة."},
+                             {t: "تقسيم المهام", d: "حول المهام الكبيرة لوحدات صغيرة."},
+                             {t: "المراجعة النشطة", d: "لا تكتفِ بالقراءة السلبية."},
+                             {t: "فترات الراحة", d: "استخدم تقنية 50/10 للتركيز."}
+                           ].map((item, i) => (
+                             <li key={i} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 m-0">
+                                <span className="block font-black text-primary mb-1">{item.t}</span>
+                                <span className="text-sm opacity-70">{item.d}</span>
+                             </li>
+                           ))}
+                        </ul>
+                      </div>
+
+                      <div className="space-y-6">
+                        <h2 id="section-3" className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                           <div className="w-2 h-8 bg-yellow-400 rounded-full"></div> نصائح إضافية للنجاح
+                        </h2>
+                        <p>تذكر دائماً أن النجاح هو رحلة تراكمية. ابدأ بخطوات بسيطة اليوم، وستجد النتائج مبهرة غداً. لا تتردد في طلب المساعدة من المختصين في "تلميذ" لتوجيهك بشكل أفضل.</p>
+                      </div>
+                   </div>
+
+                   {/* Post Share & Bookmark */}
+                   <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8">
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">شارك المعرفة:</span>
+                        <div className="flex gap-2">
+                           <button onClick={() => handleShare('facebook')} className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-primary transition-all"><Facebook size={18} /></button>
+                           <button onClick={() => handleShare('twitter')} className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-primary transition-all"><Twitter size={18} /></button>
+                           <button onClick={() => handleShare('linkedin')} className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-primary transition-all"><Linkedin size={18} /></button>
+                        </div>
+                      </div>
+                      <button className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-primary rounded-2xl font-bold text-sm hover:bg-primary hover:text-white transition-all">
+                        <Bookmark size={18} /> حفظ المقال للمراجعة
+                      </button>
+                   </div>
+                </div>
+              </article>
             </div>
-          </div>
 
+            {/* SIDEBAR - Requested Feature */}
+            <aside className="lg:col-span-4 space-y-8">
+              
+              {/* 1. Table of Contents Card */}
+              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 sticky top-24">
+                 <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-3">
+                    <List size={20} className="text-primary" /> فهرس المقال
+                 </h3>
+                 <nav className="space-y-4">
+                    <a href="#section-1" className="flex items-center gap-3 text-sm font-bold text-slate-500 hover:text-primary transition-colors group">
+                       <span className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] group-hover:bg-primary group-hover:text-white transition-all">01</span>
+                       لماذا هذه الخطوة حاسمة؟
+                    </a>
+                    <a href="#section-2" className="flex items-center gap-3 text-sm font-bold text-slate-500 hover:text-primary transition-colors group">
+                       <span className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] group-hover:bg-primary group-hover:text-white transition-all">02</span>
+                       خطوات عملية للتطبيق
+                    </a>
+                    <a href="#section-3" className="flex items-center gap-3 text-sm font-bold text-slate-500 hover:text-primary transition-colors group">
+                       <span className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] group-hover:bg-primary group-hover:text-white transition-all">03</span>
+                       نصائح إضافية للنجاح
+                    </a>
+                 </nav>
+
+                 <hr className="my-8 border-gray-50" />
+
+                 {/* 2. Newsletter Signup Card */}
+                 <div className="bg-gradient-to-br from-primary to-royal rounded-[1.5rem] p-6 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform"></div>
+                    <div className="relative z-10">
+                       <h4 className="text-lg font-black mb-2 flex items-center gap-2">
+                          <Sparkles size={18} className="text-yellow-300" /> لا تفوت أي نصيحة!
+                       </h4>
+                       <p className="text-xs text-blue-100 opacity-80 mb-6 leading-relaxed">
+                          انضم لأكثر من 5000 تلميذ يحصلون على أفضل تقنيات المراجعة أسبوعياً في بريدهم.
+                       </p>
+                       <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); alert('تم الاشتراك بنجاح!'); }}>
+                          <div className="relative">
+                             <input type="email" placeholder="بريدك الإلكتروني" required className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-xs placeholder:text-blue-100/50 outline-none focus:bg-white focus:text-slate-900 transition-all" />
+                             <Mail size={14} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30" />
+                          </div>
+                          <button className="w-full py-3 bg-white text-primary rounded-xl font-black text-xs hover:bg-yellow-400 hover:text-slate-900 transition-all flex items-center justify-center gap-2">
+                             اشترك الآن <Send size={14} />
+                          </button>
+                       </form>
+                    </div>
+                 </div>
+
+                 {/* 3. Related Resource (Bonus) */}
+                 <Link to="/program/tilmid" className="mt-8 block bg-slate-900 rounded-[1.5rem] p-6 text-white group overflow-hidden relative">
+                    <div className="relative z-10">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 block">برامجنا الخاصة</span>
+                        <h4 className="font-black text-base group-hover:text-primary transition-colors">هل تبحث عن تفوق حقيقي؟</h4>
+                        <p className="text-[10px] text-gray-400 mt-2">اكتشف عرض "المواكبة الشخصية" الذي يضمن لك أفضل النتائج.</p>
+                    </div>
+                    <ChevronLeft size={20} className="absolute left-6 bottom-6 text-gray-600 group-hover:text-primary group-hover:-translate-x-2 transition-all" />
+                 </Link>
+              </div>
+            </aside>
+
+          </div>
         </div>
       </div>
     </>
