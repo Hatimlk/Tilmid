@@ -122,9 +122,6 @@ export const StudentArea: React.FC = () => {
                     {error && <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2 animate-pulse"><AlertCircle size={16}/> {error}</div>}
                     <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-primary shadow-xl shadow-blue-500/10 transition-all hover:-translate-y-1">دخول للمساحة</button>
                 </form>
-                <div className="text-center mt-8 pt-6 border-t border-slate-50 text-xs text-gray-400 font-bold">
-                    <p>دخول تجريبي: amin / 123</p>
-                </div>
             </div>
         </div>
     );
@@ -261,7 +258,7 @@ export const StudentArea: React.FC = () => {
                                 <div className="w-12 h-12 bg-blue-50 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all"><MessageCircle size={22}/></div>
                                 <div>
                                     <h4 className="font-black text-slate-900 text-sm group-hover:text-white transition-colors">تحتاج مساعدة؟</h4>
-                                    <p className="text-slate-400 text-xs font-bold group-hover:text-slate-500">تحدث مع مستشارك</p>
+                                    <p className="text-slate-400 text-xs font-bold group-hover:text-slate-50">تحدث مع مستشارك</p>
                                 </div>
                             </div>
                             <ChevronRight size={20} className="text-slate-300 group-hover:text-white group-hover:translate-x-1 transition-all"/>
