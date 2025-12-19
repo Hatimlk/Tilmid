@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
-import { MessageCircle, ArrowUp } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { MessageCircle, ArrowUp, Zap, ArrowLeft } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +14,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isStudentArea = location.pathname.startsWith('/student-area');
+  const isOfferPage = location.pathname === '/coaching-offer';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,14 +37,31 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col bg-white">
       {!isAdminRoute && <Navbar />}
       
-      <main className={`flex-grow ${!isAdminRoute ? 'pt-20' : ''}`}>
+      <main className={`flex-grow ${!isAdminRoute ? 'pt-24 lg:pt-28' : ''}`}>
         {children}
       </main>
       
       {!isAdminRoute && !isStudentArea && <Footer />}
       
+      {/* Mobile Sticky CTA Bar - CRO Optimization */}
+      {!isAdminRoute && isOfferPage && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-blue-100 p-4 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.1)] animate-in slide-in-from-bottom duration-500">
+           <div className="flex flex-col">
+              <span className="text-[10px] font-black text-primary uppercase">عرض النجاح</span>
+              <span className="text-lg font-black text-slate-900">سجل الآن 🔥</span>
+           </div>
+           <button 
+             onClick={() => document.getElementById('registration-card')?.scrollIntoView({ behavior: 'smooth' })}
+             className="bg-primary text-white px-8 py-3 rounded-full font-black flex items-center gap-2 shadow-lg shadow-blue-500/30"
+           >
+              <span>انضم فوراً</span>
+              <ArrowLeft size={18} />
+           </button>
+        </div>
+      )}
+
       {/* Floating Action Buttons Container */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-4 items-center">
+      <div className={`fixed ${isOfferPage ? 'bottom-24 md:bottom-6' : 'bottom-6'} right-6 z-40 flex flex-col gap-4 items-center transition-all`}>
         
         {/* Scroll To Top Button */}
         <button
