@@ -29,7 +29,7 @@ export const Navbar: React.FC = () => {
         <div className={`relative ${mobile ? 'w-full' : ''}`}>
           <button
             onClick={() => toggleDropdown(item.label)}
-            className={`flex items-center gap-1 w-full ${mobile ? 'py-4 px-6 hover:bg-gray-50' : 'hover:text-primary transition-colors'}`}
+            className={`flex items-center gap-1 w-full font-black text-slate-950 ${mobile ? 'py-4 px-6 hover:bg-gray-50 text-lg' : 'hover:text-primary transition-colors'}`}
           >
             {item.label}
             <ChevronDown size={16} className={`transition-transform ${dropdownOpen === item.label ? 'rotate-180' : ''}`} />
@@ -45,7 +45,7 @@ export const Navbar: React.FC = () => {
                     setDropdownOpen(null);
                     if (mobile) setIsOpen(false);
                   }}
-                  className="block px-6 py-3 text-sm hover:bg-blue-50 hover:text-primary transition-colors text-gray-700 font-bold"
+                  className="block px-6 py-3 text-sm hover:bg-blue-50 hover:text-primary transition-colors text-slate-800 font-black"
                 >
                   {sub.label}
                 </Link>
@@ -71,23 +71,11 @@ export const Navbar: React.FC = () => {
       );
     }
 
-    if (item.href.startsWith('/#')) {
-       return (
-        <a
-          href={item.href.substring(1)}
-          onClick={() => mobile && setIsOpen(false)}
-           className={`block ${mobile ? 'py-4 px-6 hover:bg-gray-50' : 'hover:text-primary transition-colors'} ${isActive ? 'text-primary font-black' : 'text-slate-700 font-bold'}`}
-        >
-           {item.label}
-        </a>
-       )
-    }
-
     return (
       <Link
         to={item.href}
         onClick={() => mobile && setIsOpen(false)}
-        className={`block ${mobile ? 'py-4 px-6 hover:bg-gray-50' : 'hover:text-primary transition-colors'} ${isActive ? 'text-primary font-black text-xl' : 'text-slate-700 font-bold'}`}
+        className={`block font-black transition-all ${mobile ? 'py-4 px-6 hover:bg-gray-50 text-lg' : 'hover:text-primary'} ${isActive ? 'text-primary' : 'text-slate-950'}`}
       >
         {item.label}
       </Link>
@@ -97,18 +85,18 @@ export const Navbar: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-xl shadow-sm z-50 border-b border-gray-100">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-24 lg:h-28 transition-all">
+        <div className="flex items-center justify-between h-24 lg:h-28">
           
-          {/* Official Logo - Larger & Balanced */}
+          {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
               src={IMAGES.LOGOS.OFFICIAL} 
               alt="Tilmid Logo" 
-              className="h-14 lg:h-18 w-auto object-contain transition-transform hover:scale-105 duration-300" 
+              className="h-14 lg:h-18 w-auto object-contain" 
             />
           </Link>
 
-          {/* Desktop Nav - Optimized Spacing */}
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
             {NAV_ITEMS.map((item) => (
               <NavLink key={item.label} item={item} />
@@ -117,8 +105,9 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden p-3 text-slate-600 hover:text-primary hover:bg-blue-50 rounded-2xl transition-all"
+            className="md:hidden p-3 text-slate-950 hover:bg-blue-50 rounded-2xl transition-all"
             onClick={toggleMenu}
+            aria-label="القائمة"
           >
             {isOpen ? <X size={32} /> : <Menu size={32} />}
           </button>
