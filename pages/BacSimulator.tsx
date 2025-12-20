@@ -1,85 +1,96 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Calculator, Award, AlertTriangle, CheckCircle2, RotateCcw, Zap, Target, TrendingUp, Star, ChevronLeft, ArrowLeftIcon } from 'lucide-react';
+import { Calculator, Award, AlertTriangle, CheckCircle2, RotateCcw, Zap, Target, TrendingUp, Star, ChevronLeft, ArrowLeftIcon, Info, Sparkles } from 'lucide-react';
+// Fix: Import Link from react-router-dom to handle internal navigation
+import { Link } from 'react-router-dom';
 
-const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
-    const [days, setDays] = useState<number>(0);
+// --- Sub-components for better modularity and UX ---
 
-    useEffect(() => {
-        const calculate = () => {
-            const now = new Date();
-            const diff = date.getTime() - now.getTime();
-            const daysLeft = Math.max(Math.ceil(diff / (1000 * 60 * 60 * 24)), 0);
-            setDays(daysLeft);
-        };
-        calculate();
-        const timer = setInterval(calculate, 60000); 
-        return () => clearInterval(timer);
-    }, [date]);
-
-    return (
-        <div className="flex items-center gap-4 bg-[#1e293b]/30 backdrop-blur-sm px-6 py-4 rounded-[2.5rem] border border-white/5 flex-1 min-w-[220px] group hover:bg-[#1e293b]/50 transition-all">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] group-hover:scale-105 transition-transform border border-white/10 tabular-nums">
-                {days}
-            </div>
-            <div className="text-right">
-                <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-0.5">{label}</p>
-                <p className="text-sm font-black text-white mb-1">يوماً متبقياً</p>
-                <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    <span className="text-[10px] font-bold text-green-400">مباشر الآن</span>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const RequirementCard: React.FC<{ goal: string; required: number; color: string; label: string; isHighlight?: boolean }> = ({ goal, required, color, label, isHighlight }) => {
-  const isPossible = required <= 20;
-  const isAlreadyAchieved = required <= 0;
-
-  const colorClasses: Record<string, string> = {
-    emerald: 'border-emerald-100 bg-white hover:border-emerald-300 text-emerald-600 bg-emerald-50',
-    blue: 'border-blue-100 bg-white hover:border-blue-300 text-blue-600 bg-blue-50',
-    purple: 'border-purple-100 bg-white hover:border-purple-300 text-purple-600 bg-purple-50',
-    orange: 'border-orange-100 bg-white hover:border-orange-300 text-orange-600 bg-orange-50',
-    primary: 'border-primary/20 bg-primary/5 hover:border-primary/40 text-primary bg-primary/10'
-  };
+const SmartGradeInput: React.FC<{
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  icon: React.ElementType;
+  placeholder: string;
+  isGoal?: boolean;
+}> = ({ label, value, onChange, icon: Icon, placeholder, isGoal }) => {
+  const numValue = parseFloat(value);
+  const isInvalid = numValue > 20 || (isGoal && numValue < 10);
 
   return (
-    <div className={`p-6 rounded-[2.5rem] border-2 transition-all duration-300 ${isHighlight ? 'ring-4 ring-primary/10 shadow-xl' : ''} ${isPossible ? colorClasses[color].split(' ').slice(0,3).join(' ') : 'bg-gray-50 border-gray-200 opacity-60'}`}>
-      <div className="flex justify-between items-start mb-4">
-        <span className={`text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full ${isPossible ? colorClasses[color].split(' ').slice(3).join(' ') : 'bg-gray-200 text-gray-500'}`}>
+    <div className="space-y-4 group">
+      <div className="flex items-center gap-2 text-slate-500 mr-1 transition-colors group-focus-within:text-primary">
+        <Icon size={18} className={isGoal ? "text-yellow-500" : "text-blue-500"} fill={isGoal ? "currentColor" : "none"} />
+        <label className="text-sm font-extrabold uppercase tracking-wide">{label}</label>
+      </div>
+      <div className="relative">
+        <input 
+          type="number" step="0.01" min="0" max="20" required
+          value={value}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (parseFloat(val) <= 25) onChange(val); // Buffer for typing
+          }}
+          className={`
+            w-full bg-slate-50 border-2 rounded-[1.5rem] px-6 py-5 font-black text-3xl outline-none transition-all text-left dir-ltr
+            ${isInvalid ? 'border-red-400 bg-red-50' : 'border-slate-100 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10'}
+            ${isGoal ? 'text-primary' : 'text-slate-800'}
+          `}
+          placeholder={placeholder}
+        />
+        <div className={`absolute right-6 top-1/2 -translate-y-1/2 font-bold ${isGoal ? 'text-primary/30' : 'text-slate-300'}`}>
+          {isGoal ? 'Goal' : '/ 20'}
+        </div>
+      </div>
+      {isInvalid && (
+        <p className="text-[10px] font-bold text-red-500 mr-2 animate-pulse">
+          {numValue > 20 ? 'النقطة لا يمكن أن تتجاوز 20' : 'المعدل المستهدف يجب أن يكون 10 على الأقل'}
+        </p>
+      )}
+    </div>
+  );
+};
+
+const ComparisonCard: React.FC<{ goal: string; required: number; color: string; label: string }> = ({ goal, required, color, label }) => {
+  const isPossible = required <= 20;
+  
+  const colors: Record<string, { border: string, text: string, bg: string, badge: string }> = {
+    emerald: { border: 'border-emerald-100', text: 'text-emerald-600', bg: 'bg-emerald-50', badge: 'bg-emerald-100 text-emerald-700' },
+    blue: { border: 'border-blue-100', text: 'text-blue-600', bg: 'bg-blue-50', badge: 'bg-blue-100 text-blue-700' },
+    purple: { border: 'border-purple-100', text: 'text-purple-600', bg: 'bg-purple-50', badge: 'bg-purple-100 text-purple-700' },
+    orange: { border: 'border-orange-100', text: 'text-orange-600', bg: 'bg-orange-50', badge: 'bg-orange-100 text-orange-700' },
+  };
+
+  const c = colors[color];
+
+  return (
+    <div className={`
+      relative p-6 rounded-[2.5rem] border-2 transition-all duration-300 bg-white group hover:-translate-y-2
+      ${isPossible ? `${c.border} hover:shadow-xl` : 'bg-gray-50 border-gray-100 opacity-60 grayscale'}
+    `}>
+      <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1 rounded-full ${isPossible ? c.text.replace('text-', 'bg-') : 'bg-gray-200'}`}></div>
+      
+      <div className="flex justify-between items-start mb-6">
+        <span className={`text-[10px] font-black px-3 py-1 rounded-full ${isPossible ? c.badge : 'bg-gray-200 text-gray-500'}`}>
           معدل {goal}
         </span>
-        {isPossible && !isAlreadyAchieved && (
-            <span className="text-[10px] font-bold text-gray-400">نقطة الوطني</span>
-        )}
+        {isPossible && <TrendingUp size={14} className={c.text} />}
       </div>
       
-      <div className="text-center py-2">
-        {isAlreadyAchieved ? (
-          <div className="space-y-1">
-            <span className="text-2xl font-black text-emerald-500">تم الضمان! 🎉</span>
-            <p className="text-[10px] text-gray-400 font-bold">تحقق الهدف مسبقاً</p>
-          </div>
-        ) : isPossible ? (
-          <div className="flex flex-col items-center">
-            <span className={`text-5xl font-black ${required > 16 ? 'text-orange-500' : isHighlight ? 'text-primary' : colorClasses[color].split(' ').find(c => c.startsWith('text-'))} tracking-tighter tabular-nums`}>
-              {required.toFixed(2)}
-            </span>
-            <span className="text-xs font-bold text-gray-400 mt-1">/ 20</span>
+      <div className="text-center py-4">
+        {!isPossible ? (
+          <div className="space-y-2">
+            <AlertTriangle className="mx-auto text-red-300" size={24} />
+            <span className="text-lg font-black text-red-400 block">غير ممكن</span>
           </div>
         ) : (
-          <div className="space-y-1">
-            <span className="text-xl font-black text-red-400">غير ممكن ⚠️</span>
-            <p className="text-[10px] text-gray-400 font-bold">يتطلب أكثر من 20/20</p>
+          <div className="flex flex-col items-center">
+            <span className={`text-4xl font-black ${c.text} tracking-tighter tabular-nums`}>
+              {required <= 0 ? '0.00' : required.toFixed(2)}
+            </span>
+            <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-widest">{label}</p>
           </div>
         )}
-      </div>
-      
-      <div className="mt-4 pt-4 border-t border-gray-50 text-center">
-         <p className="text-xs font-bold text-gray-500">{label}</p>
       </div>
     </div>
   );
@@ -88,20 +99,9 @@ const RequirementCard: React.FC<{ goal: string; required: number; color: string;
 export const BacSimulator: React.FC = () => {
   const [grades, setGrades] = useState({ regional: '', controleContinu: '', targetAverage: '14' });
   const [showResults, setShowResults] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
-  const getExamDate = (month: number, day: number) => {
-    const now = new Date();
-    let year = now.getFullYear();
-    let target = new Date(year, month, day, 8, 0);
-    if (target.getTime() < now.getTime()) {
-      target = new Date(year + 1, month, day, 8, 0);
-    }
-    return target;
-  };
-
-  const nationalDate = useMemo(() => getExamDate(5, 10), []);
-  const regionalDate = useMemo(() => getExamDate(5, 2), []);
-
+  // Stats Logic
   const calculateRequired = (targetTotal: number) => {
     const reg = parseFloat(grades.regional.replace(',', '.')) || 0;
     const cc = parseFloat(grades.controleContinu.replace(',', '.')) || 0;
@@ -124,18 +124,16 @@ export const BacSimulator: React.FC = () => {
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
-    const reg = parseFloat(grades.regional);
-    const cc = parseFloat(grades.controleContinu);
-    const target = parseFloat(grades.targetAverage);
-
-    if (isNaN(reg) || isNaN(cc) || isNaN(target)) {
-      alert('المرجو إدخال النقط والمعدل المستهدف بشكل صحيح');
-      return;
-    }
-    setShowResults(true);
+    setIsCalculating(true);
+    
+    // Simulate thinking/calculating for "Wow" effect
     setTimeout(() => {
-        document.getElementById('results-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+        setShowResults(true);
+        setIsCalculating(false);
+        setTimeout(() => {
+            document.getElementById('results-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }, 800);
   };
 
   const reset = () => {
@@ -144,208 +142,194 @@ export const BacSimulator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pt-28 pb-20 font-sans selection:bg-primary/20 selection:text-primary">
+    <div className="min-h-screen bg-[#F8FAFC] pt-32 pb-24 font-sans selection:bg-primary/20 selection:text-primary">
       <div className="container mx-auto px-4 lg:px-8">
         
-        <div className="text-center mb-16 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-primary font-bold text-sm mb-6 shadow-sm border border-blue-50">
-            <Target size={18} className="animate-pulse" />
-            <span>محاكي أهداف البكالوريا الذكي</span>
+        {/* Header Section */}
+        <div className="text-center mb-16 max-w-3xl mx-auto animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white rounded-full text-primary font-black text-xs uppercase tracking-widest mb-6 shadow-sm border border-blue-50">
+            <Sparkles size={16} className="text-yellow-400 fill-current" />
+            <span>محاكي النجاح الذكي 2025</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
-            شحال خاصني نجيب <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-royal font-black text-5xl md:text-7xl tracking-tighter">في الوطني؟</span>
+          <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 leading-tight tracking-tight">
+            خطط لمعدلك وحقق <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-royal">حلم الباكالوريا</span>
           </h1>
-          <p className="text-gray-500 text-lg md:text-xl leading-relaxed">
-            حدد معدلك العام المنشود، وأدخل نقطك الحالية، وسنخبرك بالضبط بالمجهود المطلوب منك في الامتحان الوطني.
+          <p className="text-slate-500 text-lg font-medium leading-relaxed">
+            أدخل نقطك الحالية واكتشف المجهود الدقيق المطلوب منك في الامتحان الوطني للوصول لمعدلك المنشود.
           </p>
         </div>
 
-        {/* Exam Countdown Banner - Integrated into Simulator page */}
-        <div className="max-w-5xl mx-auto mb-16">
-            <div className="bg-[#0f172a] rounded-[4rem] px-8 py-6 lg:px-12 lg:py-8 shadow-[0_30px_60px_-10px_rgba(0,0,0,0.3)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/5">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
-
-                <div className="text-right shrink-0 lg:max-w-[250px]">
-                    <div className="flex items-center justify-center lg:justify-start gap-2 text-[#38bdf8] font-black text-[11px] uppercase tracking-widest mb-2">
-                        <Zap size={16} fill="currentColor" className="animate-pulse" />
-                        <span>مباشر: عداد الامتحانات</span>
-                    </div>
-                    <h2 className="text-3xl font-black text-white leading-tight">يوم الحسم يقترب!</h2>
-                    <p className="text-gray-500 text-[11px] mt-1.5 font-bold italic opacity-80 leading-relaxed">تخطى مخاوفك وابدأ التخطيط الآن</p>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-4 lg:gap-6 flex-grow w-full">
-                    <DayCard date={nationalDate} label="الوطني (2 باك)" />
-                    <DayCard date={regionalDate} label="الجهوي (1 باك)" />
-                </div>
-            </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-[3.5rem] shadow-2xl shadow-blue-900/5 border border-white p-8 md:p-12 relative overflow-hidden mb-12 group">
+        <div className="max-w-5xl mx-auto space-y-12">
+          
+          {/* Main Input Form - Optimized for Mobile */}
+          <div className="bg-white rounded-[3.5rem] shadow-2xl shadow-blue-900/5 border border-white p-8 md:p-14 relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-blue-400 to-royal"></div>
             
-            <form onSubmit={handleCalculate} className="space-y-10">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-slate-500 mr-1">
-                    <Award size={18} className="text-blue-500" />
-                    <label className="text-sm font-extrabold uppercase tracking-wide">الامتحان الجهوي (25%)</label>
-                  </div>
-                  <div className="relative">
-                    <input 
-                      type="number" step="0.01" min="0" max="20" required
-                      value={grades.regional}
-                      onChange={(e) => setGrades({...grades, regional: e.target.value})}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black text-3xl outline-none focus:border-blue-500 focus:bg-white focus:shadow-xl focus:shadow-blue-500/10 transition-all text-left dir-ltr"
-                      placeholder="00.00"
-                    />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold">/ 20</div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-slate-500 mr-1">
-                    <TrendingUp size={18} className="text-purple-500" />
-                    <label className="text-sm font-extrabold uppercase tracking-wide">المراقبة المستمرة (25%)</label>
-                  </div>
-                  <div className="relative">
-                    <input 
-                      type="number" step="0.01" min="0" max="20" required
-                      value={grades.controleContinu}
-                      onChange={(e) => setGrades({...grades, controleContinu: e.target.value})}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black text-3xl outline-none focus:border-purple-500 focus:bg-white focus:shadow-xl focus:shadow-purple-500/10 transition-all text-left dir-ltr"
-                      placeholder="00.00"
-                    />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold">/ 20</div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-slate-500 mr-1">
-                    <Star size={18} className="text-yellow-500" fill="currentColor" />
-                    <label className="text-sm font-extrabold uppercase tracking-wide">المعدل العام المستهدف</label>
-                  </div>
-                  <div className="relative">
-                    <input 
-                      type="number" step="0.1" min="10" max="20" required
-                      value={grades.targetAverage}
-                      onChange={(e) => setGrades({...grades, targetAverage: e.target.value})}
-                      className="w-full bg-blue-50 border-2 border-primary/20 rounded-2xl px-6 py-5 font-black text-3xl outline-none focus:border-primary focus:bg-white focus:shadow-xl focus:shadow-primary/10 transition-all text-left dir-ltr text-primary"
-                      placeholder="14.0"
-                    />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/30 font-bold">Goal</div>
-                  </div>
-                </div>
+            <form onSubmit={handleCalculate} className="space-y-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+                <SmartGradeInput 
+                  label="الامتحان الجهوي (25%)" 
+                  value={grades.regional} 
+                  onChange={(v) => setGrades({...grades, regional: v})} 
+                  icon={Award} 
+                  placeholder="00.00" 
+                />
+                <SmartGradeInput 
+                  label="المراقبة المستمرة (25%)" 
+                  value={grades.controleContinu} 
+                  onChange={(v) => setGrades({...grades, controleContinu: v})} 
+                  icon={TrendingUp} 
+                  placeholder="00.00" 
+                />
+                <SmartGradeInput 
+                  label="المعدل العام المستهدف" 
+                  value={grades.targetAverage} 
+                  onChange={(v) => setGrades({...grades, targetAverage: v})} 
+                  icon={Star} 
+                  placeholder="14.0" 
+                  isGoal
+                />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <button type="submit" className="flex-grow py-6 bg-slate-900 text-white font-extrabold rounded-3xl hover:bg-primary shadow-xl hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] text-xl flex items-center justify-center gap-3 group">
-                   <Calculator size={28} className="group-hover:rotate-12 transition-transform" />
-                   احسب النقطة المطلوبة
+              <div className="flex flex-col sm:flex-row gap-5 pt-4">
+                <button 
+                  type="submit" 
+                  disabled={isCalculating}
+                  className="flex-grow py-6 bg-slate-900 text-white font-black rounded-[2rem] hover:bg-primary shadow-2xl hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1 active:scale-[0.98] text-xl flex items-center justify-center gap-4 group disabled:opacity-70"
+                >
+                   {isCalculating ? (
+                     <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                   ) : (
+                     <>
+                       <Calculator size={28} className="group-hover:rotate-12 transition-transform" />
+                       <span>احسب النقطة المطلوبة</span>
+                     </>
+                   )}
                 </button>
-                <button type="button" onClick={reset} className="px-10 py-6 bg-gray-50 text-gray-400 font-bold rounded-3xl hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
-                   <RotateCcw size={20} />
+                <button 
+                  type="button" 
+                  onClick={reset} 
+                  className="px-10 py-6 bg-slate-50 text-slate-400 font-bold rounded-[2rem] hover:bg-slate-100 hover:text-slate-600 transition-all flex items-center justify-center"
+                >
+                   <RotateCcw size={24} />
                 </button>
               </div>
             </form>
           </div>
 
+          {/* Results Reveal Area */}
           {showResults && results && (
-            <div id="results-area" className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-12">
-               <div className="bg-white rounded-[3.5rem] p-10 border-4 border-primary/10 shadow-2xl relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                  <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
-                     <div className="text-center md:text-right">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full font-black text-xs uppercase tracking-widest mb-6">
-                            <Star size={14} fill="currentColor" />
-                            هدفك الشخصي المختار
-                        </div>
-                        <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-4">
-                          لتحقيق معدل <span className="text-primary">{grades.targetAverage}</span> <br className="hidden md:block" />
-                          خاصك تجيب في الوطني:
-                        </h2>
-                     </div>
-                     <div className="shrink-0 flex flex-col items-center bg-slate-900 px-12 py-10 rounded-[3rem] text-white shadow-2xl transform hover:scale-105 transition-transform">
-                        <span className={`text-7xl font-black tracking-tighter ${results.custom > 20 ? 'text-red-400' : 'text-white'}`}>
-                            {results.custom > 20 ? '!!' : results.custom.toFixed(2)}
-                        </span>
-                        <div className="h-px w-full bg-white/20 my-4"></div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                           {results.custom > 20 ? 'معدل مستحيل حالياً' : 'نقطة الامتحان الوطني'}
-                        </p>
-                        {results.custom > 20 && <p className="text-[10px] text-red-300 mt-2 font-medium">يتطلب أكثر من 20/20</p>}
-                     </div>
-                  </div>
-               </div>
-
-               <div>
-                  <div className="flex items-center gap-4 mb-8 px-4">
-                      <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><Zap size={24} fill="currentColor" /></div>
-                      <div>
-                        <h2 className="text-2xl font-black text-slate-900">مقارنة مع باقي الميزات</h2>
-                        <p className="text-sm font-bold text-slate-400">إليك ما تحتاجه للوصول إلى العتبات الرسمية:</p>
-                      </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                      <RequirementCard goal="10/20" required={results.pass} color="emerald" label="عتبة النجاح" />
-                      <RequirementCard goal="12/20" required={results.mustahsan} color="blue" label="ميزة مستحسن" />
-                      <RequirementCard goal="14/20" required={results.hassan} color="purple" label="ميزة حسن" />
-                      <RequirementCard goal="16/20" required={results.veryGood} color="orange" label="ميزة حسن جداً" />
-                  </div>
-               </div>
-
-               <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-                  <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
-                    <div className="lg:col-span-2">
-                       <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
-                         <TrendingUp className="text-primary" size={32} />
-                         كيفاش توصل لهاد النتيجة؟
-                       </h3>
-                       <p className="text-slate-300 text-lg leading-relaxed font-medium mb-8">
-                         تذكر أن الامتحان الوطني يشكل <span className="text-white font-bold underline decoration-primary decoration-4">50% من المعدل العام</span>. هادشي كيعني أن أي مجهود إضافي في الوطني كيتدوبل مفعوله في النتيجة النهائية. التركيز التام هو مفتاحك دابا.
-                       </p>
-                       <div className="flex flex-wrap gap-4">
-                          <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-2xl border border-white/10 text-sm font-bold hover:bg-white/20 transition-colors">
-                             <CheckCircle2 size={18} className="text-emerald-400" /> مراجعة ذكية
+            <div id="results-area" className="animate-fade-in-up space-y-16">
+               
+               {/* 3. The "Required Score" Card - Dramatic Styling */}
+               <div className="relative group">
+                  {/* Outer Glow Effect */}
+                  <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-[4rem] opacity-50 group-hover:opacity-80 transition-opacity"></div>
+                  
+                  <div className="relative bg-[#0f172a] rounded-[4rem] p-10 md:p-16 text-white border border-white/10 shadow-2xl overflow-hidden">
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-royal/10 rounded-full blur-[80px] -ml-32 -mb-32"></div>
+                    
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                       <div className="text-center lg:text-right space-y-6">
+                          <div className="inline-flex items-center gap-3 px-6 py-2 bg-primary text-white rounded-full font-black text-sm shadow-xl shadow-primary/20">
+                              <Star size={16} fill="currentColor" />
+                              <span>هدفك: معدل {grades.targetAverage}</span>
                           </div>
-                          <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-2xl border border-white/10 text-sm font-bold hover:bg-white/20 transition-colors">
-                             <CheckCircle2 size={18} className="text-emerald-400" /> تمارين مكثفة
-                          </div>
-                          <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-2xl border border-white/10 text-sm font-bold hover:bg-white/20 transition-colors">
-                             <CheckCircle2 size={18} className="text-emerald-400" /> تتبع يومي
+                          <h2 className="text-4xl md:text-6xl font-black leading-tight tracking-tight">
+                            باش توصل لهاد الهدف، <br className="hidden md:block" />
+                            خاصك تجيب في <span className="text-primary">الوطني</span>:
+                          </h2>
+                          <p className="text-slate-400 text-lg font-medium opacity-80">ركز على الوطني، راه كيمثل 50% من النتيجة!</p>
+                       </div>
+
+                       <div className="shrink-0 relative group/score">
+                          <div className="absolute inset-0 bg-primary/20 blur-3xl scale-125 opacity-0 group-hover/score:opacity-100 transition-opacity"></div>
+                          <div className="relative flex flex-col items-center bg-white/[0.03] backdrop-blur-xl px-16 py-14 rounded-[4rem] border border-white/10 shadow-inner">
+                            <span className={`text-8xl md:text-9xl font-black tracking-tighter tabular-nums drop-shadow-[0_0_30px_rgba(0,149,255,0.3)] ${results.custom > 20 ? 'text-red-400' : 'text-white'}`}>
+                                {results.custom > 20 ? '!!' : (results.custom <= 0 ? '0.00' : results.custom.toFixed(2))}
+                            </span>
+                            <div className="h-1 w-24 bg-primary/50 my-6 rounded-full"></div>
+                            <p className="text-xs font-black text-primary uppercase tracking-[0.3em]">
+                               {results.custom > 20 ? 'هدف غير متاح حالياً' : 'نقطة الامتحان الوطني'}
+                            </p>
                           </div>
                        </div>
                     </div>
-                    <div className="bg-white/5 backdrop-blur-md rounded-[3rem] p-10 border border-white/10 text-center relative group">
-                       <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-5 transition-opacity rounded-[3rem]"></div>
-                       <Award size={72} className="mx-auto mb-6 text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)] animate-bounce-slow" />
-                       <h4 className="text-2xl font-black mb-3">أنت قدها!</h4>
-                       <p className="text-xs text-slate-400 font-bold tracking-wide leading-relaxed">
-                         مئات التلاميذ بدأوا بمعدلات جهوي أقل، ولكن بفضل الوطني والالتزام حققوا أحلامهم.
+                  </div>
+               </div>
+
+               {/* 4. "What-If" Scenarios Grid - Color Coded & Responsive */}
+               <div className="space-y-10">
+                  <div className="flex items-center justify-between px-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-50 text-primary rounded-2xl"><Zap size={24} fill="currentColor" /></div>
+                        <div>
+                          <h2 className="text-2xl font-black text-slate-900">سيناريوهات بديلة</h2>
+                          <p className="text-sm font-bold text-slate-400">إليك ما تحتاجه للوصول لأفضل الميزات:</p>
+                        </div>
+                      </div>
+                  </div>
+                  {/* Grid 2x2 on Mobile, 4 columns on Desktop */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                      <ComparisonCard goal="10/20" required={results.pass} color="emerald" label="عتبة النجاح" />
+                      <ComparisonCard goal="12/20" required={results.mustahsan} color="blue" label="ميزة مستحسن" />
+                      <ComparisonCard goal="14/20" required={results.hassan} color="purple" label="ميزة حسن" />
+                      <ComparisonCard goal="16/20" required={results.veryGood} color="orange" label="ميزة حسن جداً" />
+                  </div>
+               </div>
+
+               {/* 5. Dynamic Motivational Feedback Card */}
+               <div className={`
+                 p-8 md:p-12 rounded-[4rem] text-white shadow-2xl relative overflow-hidden transition-all duration-500
+                 ${results.custom > 20 ? 'bg-red-600' : results.custom <= 10 ? 'bg-emerald-600' : 'bg-slate-900'}
+               `}>
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
+                    <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-[2.5rem] flex items-center justify-center shrink-0 shadow-xl border border-white/20">
+                      {results.custom > 20 ? <AlertTriangle size={48} /> : results.custom <= 10 ? <Trophy size={48} /> : <Target size={48} />}
+                    </div>
+                    <div className="text-center md:text-right flex-grow">
+                       <h3 className="text-2xl md:text-3xl font-black mb-4">
+                         {results.custom > 20 
+                           ? 'هذا الهدف مستحيل رياضياً حالياً!' 
+                           : results.custom <= 10 
+                           ? 'الهدف في المتناول جداً! 🔥' 
+                           : 'أنت قادر على تحقيق هذا وأكثر!'}
+                       </h3>
+                       <p className="text-white/80 text-lg font-medium leading-relaxed">
+                         {results.custom > 20 
+                           ? 'النقطة المطلوبة تتجاوز 20/20. حاول تقليل المعدل المستهدف قليلاً ليكون واقعياً وقابلاً للتحقيق.' 
+                           : results.custom <= 10 
+                           ? 'نقطة الوطني المطلوبة بسيطة جداً. لماذا لا ترفع سقف طموحك وتستهدف ميزة أعلى؟' 
+                           : 'بإمكانك الوصول لهاد النقطة إذا نظمتي وقتك وتبعتي منهجية ذكية. مئات التلاميذ بدلو مجهود في الوطني وصلو لأفضل المدارس.'}
                        </p>
+                    </div>
+                    <div className="shrink-0">
+                       <Link 
+                         to={results.custom > 20 ? "/bac-simulator" : "/coaching-offer"} 
+                         className="px-10 py-5 bg-white text-slate-900 rounded-[2rem] font-black text-lg hover:scale-105 transition-all block text-center"
+                       >
+                         {results.custom > 20 ? 'تعديل الهدف' : 'كيفاش نضمنها؟'}
+                       </Link>
                     </div>
                   </div>
                </div>
             </div>
           )}
 
-          <div className="mt-16 p-8 bg-blue-50/50 rounded-[3rem] border border-blue-100 flex flex-col md:flex-row items-center gap-8 backdrop-blur-sm">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm text-primary shrink-0 flex items-center justify-center">
-                <AlertTriangle size={32} />
+          {/* Contextual Guidance */}
+          <div className="bg-blue-50/50 p-8 rounded-[3rem] border border-blue-100 flex flex-col md:flex-row items-center gap-8 backdrop-blur-sm">
+              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm text-primary shrink-0 flex items-center justify-center border border-blue-50">
+                <Info size={32} />
               </div>
               <div className="text-center md:text-right">
-                <h4 className="text-lg font-black text-slate-900 mb-1">توضيح منهجي</h4>
-                <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                  تمت برمجة هذا المحاكي وفقاً للصيغة الرسمية المعتمدة (25% جهوي، 25% مراقبة مستمرة، 50% وطني). النتائج هي مؤشرات حسابية لتوجيه مسار مراجعتك ورفع سقف طموحك.
+                <h4 className="text-lg font-black text-slate-900 mb-1">كيف يتم الحساب؟</h4>
+                <p className="text-sm text-slate-500 leading-relaxed font-bold">
+                  تعتمد النتيجة على الصيغة الرسمية: (الجهوي × 0.25) + (المراقبة × 0.25) + (الوطني × 0.50) = المعدل العام. <br/>
+                  النتائج أعلاه هي تقديرية لمساعدتك على وضع خطة دراسية فعالة.
                 </p>
-              </div>
-              <div className="hidden lg:block mr-auto">
-                 <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="p-4 bg-white rounded-2xl shadow-sm text-slate-400 hover:text-primary hover:shadow-md transition-all">
-                    <RotateCcw size={20} />
-                 </button>
               </div>
           </div>
         </div>
@@ -353,3 +337,24 @@ export const BacSimulator: React.FC = () => {
     </div>
   );
 };
+
+const Trophy = ({ size }: { size: number }) => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width={size} 
+        height={size} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+    >
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+        <path d="M18 4H6v7a6 6 0 0 0 12 0V4Z"/>
+    </svg>
+);
