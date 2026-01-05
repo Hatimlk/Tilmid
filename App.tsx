@@ -12,6 +12,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { BacSimulator } from './pages/BacSimulator';
 import { About } from './pages/About';
 import { Contact } from './pages/Contact';
+import { NotFound } from './pages/NotFound';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/bac-simulator" element={<BacSimulator />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
     </HashRouter>

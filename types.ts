@@ -30,6 +30,11 @@ export interface BlogPost {
     name: string;
     avatar: string;
   };
+  sections?: {
+    title: string;
+    content: string;
+    list?: { t: string; d: string; }[];
+  }[];
 }
 
 export interface StudyResource {
@@ -69,7 +74,11 @@ export interface ProgramData {
     description: string;
     color?: string;
   }[];
-  extraTopics?: string[];
+  extraTopics?: {
+    title: string;
+    query: string;
+  }[];
+  relatedBlogIds?: string[];
 }
 
 export interface SuccessStory {

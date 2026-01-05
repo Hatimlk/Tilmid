@@ -116,7 +116,7 @@ export const CoachingOffer: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden font-sans w-full max-w-full">
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 lg:pt-36 lg:pb-24 bg-slate-900 text-white overflow-hidden rounded-b-[2.5rem] lg:rounded-b-[3rem] shadow-2xl">
+      <section className="relative pt-24 pb-16 lg:pt-36 lg:pb-24 bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white overflow-hidden rounded-b-[2.5rem] lg:rounded-b-[3rem] shadow-2xl">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-blob"></div>
           <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
@@ -232,9 +232,7 @@ export const CoachingOffer: React.FC = () => {
                   </form>
 
                   <div className="mt-12 pt-8 border-t border-slate-50 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-2 text-xs font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
-                      <ShieldCheck size={16} /> ضمان استرجاع الأموال في حال عدم الرضا
-                    </div>
+
                     <div className="flex items-center -space-x-3 space-x-reverse">
                       {[1, 2, 3, 4].map(i => (
                         <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm">
@@ -331,26 +329,59 @@ export const CoachingOffer: React.FC = () => {
         </div>
 
         {/* Features Grid - Already Refined */}
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">ماذا يقدم لك البرنامج؟</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg font-medium">نحن لا نعلمك الدروس، نحن نعلمك "كيف تنجح" في مسارك الدراسي بالكامل.</p>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+              <Sparkles size={16} />
+              <span>قيمة لا تقدر بثمن</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">ماذا يقدم لك البرنامج؟</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-xl font-bold">نحن لا نعلمك الدروس، نحن نعلمك "كيف تنجح" في مسارك الدراسي بالكامل.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => (
-              <div key={feature.id} className="group relative bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 overflow-hidden">
-                <div className={`absolute top-0 left-0 w-full h-1.5 ${feature.color}`}></div>
-                <div className={`absolute -right-10 -top-10 w-48 h-48 ${feature.color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`}></div>
+              <div key={feature.id} className="group relative bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+                <div className={`absolute top-0 right-0 w-32 h-32 ${feature.color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`}></div>
 
-                <div className="relative z-10">
-                  <div className={`w-20 h-20 ${feature.color} text-white rounded-3xl flex items-center justify-center mb-8 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
-                    <feature.icon size={40} />
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className={`w-16 h-16 ${feature.color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg transform group-hover:rotate-6 transition-transform duration-500`}>
+                    <feature.icon size={32} />
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-4 leading-tight">{feature.title}</h3>
-                  <p className="text-slate-500 leading-relaxed font-bold text-sm">{feature.text}</p>
+
+                  <h3 className="text-xl font-black text-slate-900 mb-3 leading-tight group-hover:text-primary transition-colors">{feature.title}</h3>
+                  <p className="text-slate-500 leading-relaxed font-bold text-sm mt-auto opacity-90">{feature.text}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="max-w-4xl mx-auto mt-24 px-4 pb-24">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">أسئلة شائعة</h2>
+            <p className="text-slate-500 text-lg font-bold">كل ما تحتاج معرفته عن برنامج المواكبة</p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { q: "هل البرنامج مناسب لتلاميذ السنة الأولى باكالوريا؟", a: "نعم، البرنامج مصمم ليناسب جميع المستويات الثانوية (سانكيام، سيزيام، وباك)، حيث نخصص خطة عمل تناسب كل مستوى." },
+              { q: "كيف يتم التواصل مع الأستاذ؟", a: "يتم التواصل بشكل مباشر ويومي عبر مجموعة واتساب خاصة، بالإضافة إلى جلسات فيديو أسبوعية للمتابعة الشخصية." },
+
+              { q: "هل يتعارض البرنامج مع  دروس الدعم (Soutien)؟", a: "على العكس، البرنامج يكمل دروس الدعم بتعليمك كيفية تنظيم وقتك وكيفية استغلال تلك الدروس بفعالية أكبر." }
+            ].map((faq, i) => (
+              <details key={i} className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm open:shadow-xl open:border-blue-100 transition-all duration-300 overflow-hidden">
+                <summary className="flex items-center justify-between p-8 cursor-pointer list-none">
+                  <h4 className="text-lg md:text-xl font-black text-slate-800 group-hover:text-primary transition-colors">{faq.q}</h4>
+                  <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-open:bg-primary group-open:text-white transition-all duration-300">
+                    <ChevronDown size={20} className="group-open:rotate-180 transition-transform duration-300" />
+                  </div>
+                </summary>
+                <div className="px-8 pb-8 pt-0">
+                  <p className="text-slate-500 font-medium leading-relaxed border-t border-slate-50 pt-6">{faq.a}</p>
+                </div>
+              </details>
             ))}
           </div>
         </div>

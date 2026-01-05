@@ -12,6 +12,7 @@ export const BlogPost = () => {
   const post = dataManager.getPosts().find(p => p.id === id);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const themeColors = ['bg-primary', 'bg-royal', 'bg-yellow-400'];
 
   React.useEffect(() => {
     if (id) {
@@ -118,38 +119,64 @@ export const BlogPost = () => {
                       "{post.excerpt}"
                     </p>
 
-                    <div className="space-y-6">
-                      <h2 id="section-1" className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                        <div className="w-2 h-8 bg-primary rounded-full"></div> لماذا هذه الخطوة حاسمة؟
-                      </h2>
-                      <p>تعتبر إدارة الوقت وتحديد الأهداف حجر الزاوية في مسيرة أي تلميذ ناجح. الفارق الجوهري بين التلميذ المتفوق وغيره ليس في عدد ساعات الدراسة، بل في "جودة" و"ذكاء" هذه الساعات.</p>
-                    </div>
+                    {post.sections && post.sections.length > 0 ? (
+                      /* Dynamic Content Rendering */
+                      post.sections.map((section, idx) => (
+                        <div key={idx} className="space-y-6">
+                          <h2 id={`section-${idx + 1}`} className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                            <div className={`w-2 h-8 ${themeColors[idx % 3]} rounded-full`}></div> {section.title}
+                          </h2>
+                          <p>{section.content}</p>
 
-                    <div className="space-y-6">
-                      <h2 id="section-2" className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                        <div className="w-2 h-8 bg-royal rounded-full"></div> خطوات عملية للتطبيق الفوري
-                      </h2>
-                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
-                        {[
-                          { t: "التخطيط المسبق", d: "ابدأ يومك بخريطة واضحة." },
-                          { t: "تقسيم المهام", d: "حول المهام الكبيرة لوحدات صغيرة." },
-                          { t: "المراجعة النشطة", d: "لا تكتفِ بالقراءة السلبية." },
-                          { t: "فترات الراحة", d: "استخدم تقنية 50/10 للتركيز." }
-                        ].map((item, i) => (
-                          <li key={i} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 m-0">
-                            <span className="block font-black text-primary mb-1">{item.t}</span>
-                            <span className="text-sm opacity-70">{item.d}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                          {section.list && (
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+                              {section.list.map((item, i) => (
+                                <li key={i} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 m-0">
+                                  <span className="block font-black text-primary mb-1">{item.t}</span>
+                                  <span className="text-sm opacity-70">{item.d}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      /* Fallback for old posts */
+                      <>
+                        <div className="space-y-6">
+                          <h2 id="section-1" className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                            <div className="w-2 h-8 bg-primary rounded-full"></div> لماذا هذه الخطوة حاسمة؟
+                          </h2>
+                          <p>تعتبر إدارة الوقت وتحديد الأهداف حجر الزاوية في مسيرة أي تلميذ ناجح. الفارق الجوهري بين التلميذ المتفوق وغيره ليس في عدد ساعات الدراسة، بل في "جودة" و"ذكاء" هذه الساعات.</p>
+                        </div>
 
-                    <div className="space-y-6">
-                      <h2 id="section-3" className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                        <div className="w-2 h-8 bg-yellow-400 rounded-full"></div> نصائح إضافية للنجاح
-                      </h2>
-                      <p>تذكر دائماً أن النجاح هو رحلة تراكمية. ابدأ بخطوات بسيطة اليوم، وستجد النتائج مبهرة غداً. لا تتردد في طلب المساعدة من المختصين في "تلميذ" لتوجيهك بشكل أفضل.</p>
-                    </div>
+                        <div className="space-y-6">
+                          <h2 id="section-2" className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                            <div className="w-2 h-8 bg-royal rounded-full"></div> خطوات عملية للتطبيق الفوري
+                          </h2>
+                          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+                            {[
+                              { t: "التخطيط المسبق", d: "ابدأ يومك بخريطة واضحة." },
+                              { t: "تقسيم المهام", d: "حول المهام الكبيرة لوحدات صغيرة." },
+                              { t: "المراجعة النشطة", d: "لا تكتفِ بالقراءة السلبية." },
+                              { t: "فترات الراحة", d: "استخدم تقنية 50/10 للتركيز." }
+                            ].map((item, i) => (
+                              <li key={i} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 m-0">
+                                <span className="block font-black text-primary mb-1">{item.t}</span>
+                                <span className="text-sm opacity-70">{item.d}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="space-y-6">
+                          <h2 id="section-3" className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                            <div className="w-2 h-8 bg-yellow-400 rounded-full"></div> نصائح إضافية للنجاح
+                          </h2>
+                          <p>تذكر دائماً أن النجاح هو رحلة تراكمية. ابدأ بخطوات بسيطة اليوم، وستجد النتائج مبهرة غداً. لا تتردد في طلب المساعدة من المختصين في "تلميذ" لتوجيهك بشكل أفضل.</p>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Post Share & Bookmark */}

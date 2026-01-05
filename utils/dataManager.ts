@@ -27,36 +27,41 @@ const SEED_STORIES: SuccessStory[] = [
 export const dataManager = {
   init: () => {
     // Seed Blog Posts - Ensure readingTime is present
-    if (!localStorage.getItem(KEYS.POSTS)) {
-        localStorage.setItem(KEYS.POSTS, JSON.stringify(BLOG_POSTS));
+    // Seed Blog Posts - Sync with constants if new posts added or content structure outdated
+    const storedPosts = localStorage.getItem(KEYS.POSTS);
+    const parsedPosts: BlogPost[] = storedPosts ? JSON.parse(storedPosts) : [];
+
+    // Check if lengths differ OR if ID '1' (old post) or '10' (new post) is missing sections
+    if (!storedPosts || parsedPosts.length < BLOG_POSTS.length || !parsedPosts.find(p => p.id === '1')!.sections || !parsedPosts.find(p => p.id === '10')?.sections) {
+      localStorage.setItem(KEYS.POSTS, JSON.stringify(BLOG_POSTS));
     }
-    
+
     // Seed Resources
     if (!localStorage.getItem(KEYS.RESOURCES)) {
-        localStorage.setItem(KEYS.RESOURCES, JSON.stringify(SEED_RESOURCES));
+      localStorage.setItem(KEYS.RESOURCES, JSON.stringify(SEED_RESOURCES));
     }
 
     // Seed Success Stories
     if (!localStorage.getItem(KEYS.STORIES)) {
-        localStorage.setItem(KEYS.STORIES, JSON.stringify(SEED_STORIES));
+      localStorage.setItem(KEYS.STORIES, JSON.stringify(SEED_STORIES));
     }
 
     // Seed Students
     if (!localStorage.getItem(KEYS.STUDENTS)) {
-        const initialStudents = [
-            { 
-              id: 'std-1', 
-              name: 'أمين التلميذ', 
-              username: 'amin', 
-              password: '123', 
-              grade: '2 باكالوريا', 
-              status: 'active', 
-              joinDate: '2023-09-01', 
-              avatar: IMAGES.AVATARS.DEFAULT_USER,
-              stats: { studyHours: 12, commitmentRate: 85, weeklyProgress: [40, 60, 55, 80, 70, 85, 50] } 
-            }
-        ];
-        localStorage.setItem(KEYS.STUDENTS, JSON.stringify(initialStudents));
+      const initialStudents = [
+        {
+          id: 'std-1',
+          name: 'أمين التلميذ',
+          username: 'amin',
+          password: '123',
+          grade: '2 باكالوريا',
+          status: 'active',
+          joinDate: '2023-09-01',
+          avatar: IMAGES.AVATARS.DEFAULT_USER,
+          stats: { studyHours: 12, commitmentRate: 85, weeklyProgress: [40, 60, 55, 80, 70, 85, 50] }
+        }
+      ];
+      localStorage.setItem(KEYS.STUDENTS, JSON.stringify(initialStudents));
     }
   },
 
