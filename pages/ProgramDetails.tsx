@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
+import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA, BLOG_POSTS } from '../constants';
 import { ProgramData } from '../types';
 import {
   CheckCircle,
@@ -26,7 +26,8 @@ import {
   Clock,
   Play,
   Map,
-  ArrowDown
+  ArrowDown,
+  Star
 } from 'lucide-react';
 
 const FeatureStep: React.FC<{
@@ -39,12 +40,16 @@ const FeatureStep: React.FC<{
   const [isActive, setIsActive] = useState(false);
   const stepRef = useRef<HTMLDivElement>(null);
 
+  // Map index to Icons
+  const Icons = [Target, BrainCircuit, ShieldCheck, User];
+  const Icon = Icons[index] || Star;
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) setIsActive(true);
       },
-      { threshold: 0.6 }
+      { threshold: 0.2 }
     );
     if (stepRef.current) observer.observe(stepRef.current);
     return () => observer.disconnect();
@@ -53,26 +58,28 @@ const FeatureStep: React.FC<{
   return (
     <div
       ref={stepRef}
-      className={`group relative p-6 md:p-8 bg-white rounded-[2rem] border transition-all duration-700 flex flex-col md:flex-row gap-6 items-start z-10
+      className={`group relative p-8 bg-white rounded-[2.5rem] border border-gray-100 hover:shadow-xl transition-all duration-700 flex flex-col items-start min-h-[280px]
       ${isActive
-          ? `opacity-100 translate-y-0 scale-100 shadow-[0_20px_50px_-15px_rgba(0,149,255,0.1)] ${borderColor.replace('border-', 'border-opacity-50 border-')}`
+          ? 'opacity-100 translate-y-0 scale-100'
           : 'opacity-40 translate-y-12 scale-95 grayscale'}`}
     >
       <div className={`absolute top-0 right-0 w-48 h-full ${lightThemeBg} opacity-20 filter blur-3xl transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
 
-      {/* Number Circle */}
-      <div className={`w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] flex-shrink-0 flex items-center justify-center transition-all duration-1000 shadow-lg relative z-20 font-black
-      ${isActive
-          ? `${themeColor.replace('text-', 'bg-')} text-white animate-glow-pulse scale-105 rotate-3`
-          : 'bg-slate-100 text-slate-400 rotate-0 scale-100'}`}>
-        <span className="text-2xl md:text-3xl">{index + 1}</span>
+      {/* Icon Circle */}
+      <div className="w-full flex justify-start mb-6">
+        <div className={`w-16 h-16 rounded-[1.2rem] flex items-center justify-center transition-all duration-1000 relative z-20 shadow-sm
+        ${isActive
+            ? `${lightThemeBg} ${themeColor}`
+            : 'bg-slate-50 text-slate-300'}`}>
+          <Icon size={32} strokeWidth={1.5} />
+        </div>
       </div>
 
-      <div className="relative z-10 pt-1 text-right">
-        <h3 className={`text-xl md:text-2xl font-black mb-3 transition-colors duration-700 tracking-tight ${isActive ? themeColor : 'text-slate-400'}`}>
+      <div className="relative z-10 text-right w-full mt-auto">
+        <h3 className="text-xl md:text-2xl font-black mb-4 transition-colors duration-700 text-slate-900 leading-tight">
           {feature.title}
         </h3>
-        <p className={`leading-relaxed text-base md:text-lg font-bold transition-colors duration-700 ${isActive ? 'text-slate-600' : 'text-slate-300'}`}>
+        <p className="leading-relaxed text-sm md:text-base font-bold text-slate-500 opacity-90">
           {feature.description}
         </p>
       </div>
@@ -88,9 +95,13 @@ const TawjihAIAdvisor: React.FC = () => {
   const [resultType, setResultType] = useState<string>('');
 
   const questions = [
-    { id: 1, text: "ما هو النشاط الذي تجد نفسك منغمساً فيه وتنسى الوقت؟", options: [{ label: "حل الألغاز والمشاكل المنطقية", type: "eng" }, { label: "مساعدة الآخرين", type: "med" }, { label: "الكتابة أو الرسم", type: "art" }, { label: "تنظيم المشاريع", type: "bus" }] },
-    { id: 2, text: "في العمل الجماعي، ما هو الدور الذي تفضله؟", options: [{ label: "المحلل التقني", type: "eng" }, { label: "الداعم النفسي", type: "med" }, { label: "المبدع والمبتكر", type: "art" }, { label: "القائد الإداري", type: "bus" }] },
-    { id: 3, text: "أي من المواد الدراسية التالية كنت تستمتع بها أكثر؟", options: [{ label: "الرياضيات والفيزياء", type: "eng" }, { label: "العلوم الطبيعية", type: "med" }, { label: "اللغات والفنون", type: "art" }, { label: "الاقتصاد", type: "bus" }] }
+    { id: 1, text: "ما هو النشاط الذي تجد نفسك منغمساً فيه وتنسى الوقت؟", options: [{ label: "حل الألغاز والمشاكل المنطقية", type: "eng" }, { label: "مساعدة الآخرين وشرح الأمور", type: "med" }, { label: "الكتابة، الرسم أو التصميم", type: "art" }, { label: "تنظيم المشاريع والخطط", type: "bus" }] },
+    { id: 2, text: "في العمل الجماعي، ما هو الدور الذي تفضله عادة؟", options: [{ label: "المحلل التقني", type: "eng" }, { label: "المستمع والداعم", type: "med" }, { label: "صاحب الأفكار الإبداعية", type: "art" }, { label: "القائد والمنظم", type: "bus" }] },
+    { id: 3, text: "كيف تفضل التعامل مع المشاكل المعقدة؟", options: [{ label: "تفكيكها إلى أجزاء صغيرة ومنطقية", type: "eng" }, { label: "البحث عن حل يرضي جميع الأطراف", type: "med" }, { label: "التفكير خارج الصندوق وبطرق غير تقليدية", type: "art" }, { label: "اتخاذ قرار سريع وحاسم", type: "bus" }] },
+    { id: 4, text: "أي نوع من البيئات تفضل العمل فيه؟", options: [{ label: "مختبر أو مكتب هادئ مع تقنيات", type: "eng" }, { label: "مكان فيه تواصل دائم مع الناس", type: "med" }, { label: "استوديو مفتوح ومرن", type: "art" }, { label: "بيئة عمل ديناميكية ومتغيرة", type: "bus" }] },
+    { id: 5, text: "ما هو أكثر شيء يثير فضولك؟", options: [{ label: "كيف تعمل الأشياء والآلات", type: "eng" }, { label: "سلوك الإنسان وعلم النفس", type: "med" }, { label: "الجماليات والتعبير الفني", type: "art" }, { label: "قصص النجاح والثروة", type: "bus" }] },
+    { id: 6, text: "كيف تتصرف تحت الضغط؟", options: [{ label: "أركز على الحلول المنطقية", type: "eng" }, { label: "أطلب المساعدة وأتعاون مع الفريق", type: "med" }, { label: "أبحث عن حلول بديلة ومبتكرة", type: "art" }, { label: "أتولى القيادة وأوزع المهام", type: "bus" }] },
+    { id: 7, text: "ما هي القيمة الأهم بالنسبة لك مهنياً؟", options: [{ label: "الدقة والابتكار التقني", type: "eng" }, { label: "الأثر المباشر على حياة الناس", type: "med" }, { label: "حرية التعبير والتفرد", type: "art" }, { label: "النمو، القيادة والتأثير", type: "bus" }] }
   ];
 
   const handleAnswer = (type: string) => {
@@ -102,6 +113,8 @@ const TawjihAIAdvisor: React.FC = () => {
       setTimeout(() => {
         const counts: any = { eng: 0, med: 0, art: 0, bus: 0 };
         newAnswers.forEach(a => { counts[a] = (counts[a] || 0) + 1; });
+
+        // Find top two traits for more nuanced result if needed, currently picking top 1
         setResultType(Object.keys(counts).reduce((a, b) => counts[a] >= counts[b] ? a : b));
         setStep('result');
       }, 2000);
@@ -110,10 +123,22 @@ const TawjihAIAdvisor: React.FC = () => {
 
   const getResult = () => {
     const map: any = {
-      eng: { t: "الهندسة والتقنية", d: "لديك عقل تحليلي قوي وميول تقنية واضحة." },
-      med: { t: "الطب والعلوم الصحية", d: "تتميز بحب مساعدة الآخرين والاهتمام بالجانب الإنساني." },
-      art: { t: "الفنون والآداب", d: "تملك خيالاً واسعاً وقدرة على التعبير الإبداعي." },
-      bus: { t: "الأعمال والإدارة", d: "تملك سمات قيادية وقدرة على التنظيم الاستراتيجي." }
+      eng: {
+        t: "الهندسة والعلوم التطبيقية",
+        d: "أنت تتمتع بتفكير تحليلي ومنطقي قوي. تميل لفهم كيف تعمل الأشياء وتستمتع بحل المشكلات المعقدة بالأرقام والبيانات. مجالات مثل الهندسة (المعلوماتية، المدنية، الصناعية) أو الذكاء الاصطناعي تناسبك تماماً."
+      },
+      med: {
+        t: "العلوم الطبية والإنسانية",
+        d: "لديك ذكاء عاطفي عالٍ ورغبة حقيقية في مساعدة الآخرين. تجد نفسك في المجالات التي تتطلب تواصلاً إنسانياً وعناية، مثل الطب، الصيدلة، التمريض، أو حتى علم النفس والتعليم."
+      },
+      art: {
+        t: "الفنون، التصميم والإعلام",
+        d: "خيّالك هو قوتك الخارقة. لا تحب القيود والروتين، وتبحث دائماً عن طرق جديدة للتعبير عن أفكارك. مجالات مثل الهندسة المعمارية، التصميم الجرافيكي، الصحافة، أو الفنون الرقمية هي ملعبك الطبيعي."
+      },
+      bus: {
+        t: "التسيير، الاقتصاد والمقاولات",
+        d: "أنت قائد بالفطرة. لديك رؤية استراتيجية وتهتم بالنتائج والنمو وتستمتع بالمنافسة. تخصصات مثل التجارة والتسيير (ENCG)، إدارة الأعمال، أو الاقتصاد ستسمح لقدراتك القيادية بالازدهار."
+      }
     };
     return map[resultType] || map.eng;
   };
@@ -191,7 +216,7 @@ const TawjihAIAdvisor: React.FC = () => {
           )}
 
           {step === 'result' && (
-            <div className="p-10 lg:p-20 text-center text-white animate-in zoom-in duration-500 flex flex-col items-center">
+            <div className="relative z-10 p-10 lg:p-20 text-center text-white animate-in zoom-in duration-500 flex flex-col items-center">
               <div className="inline-flex items-center gap-2 px-6 py-2 bg-green-500/10 text-green-400 rounded-full text-sm font-black mb-8 border border-green-500/20">
                 <CheckCircle size={18} /> تم التحليل بنجاح
               </div>
@@ -199,8 +224,14 @@ const TawjihAIAdvisor: React.FC = () => {
               <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-2xl mx-auto font-bold opacity-80 leading-relaxed">{getResult().d}</p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all">تحدث مع موجه</button>
-                <button onClick={() => { setStep('intro'); setCurrentQuestion(0); setAnswers([]); }} className="px-10 py-4 bg-slate-800 text-white rounded-2xl font-black border border-slate-700 hover:bg-slate-700 transition-all flex items-center gap-2">
+                <Link to="/coaching-offer" className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center">تحدث مع موجه</Link>
+                <button onClick={() => {
+                  setStep('intro');
+                  setCurrentQuestion(0);
+                  setAnswers([]);
+                  setResultType('');
+                  document.getElementById('ai-advisor')?.scrollIntoView({ behavior: 'smooth' });
+                }} className="px-10 py-4 bg-slate-800 text-white rounded-2xl font-black border border-slate-700 hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
                   <RefreshCcw size={18} /> إعادة الاختبار
                 </button>
               </div>
@@ -374,20 +405,17 @@ export const ProgramDetails: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24" id="features">
 
           {/* Main Content Column with Journey Path (Step Timeline) */}
+          {/* Main Content Column with Grid Features */}
           <div className="lg:col-span-8 space-y-16">
             <div className="relative px-2">
-              <div className="space-y-4 mb-16 text-center md:text-right">
-                <div className={`inline-flex items-center gap-2 px-6 py-2.5 ${theme.lightBg} ${theme.primary} rounded-full text-xs font-black uppercase tracking-widest shadow-sm border ${theme.border}`}>
-                  <Sparkles size={16} fill="currentColor" />
-                  <span>خارطة طريق النجاح الدراسي</span>
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">مميزات البرنامج</h2>
+                <div className={`w-12 h-12 rounded-2xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
+                  <Sparkles size={24} />
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">ماذا ستحقق في هذا البرنامج؟</h2>
               </div>
 
-              {/* 2. Vertical Timeline Connector Logic (Dashed line) */}
-              <div className="absolute top-[320px] bottom-[100px] right-[75px] md:right-[100px] w-1 border-r-2 border-dashed border-slate-200 hidden md:block z-0 opacity-80"></div>
-
-              <div className="grid grid-cols-1 gap-12 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                 {data.features.map((feature, idx) => (
                   <FeatureStep
                     key={idx}
@@ -401,41 +429,69 @@ export const ProgramDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* 3. Exclusive Topics Refactored with Glassmorphism Grid */}
-            {data.extraTopics && (
-              <section id="extra-topics" className="bg-slate-900 rounded-[3rem] p-8 md:p-16 shadow-2xl relative overflow-hidden group">
-                <div className={`absolute top-0 right-0 w-96 h-96 ${theme.bg} opacity-[0.15] rounded-full blur-[120px] group-hover:scale-125 transition-transform duration-1000`}></div>
-
-                <div className="relative z-10">
-                  <div className="flex items-center gap-6 mb-16">
-                    <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-[2.2rem] flex items-center justify-center text-white border border-white/20 shadow-2xl">
-                      <BookOpen size={40} />
-                    </div>
-                    <h3 className="text-3xl md:text-5xl font-black text-white tracking-tight">محاور إضافية حصرية</h3>
+            {/* 3. Related Blog Posts Grid */}
+            {data.relatedBlogIds && (
+              <section id="related-blogs" className="space-y-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-12 h-12 rounded-2xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
+                    <BookOpen size={24} />
                   </div>
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tight">مقالات قد تهمك</h3>
+                </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {data.extraTopics.map((topic, idx) => (
-                      <Link
-                        to={`/blog?search=${encodeURIComponent(topic)}`}
-                        key={idx}
-                        className="flex items-center gap-6 p-10 rounded-[2.5rem] bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white hover:border-white transition-all duration-500 group/topic overflow-hidden relative shadow-lg"
-                      >
-                        {/* Interactive Highlight Background */}
-                        <div className={`absolute inset-0 ${theme.bg} opacity-0 group-hover/topic:opacity-10 transition-opacity`}></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {data.relatedBlogIds.map((id) => {
+                    const post = BLOG_POSTS.find(p => p.id === id);
+                    if (!post) return null;
 
-                        <div className={`w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 border border-white/10 ${theme.accent} group-hover/topic:bg-white group-hover/topic:text-slate-900 group-hover/topic:border-white transition-all duration-500`}>
-                          <Check size={28} strokeWidth={4} className="scale-75 group-hover/topic:scale-100 transition-transform" />
+                    return (
+                      <Link to={`/blog/${post.id}`} key={post.id} className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                        {/* Image Container */}
+                        <div className="relative h-48 overflow-hidden">
+                          <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors z-10"></div>
+                          <img
+                            src={post.image}
+                            alt={post.title}
+                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                          />
+                          <div className="absolute top-4 right-4 z-20">
+                            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-xs font-bold text-slate-900 shadow-sm border border-white/20">
+                              {post.category}
+                            </span>
+                          </div>
                         </div>
 
-                        <span className="text-white font-black text-xl group-hover/topic:text-slate-900 transition-colors leading-tight">
-                          {topic}
-                        </span>
+                        {/* Content */}
+                        <div className="p-6 flex flex-col flex-grow relative z-20">
+                          {/* Date & Time */}
+                          <div className="flex items-center gap-3 text-xs text-slate-400 font-bold mb-3">
+                            <span className="flex items-center gap-1"><Calendar size={12} /> {post.date}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span className="flex items-center gap-1"><Clock size={12} /> {post.readingTime || '5 min'}</span>
+                          </div>
 
-                        <ArrowUpRight size={24} className={`absolute left-8 text-white/20 ${theme.primary} transition-all opacity-0 group-hover/topic:opacity-100 -translate-y-4 group-hover/topic:translate-y-0`} />
+                          <h4 className="text-xl font-black text-slate-900 mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                            {post.title}
+                          </h4>
+
+                          <p className="text-slate-500 text-sm font-semibold leading-relaxed mb-6 line-clamp-2">
+                            {post.excerpt}
+                          </p>
+
+                          {/* Footer */}
+                          <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
+                            <div className="flex items-center gap-2">
+                              <img src={post.author?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'} alt={post.author?.name || 'Admin'} className="w-8 h-8 rounded-full border border-gray-100" />
+                              <span className="text-xs font-bold text-slate-700">{post.author?.name || 'Admin'}</span>
+                            </div>
+                            <div className={`w-8 h-8 rounded-full ${theme.lightBg} flex items-center justify-center ${theme.primary} group-hover:bg-primary group-hover:text-white transition-all`}>
+                              <ArrowUpRight size={16} />
+                            </div>
+                          </div>
+                        </div>
                       </Link>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </section>
             )}

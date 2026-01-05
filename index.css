@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Tajawal', sans-serif;
+    font-display: swap;
+    letter-spacing: 0.01em;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Utilities */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@layer components {
+  /* Glassmorphism Classes */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/30;
+  }
+}

@@ -1,57 +1,57 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { MAIN_SERVICES, INSTAGRAM_REELS } from '../constants';
+import { MAIN_SERVICES, INSTAGRAM_REELS, TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost, SuccessStory, VideoReel } from '../types';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap } from 'lucide-react';
 
 const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
-    const [days, setDays] = useState<number>(0);
+  const [days, setDays] = useState<number>(0);
 
-    useEffect(() => {
-        const calculate = () => {
-            const now = new Date();
-            const diff = date.getTime() - now.getTime();
-            const daysLeft = Math.max(Math.ceil(diff / (1000 * 60 * 60 * 24)), 0);
-            setDays(daysLeft);
-        };
-        calculate();
-        const timer = setInterval(calculate, 60000); 
-        return () => clearInterval(timer);
-    }, [date]);
+  useEffect(() => {
+    const calculate = () => {
+      const now = new Date();
+      const diff = date.getTime() - now.getTime();
+      const daysLeft = Math.max(Math.ceil(diff / (1000 * 60 * 60 * 24)), 0);
+      setDays(daysLeft);
+    };
+    calculate();
+    const timer = setInterval(calculate, 60000);
+    return () => clearInterval(timer);
+  }, [date]);
 
-    return (
-        <div className="flex items-center gap-4 bg-slate-800/40 backdrop-blur-md px-6 py-5 rounded-[2rem] border border-white/5 flex-1 w-full md:min-w-[240px] group hover:bg-slate-800/60 transition-all duration-300">
-            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-[0_0_25px_rgba(37,99,235,0.3)] group-hover:scale-110 transition-transform tabular-nums border border-white/10">
-                {days}
-            </div>
-            <div className="text-right">
-                <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-1">{label}</p>
-                <div className="text-base font-black text-white">يوماً متبقياً</div>
-                <div className="flex items-center gap-1.5 mt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[10px] font-bold text-emerald-400">مباشر الآن</span>
-                </div>
-            </div>
+  return (
+    <div className="flex items-center gap-4 bg-slate-800/40 backdrop-blur-md px-6 py-5 rounded-[2rem] border border-white/5 flex-1 w-full md:min-w-[240px] group hover:bg-slate-800/60 transition-all duration-300">
+      <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-[0_0_25px_rgba(37,99,235,0.3)] group-hover:scale-110 transition-transform tabular-nums border border-white/10">
+        {days}
+      </div>
+      <div className="text-right">
+        <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-1">{label}</p>
+        <div className="text-base font-black text-white">يوماً متبقياً</div>
+        <div className="flex items-center gap-1.5 mt-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="text-[10px] font-bold text-emerald-400">مباشر الآن</span>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => (
   <div className="group relative flex flex-col items-center w-full">
     <div className="relative w-full max-w-[340px] bg-slate-800 rounded-[3rem] p-3 shadow-2xl ring-1 ring-slate-700 transition-all duration-500 hover:-translate-y-4 hover:shadow-primary/10">
       <div className="relative overflow-hidden rounded-[2.5rem] bg-black aspect-[9/16] w-full">
-        <iframe 
-          src={`https://www.instagram.com/reel/${reel.reelId}/embed/`} 
-          className="w-full h-full border-0 pointer-events-none" 
-          allowFullScreen 
-          title={reel.title} 
-          scrolling="no" 
+        <iframe
+          src={`https://www.instagram.com/reel/${reel.reelId}/embed/`}
+          className="w-full h-full border-0 pointer-events-none"
+          allowFullScreen
+          title={reel.title}
+          scrolling="no"
           loading="lazy"
         ></iframe>
-        
+
         {/* Play Overlay */}
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all flex items-center justify-center z-20 pointer-events-none">
           <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500">
@@ -61,27 +61,42 @@ const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => (
 
         {/* Bottom Gradient Overlay */}
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10 pointer-events-none"></div>
-        
+
         {/* Caption */}
         <div className="absolute bottom-6 inset-x-6 z-20 text-right pointer-events-none">
           <h4 className="text-white font-black text-sm leading-relaxed line-clamp-2 drop-shadow-md">
             {reel.title}
           </h4>
           <div className="flex items-center justify-end gap-3 mt-3 text-blue-300">
-             <span className="text-[10px] font-black uppercase tracking-widest">{reel.views} مشاهدة</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">{reel.views} مشاهدة</span>
           </div>
         </div>
       </div>
     </div>
-    <a 
-      href={reel.url} 
-      target="_blank" 
-      rel="noopener noreferrer" 
+    <a
+      href={reel.url}
+      target="_blank"
+      rel="noopener noreferrer"
       className="mt-6 text-slate-400 hover:text-primary font-bold text-sm flex items-center gap-2 transition-colors"
     >
       عرض على إنستغرام <ArrowLeftIcon size={14} />
     </a>
   </div>
+);
+
+const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string }> = ({ data, icon: Icon, color, link }) => (
+  <Link to={link} className="group relative bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 overflow-hidden flex flex-col h-full">
+    <div className={`absolute top-0 right-0 w-32 h-32 ${color} opacity-5 rounded-bl-[4rem] group-hover:scale-150 transition-transform duration-700`}></div>
+    <div className={`w-16 h-16 ${color} bg-opacity-10 text-${color.split('-')[1]}-${color.split('-')[2] || '600'} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+      <Icon size={32} className={color.replace('bg-', 'text-')} />
+    </div>
+    <h3 className="text-2xl font-black text-slate-900 mb-3">{data.title}</h3>
+    <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8 line-clamp-3 flex-grow opacity-80">{data.subtitle}</p>
+    <div className="flex items-center gap-2 text-sm font-black text-slate-900 group-hover:text-primary group-hover:gap-4 transition-all mt-auto">
+      <span>اكتشف البرنامج</span>
+      <ArrowLeftIcon size={18} />
+    </div>
+  </Link>
 );
 
 export const Home: React.FC = () => {
@@ -123,16 +138,16 @@ export const Home: React.FC = () => {
               </div>
 
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.15] text-slate-900 tracking-tight">
-                تلميـذ رفيقك <br/>
+                تلميـذ رفيقك <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-royal">
                   نحو قمة التفوق الدراسي
                 </span>
               </h1>
-              
+
               <p className="text-base lg:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 font-medium leading-relaxed">
                 اكتشف منهجيات التعلم الحديثة، احصل على توجيه مدرسي دقيق، وانضم لآلاف التلاميذ الذين حققوا أحلامهم الدراسية معنا.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto pt-4">
                 <Link to="/coaching-offer" className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-lg hover:bg-primary transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-3 transform hover:-translate-y-1">
                   ابدأ رحلتك الآن
@@ -150,14 +165,14 @@ export const Home: React.FC = () => {
               <div className="relative z-10 group">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-royal/20 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative bg-white p-3 rounded-[3.5rem] shadow-2xl border border-slate-100 transform hover:rotate-1 transition-transform duration-500">
-                    <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="rounded-[3rem] w-full object-cover h-[350px] sm:h-[500px] lg:h-[600px]" loading="eager" />
-                    <div className="absolute -bottom-6 -right-6 bg-white p-5 rounded-3xl shadow-2xl border border-slate-50 animate-float hidden md:flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center"><TrendingUp size={24}/></div>
-                        <div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase">معدل النجاح</div>
-                            <div className="text-xl font-black text-slate-900">+98% سنوياً</div>
-                        </div>
+                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="rounded-[3rem] w-full object-cover h-[350px] sm:h-[500px] lg:h-[600px]" loading="eager" />
+                  <div className="absolute -bottom-6 -right-6 bg-white p-5 rounded-3xl shadow-2xl border border-slate-50 animate-float hidden md:flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center"><TrendingUp size={24} /></div>
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase">معدل النجاح</div>
+                      <div className="text-xl font-black text-slate-900">+98% سنوياً</div>
                     </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -165,32 +180,58 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Modern Exam Countdown Banner - Responsive & High Contrast */}
-      <section className="relative z-30 -mt-14 lg:-mt-20 px-4">
-          <div className="container mx-auto max-w-7xl">
-              <div className="bg-[#0f172a] rounded-[3.5rem] md:rounded-[4rem] px-6 py-10 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/5">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
-
-                <div className="text-center lg:text-right shrink-0 lg:max-w-[250px] space-y-2">
-                    <div className="flex items-center justify-center lg:justify-start gap-2 text-[#38bdf8] font-black text-[11px] uppercase tracking-[0.2em]">
-                        <Zap size={16} fill="currentColor" className="animate-pulse" />
-                        <span>مباشر: عداد الامتحانات</span>
-                    </div>
-                    <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight">يوم الحسم يقترب!</h2>
-                    <p className="text-gray-500 text-[11px] font-bold italic opacity-80">استعد جيداً للوطني والجهوي</p>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-5 lg:gap-6 flex-grow w-full">
-                    <DayCard date={nationalDate} label="الوطني (2 باك)" />
-                    <DayCard date={regionalDate} label="الجهوي (1 باك)" />
-                </div>
-
-                <Link to="/bac-simulator" className="bg-white text-[#0f172a] px-10 py-5 rounded-[2.5rem] font-black text-lg flex items-center gap-3 hover:bg-primary hover:text-white transition-all shadow-xl hover:shadow-primary/20 shrink-0 group/btn transform active:scale-95 w-full lg:w-auto justify-center">
-                    <span>احسب معدلك</span>
-                    <ArrowLeftIcon size={22} className="group-hover:-translate-x-1 transition-transform" />
-                </Link>
-              </div>
+      {/* Programs Showcase Section */}
+      <section className="relative z-20 -mt-20 px-4 mb-24">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <ProgramCard
+              data={TAWJIH_DATA}
+              icon={Compass}
+              color="bg-purple-600"
+              link="/program/tawjih"
+            />
+            <ProgramCard
+              data={TILMID_DATA}
+              icon={BookOpen}
+              color="bg-blue-600"
+              link="/program/tilmid"
+            />
+            <ProgramCard
+              data={TALIB_DATA}
+              icon={GraduationCap}
+              color="bg-emerald-600"
+              link="/program/talib"
+            />
           </div>
+        </div>
+      </section>
+
+      {/* Modern Exam Countdown Banner - Responsive & High Contrast */}
+      <section className="relative z-30 mt-12 lg:mt-24 px-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className="bg-[#0f172a] rounded-[3.5rem] md:rounded-[4rem] px-6 py-10 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/5">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
+
+            <div className="text-center lg:text-right shrink-0 lg:max-w-[250px] space-y-2">
+              <div className="flex items-center justify-center lg:justify-start gap-2 text-[#38bdf8] font-black text-[11px] uppercase tracking-[0.2em]">
+                <Zap size={16} fill="currentColor" className="animate-pulse" />
+                <span>مباشر: عداد الامتحانات</span>
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight">يوم الحسم يقترب!</h2>
+              <p className="text-gray-500 text-[11px] font-bold italic opacity-80">استعد جيداً للوطني والجهوي</p>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-5 lg:gap-6 flex-grow w-full">
+              <DayCard date={nationalDate} label="الوطني (2 باك)" />
+              <DayCard date={regionalDate} label="الجهوي (1 باك)" />
+            </div>
+
+            <Link to="/bac-simulator" className="bg-white text-[#0f172a] px-10 py-5 rounded-[2.5rem] font-black text-lg flex items-center gap-3 hover:bg-primary hover:text-white transition-all shadow-xl hover:shadow-primary/20 shrink-0 group/btn transform active:scale-95 w-full lg:w-auto justify-center">
+              <span>احسب معدلك</span>
+              <ArrowLeftIcon size={22} className="group-hover:-translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* Services Grid - Interactive Cards */}
@@ -201,7 +242,7 @@ export const Home: React.FC = () => {
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight">تلميذ يساعد الطلبة على تحقيق أهدافهم</h2>
             <p className="text-slate-500 font-medium text-lg">نقدم باقة من الخدمات المتكاملة التي تغطي الجانب النفسي، الدراسي والتقني.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {MAIN_SERVICES.map((service, idx) => (
               <div key={idx} className="bg-white p-8 lg:p-12 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-[0_40px_80px_-20px_rgba(0,149,255,0.08)] hover:-translate-y-2 transition-all duration-500 flex flex-col md:flex-row items-start gap-8 group">
@@ -218,15 +259,41 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Success Stories Slider */}
+      <section className="py-24 bg-slate-50 overflow-hidden">
+        <div className="container mx-auto px-4 lg:px-8 mb-16 text-center">
+          <span className="text-primary font-black tracking-widest text-xs uppercase block mb-4">قصص نجاح</span>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900">أبطال تلميذ يشاركون تجربتهم</h2>
+        </div>
+
+        <div className="relative w-full overflow-hidden">
+          <div className="flex gap-6 animate-scroll-rtl hover:[animation-play-state:paused] w-max px-4">
+            {[...successStories, ...successStories, ...successStories].map((story, i) => (
+              <div key={i} className="w-[350px] md:w-[450px] bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex-shrink-0 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-4 mb-6">
+                  <img src={story.image} alt={story.name} className="w-14 h-14 rounded-full object-cover ring-4 ring-slate-50" />
+                  <div>
+                    <h4 className="font-black text-slate-900 text-lg">{story.name}</h4>
+                    <span className="text-primary text-xs font-bold uppercase tracking-wider">{story.role}</span>
+                  </div>
+                  <Quote size={40} className="mr-auto text-slate-100" />
+                </div>
+                <p className="text-slate-600 font-medium leading-relaxed text-lg">"{story.content}"</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Media & Reels Section - Visual Video Cards */}
       <section id="media" className="py-32 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,149,255,0.05)_0%,_transparent_70%)]"></div>
         <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
           <div className="max-w-3xl mx-auto mb-20 space-y-6">
-              <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
-                  الأكثر مشاهدة على تلميذ 🔥
-              </h2>
-              <p className="text-slate-400 text-lg font-bold">جرعات من التحفيز والنصائح الدراسية السريعة</p>
+            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
+              الأكثر مشاهدة على تلميذ 🔥
+            </h2>
+            <p className="text-slate-400 text-lg font-bold">جرعات من التحفيز والنصائح الدراسية السريعة</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 max-w-6xl mx-auto">
@@ -239,41 +306,41 @@ export const Home: React.FC = () => {
 
       {/* Final CTA Section - High Button Hierarchy */}
       <section className="py-24 bg-white">
-          <div className="container mx-auto px-4">
-              <div className="bg-[#0f172a] rounded-[4rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl border border-white/5">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-royal/20 opacity-40"></div>
-                  <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
-                  
-                  <div className="relative z-10 space-y-10 max-w-4xl mx-auto">
-                      <div className="w-24 h-24 bg-primary/20 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl border border-primary/30">
-                          <Sparkles size={48} className="text-primary animate-pulse" />
-                      </div>
-                      <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight">جاهز لتبدأ رحلة النجاح معنا؟</h2>
-                      <p className="text-slate-400 text-xl lg:text-2xl font-bold max-w-2xl mx-auto leading-relaxed">احجز استشارتك الأولى اليوم واكتشف كيف يمكننا تغيير مسارك الدراسي للأفضل.</p>
-                      
-                      <div className="flex flex-col md:flex-row justify-center items-center gap-6 pt-6">
-                          {/* Primary Action */}
-                          <Link 
-                            to="/coaching-offer" 
-                            className="w-full md:w-auto px-16 py-6 bg-primary text-white rounded-[2.5rem] font-black text-2xl hover:bg-white hover:text-[#0f172a] transition-all shadow-2xl shadow-primary/30 transform hover:-translate-y-2 active:scale-95"
-                          >
-                            سجل الآن
-                          </Link>
-                          
-                          {/* Secondary Action */}
-                          <a 
-                            href="https://wa.me/message/GN4XKUOMHNHGO1" 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="w-full md:w-auto px-12 py-6 bg-transparent text-white border-2 border-white/20 hover:border-white hover:bg-white/5 rounded-[2.5rem] font-black text-2xl transition-all flex items-center justify-center gap-4 group active:scale-95"
-                          >
-                            <MessageCircle size={28} className="group-hover:rotate-12 transition-transform" />
-                            تواصل عبر واتساب
-                          </a>
-                      </div>
-                  </div>
+        <div className="container mx-auto px-4">
+          <div className="bg-[#0f172a] rounded-[4rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl border border-white/5">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-royal/20 opacity-40"></div>
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
+
+            <div className="relative z-10 space-y-10 max-w-4xl mx-auto">
+              <div className="w-24 h-24 bg-primary/20 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl border border-primary/30">
+                <Sparkles size={48} className="text-primary animate-pulse" />
               </div>
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight">جاهز لتبدأ رحلة النجاح معنا؟</h2>
+              <p className="text-slate-400 text-xl lg:text-2xl font-bold max-w-2xl mx-auto leading-relaxed">احجز استشارتك الأولى اليوم واكتشف كيف يمكننا تغيير مسارك الدراسي للأفضل.</p>
+
+              <div className="flex flex-col md:flex-row justify-center items-center gap-6 pt-6">
+                {/* Primary Action */}
+                <Link
+                  to="/coaching-offer"
+                  className="w-full md:w-auto px-16 py-6 bg-primary text-white rounded-[2.5rem] font-black text-2xl hover:bg-white hover:text-[#0f172a] transition-all shadow-2xl shadow-primary/30 transform hover:-translate-y-2 active:scale-95"
+                >
+                  سجل الآن
+                </Link>
+
+                {/* Secondary Action */}
+                <a
+                  href="https://wa.me/message/GN4XKUOMHNHGO1"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full md:w-auto px-12 py-6 bg-transparent text-white border-2 border-white/20 hover:border-white hover:bg-white/5 rounded-[2.5rem] font-black text-2xl transition-all flex items-center justify-center gap-4 group active:scale-95"
+                >
+                  <MessageCircle size={28} className="group-hover:rotate-12 transition-transform" />
+                  تواصل عبر واتساب
+                </a>
+              </div>
+            </div>
           </div>
+        </div>
       </section>
     </>
   );
