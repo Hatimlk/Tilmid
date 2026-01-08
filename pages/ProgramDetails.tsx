@@ -27,7 +27,9 @@ import {
   Play,
   Map,
   ArrowDown,
-  Star
+  Star,
+  Gift,
+  Brain
 } from 'lucide-react';
 
 const FeatureStep: React.FC<{
@@ -58,28 +60,28 @@ const FeatureStep: React.FC<{
   return (
     <div
       ref={stepRef}
-      className={`group relative p-8 bg-white rounded-[2.5rem] border border-gray-100 hover:shadow-xl transition-all duration-700 flex flex-col items-start min-h-[280px]
+      className={`group relative p-6 bg-white rounded-[2rem] border border-gray-100 hover:shadow-lg transition-all duration-700 flex flex-col items-start min-h-[240px]
       ${isActive
           ? 'opacity-100 translate-y-0 scale-100'
-          : 'opacity-40 translate-y-12 scale-95 grayscale'}`}
+          : 'opacity-40 translate-y-8 scale-95 grayscale'}`}
     >
-      <div className={`absolute top-0 right-0 w-48 h-full ${lightThemeBg} opacity-20 filter blur-3xl transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
+      <div className={`absolute top-0 right-0 w-32 h-full ${lightThemeBg} opacity-20 filter blur-2xl transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
 
       {/* Icon Circle */}
-      <div className="w-full flex justify-start mb-6">
-        <div className={`w-16 h-16 rounded-[1.2rem] flex items-center justify-center transition-all duration-1000 relative z-20 shadow-sm
+      <div className="w-full flex justify-start mb-5">
+        <div className={`w-14 h-14 rounded-[1rem] flex items-center justify-center transition-all duration-1000 relative z-20 shadow-sm
         ${isActive
             ? `${lightThemeBg} ${themeColor}`
             : 'bg-slate-50 text-slate-300'}`}>
-          <Icon size={32} strokeWidth={1.5} />
+          <Icon size={28} strokeWidth={1.5} />
         </div>
       </div>
 
       <div className="relative z-10 text-right w-full mt-auto">
-        <h3 className="text-xl md:text-2xl font-black mb-4 transition-colors duration-700 text-slate-900 leading-tight">
+        <h3 className="text-lg md:text-xl font-bold mb-3 transition-colors duration-700 text-slate-900 leading-tight">
           {feature.title}
         </h3>
-        <p className="leading-relaxed text-sm md:text-base font-bold text-slate-500 opacity-90">
+        <p className="leading-relaxed text-sm text-slate-500 font-medium">
           {feature.description}
         </p>
       </div>
@@ -152,28 +154,28 @@ const TawjihAIAdvisor: React.FC = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,149,255,0.08)_0%,transparent_70%)] animate-pulse"></div>
 
           {step === 'intro' && (
-            <div className="relative z-10 flex-grow flex flex-col items-center justify-center text-center p-8 lg:p-20">
+            <div className="relative z-10 flex-grow flex flex-col items-center justify-center text-center p-8 lg:p-12">
               {/* Animated Icon with Scanning Ring */}
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-blue-500/20 rounded-[2.5rem] blur-xl animate-glow-pulse"></div>
-                <div className="w-28 h-28 bg-gradient-to-br from-blue-600 to-royal rounded-[2.2rem] flex items-center justify-center relative shadow-2xl animate-float overflow-hidden">
-                  <BrainCircuit size={54} className="text-white relative z-10 animate-pulse" />
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-blue-500/20 rounded-[2rem] blur-xl animate-glow-pulse"></div>
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-royal rounded-[1.8rem] flex items-center justify-center relative shadow-xl animate-float overflow-hidden">
+                  <BrainCircuit size={40} className="text-white relative z-10 animate-pulse" />
                   {/* Scanning Line Effect */}
-                  <div className="absolute top-0 left-0 w-full h-1.5 bg-white/40 blur-sm animate-[scan_2s_ease-in-out_infinite]"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-white/40 blur-sm animate-[scan_2s_ease-in-out_infinite]"></div>
                 </div>
               </div>
 
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">المستشار الذكي للتوجيه</h2>
-              <p className="text-blue-200 text-xl mb-12 max-w-xl font-bold opacity-80 leading-relaxed">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">المستشار الذكي للتوجيه</h2>
+              <p className="text-blue-200 text-lg mb-8 max-w-lg font-medium opacity-80 leading-relaxed">
                 دع الذكاء الاصطناعي يحلل ميولك ويقترح عليك المسار الأنسب لشخصيتك وقدراتك.
               </p>
 
               <button
                 onClick={() => setStep('quiz')}
-                className="px-14 py-5 bg-white text-slate-900 rounded-2xl font-black text-xl shadow-2xl hover:bg-primary hover:text-white hover:-translate-y-2 transition-all active:scale-95 flex items-center gap-3"
+                className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-bold text-lg shadow-xl hover:bg-primary hover:text-white hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-3"
               >
                 <span>ابدأ التحليل الآن</span>
-                <ArrowUpRight size={24} strokeWidth={3} />
+                <ArrowUpRight size={20} strokeWidth={2.5} />
               </button>
             </div>
           )}
@@ -339,42 +341,42 @@ export const ProgramDetails: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden font-sans">
 
       {/* Hero Section */}
-      <div className={`relative pt-32 pb-32 lg:pt-48 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
+      <div className={`relative pt-28 pb-24 lg:pt-40 lg:pb-48 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[120px] opacity-20 animate-blob ${theme.blob1}`}></div>
-          <div className={`absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] opacity-20 animate-blob animation-delay-2000 ${theme.blob2}`}></div>
-          <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-white rounded-full blur-[100px] opacity-10 animate-pulse"></div>
+          <div className={`absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] opacity-20 animate-blob ${theme.blob1}`}></div>
+          <div className={`absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[80px] opacity-20 animate-blob animation-delay-2000 ${theme.blob2}`}></div>
+          <div className="absolute top-[40%] left-[20%] w-[300px] h-[300px] bg-white rounded-full blur-[80px] opacity-10 animate-pulse"></div>
         </div>
 
         {/* Pattern Overlay */}
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          <div className="max-w-5xl mx-auto text-center animate-fade-in-up">
+          <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
 
-            <div className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-bold shadow-lg animate-bounce-slow">
-              <Sparkles size={16} className="text-yellow-300" />
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold shadow-sm animate-bounce-slow">
+              <Sparkles size={14} className="text-yellow-300" />
               <span>البرنامج الأكثر طلباً هذا الموسم</span>
             </div>
 
-            <div className="w-28 h-28 md:w-36 md:h-36 bg-white/10 backdrop-blur-xl rounded-[2.5rem] mb-10 shadow-2xl border border-white/20 transform hover:rotate-6 transition-all duration-500 mx-auto flex items-center justify-center group/icon relative">
-              <div className="absolute inset-0 bg-white/20 blur-xl rounded-[2.5rem] -z-10 group-hover/icon:blur-2xl transition-all"></div>
-              <ProgramIcon size={72} className="text-white group-hover/icon:scale-110 transition-transform drop-shadow-md" strokeWidth={1.5} />
+            <div className="w-20 h-20 md:w-28 md:h-28 bg-white/10 backdrop-blur-xl rounded-[2rem] mb-8 shadow-xl border border-white/20 transform hover:rotate-6 transition-all duration-500 mx-auto flex items-center justify-center group/icon relative">
+              <div className="absolute inset-0 bg-white/20 blur-xl rounded-[2rem] -z-10 group-hover/icon:blur-2xl transition-all"></div>
+              <ProgramIcon size={48} className="text-white group-hover/icon:scale-110 transition-transform drop-shadow-md" strokeWidth={1.5} />
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 tracking-tight leading-[1] drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight leading-[1.1] drop-shadow-lg">
               {data.title}
             </h1>
 
-            <p className="text-xl sm:text-2xl md:text-3xl text-blue-50/90 font-bold leading-relaxed max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl text-blue-50/90 font-medium leading-relaxed max-w-2xl mx-auto opacity-90">
               {data.subtitle}
             </p>
 
-            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all shadow-xl hover:-translate-y-1 flex items-center gap-2">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-3.5 bg-white text-slate-900 rounded-2xl font-bold text-base hover:bg-slate-50 transition-all shadow-lg hover:-translate-y-1 flex items-center gap-2">
                 <span>اكتشف البرنامج</span>
-                <ArrowDown size={20} className="animate-bounce" />
+                <ArrowDown size={18} className="animate-bounce" />
               </button>
             </div>
           </div>
@@ -384,16 +386,16 @@ export const ProgramDetails: React.FC = () => {
       <div className="container mx-auto px-4 lg:px-8 -mt-20 lg:-mt-28 relative z-20">
 
         {/* Polished Stats Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.08)] p-5 md:p-8 mb-16 border border-white/60 relative z-30">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-10 items-center">
+        <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] p-4 md:p-6 mb-12 border border-white/60 relative z-30 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 items-center">
             {stats.map((stat, idx) => (
-              <div key={idx} className={`flex flex-col items-center text-center gap-3 p-3 md:p-5 rounded-[2rem] group transition-all duration-500 ${idx === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
-                <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl ${idx === 1 ? 'bg-yellow-50 text-yellow-500 border-yellow-100' : theme.lightBg + ' ' + theme.primary + ' ' + theme.border} border-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform bg-white relative z-10`}>
-                  <stat.icon size={32} strokeWidth={2} className="md:w-10 md:h-10" />
+              <div key={idx} className={`flex flex-col items-center text-center gap-2 p-3 rounded-2xl group transition-all duration-500 ${idx === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
+                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${idx === 1 ? 'bg-yellow-50 text-yellow-500 border-yellow-100' : theme.lightBg + ' ' + theme.primary + ' ' + theme.border} border flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform bg-white relative z-10`}>
+                  <stat.icon size={24} strokeWidth={2} />
                 </div>
                 <div>
-                  <h4 className="text-2xl md:text-4xl font-black text-slate-900 mb-1 tracking-tighter tabular-nums">{stat.value}</h4>
-                  <p className="text-[10px] md:text-xs text-slate-400 font-black uppercase tracking-widest leading-none">{stat.label}</p>
+                  <h4 className="text-xl md:text-2xl font-bold text-slate-900 mb-0.5 tracking-tight tabular-nums">{stat.value}</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -402,16 +404,18 @@ export const ProgramDetails: React.FC = () => {
 
         {id === 'tawjih' && <TawjihAIAdvisor />}
 
+
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24" id="features">
 
           {/* Main Content Column with Journey Path (Step Timeline) */}
           {/* Main Content Column with Grid Features */}
-          <div className="lg:col-span-8 space-y-16">
+          <div className="lg:col-span-8 space-y-12">
             <div className="relative px-2">
-              <div className="flex items-center justify-between mb-12">
-                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">مميزات البرنامج</h2>
-                <div className={`w-12 h-12 rounded-2xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
-                  <Sparkles size={24} />
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">مميزات البرنامج</h2>
+                <div className={`w-10 h-10 rounded-xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
+                  <Sparkles size={20} />
                 </div>
               </div>
 
@@ -428,6 +432,54 @@ export const ProgramDetails: React.FC = () => {
                 ))}
               </div>
             </div>
+
+            {/* Bonus Course Card - Exclusive for Tawjih - Moved Here */}
+            {id === 'tawjih' && (
+              <div className="w-full mb-12 mt-8">
+                <div className="relative p-1 lg:p-2 rounded-[2.5rem] bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-500 shadow-lg shadow-yellow-500/10 overflow-hidden group">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-20 group-hover:scale-110 transition-transform duration-1000"></div>
+
+                  <div className="relative bg-slate-900 rounded-[2rem] p-6 md:p-10 text-center overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px] -ml-32 -mb-32"></div>
+
+                    <div className="relative z-10">
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-400 text-slate-900 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 shadow-lg animate-bounce-slow">
+                        <Gift size={14} /> هدية حصرية مجانية
+                      </div>
+
+                      <h2 className="text-2xl md:text-3xl font-black text-white mb-4 tracking-tight leading-tight">
+                        دورة <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 italic">"أسرار التوجيه الجامعي"</span>
+                      </h2>
+
+                      <p className="text-base md:text-lg text-slate-300 font-medium mb-8 max-w-xl mx-auto leading-relaxed">
+                        احصل مجاناً على أقوى دليل شامل للتخطيط لمسارك بعد الباكالوريا (المدارس العليا، الأقسام التحضيرية، كليات الطب).
+                      </p>
+
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                        <div className="flex items-center gap-3 text-right">
+                          <div className="w-10 h-10 bg-white/5 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
+                            <CheckCircle size={20} className="text-yellow-400" />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold text-sm">تحليل جميع المدارس</h4>
+                          </div>
+                        </div>
+                        <div className="w-px h-8 bg-white/10 hidden sm:block"></div>
+                        <div className="flex items-center gap-3 text-right">
+                          <div className="w-10 h-10 bg-white/5 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
+                            <Brain size={20} className="text-yellow-400" />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold text-sm">تحديد الشغف المهني</h4>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 3. Related Blog Posts Grid */}
             {data.relatedBlogIds && (
@@ -501,38 +553,38 @@ export const ProgramDetails: React.FC = () => {
           <div className="lg:col-span-4 relative">
             <div className="sticky top-28 space-y-8">
               {/* Booking Form Card */}
-              <div id="registration-card" className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] p-6 border border-gray-100 text-center relative overflow-hidden group hover:shadow-xl transition-all duration-500">
-                <div className={`absolute top-0 left-0 w-full h-3 bg-gradient-to-r ${theme.gradient}`}></div>
+              <div id="registration-card" className="bg-white rounded-[2rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] p-5 border border-gray-100 text-center relative overflow-hidden group hover:shadow-lg transition-all duration-500">
+                <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${theme.gradient}`}></div>
                 <div className="relative z-10">
-                  <div className={`w-24 h-24 mx-auto rounded-[2rem] ${theme.lightBg} flex items-center justify-center ${theme.primary} mb-8 shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-700`}>
-                    <MessageCircle size={48} strokeWidth={2.5} />
+                  <div className={`w-20 h-20 mx-auto rounded-[1.5rem] ${theme.lightBg} flex items-center justify-center ${theme.primary} mb-6 shadow-md border-2 border-white group-hover:scale-105 transition-transform duration-700`}>
+                    <MessageCircle size={36} strokeWidth={2} />
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">هل تحتاج استشارة؟</h3>
-                  <p className="text-slate-500 mb-8 text-lg font-bold leading-relaxed">فريقنا المختص جاهز للإجابة على جميع تساؤلاتك وتوجيهك نحو التفوق.</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">هل تحتاج استشارة؟</h3>
+                  <p className="text-slate-500 mb-6 text-base font-medium leading-relaxed">فريقنا المختص جاهز للإجابة على جميع تساؤلاتك وتوجيهك نحو التفوق.</p>
 
-                  <div className="space-y-4">
-                    <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noreferrer" className="w-full py-5 bg-[#25D366] hover:bg-[#1da851] text-white rounded-[1.8rem] font-black shadow-xl flex items-center justify-center gap-3 text-xl group active:scale-95 transition-all">
-                      <MessageCircle size={26} fill="white" className="group-hover:rotate-12 transition-transform" />
+                  <div className="space-y-3">
+                    <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noreferrer" className="w-full py-4 bg-[#25D366] hover:bg-[#1da851] text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 text-lg group active:scale-95 transition-all">
+                      <MessageCircle size={22} fill="white" className="group-hover:rotate-12 transition-transform" />
                       <span>تحدث معنا الآن</span>
                     </a>
-                    <Link to="/contact" className={`w-full py-5 bg-white border-2 rounded-[1.8rem] font-black transition-all flex items-center justify-center gap-3 text-xl hover:bg-slate-50 active:scale-95 ${theme.primary} ${theme.border}`}>
+                    <Link to="/contact" className={`w-full py-4 bg-white border rounded-2xl font-bold transition-all flex items-center justify-center gap-2 text-lg hover:bg-slate-50 active:scale-95 ${theme.primary} ${theme.border}`}>
                       <span>حجز موعد</span>
-                      <Calendar size={22} />
+                      <Calendar size={20} />
                     </Link>
                   </div>
                 </div>
 
-                <div className="mt-10 pt-8 border-t border-gray-50">
-                  <div className="flex flex-col items-center gap-3">
+                <div className="mt-8 pt-6 border-t border-gray-50">
+                  <div className="flex flex-col items-center gap-2">
                     <div className="flex -space-x-2 space-x-reverse">
                       {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-all">
+                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-all">
                           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + id!}`} alt="Student" />
                         </div>
                       ))}
-                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-[9px] font-black border-2 border-white shadow-sm">+3k</div>
+                      <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[8px] font-bold border-2 border-white shadow-sm">+3k</div>
                     </div>
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em]">انضم إلى مجتمع المتفوقين في المغرب</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">انضم إلى مجتمع المتفوقين في المغرب</p>
                   </div>
                 </div>
               </div>
