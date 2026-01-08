@@ -116,42 +116,42 @@ export const CoachingOffer: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden font-sans w-full max-w-full">
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 lg:pt-36 lg:pb-24 bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white overflow-hidden rounded-b-[2.5rem] lg:rounded-b-[3rem] shadow-2xl">
+      <section className="relative pt-24 pb-16 lg:pt-36 lg:pb-24 bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white overflow-hidden rounded-b-[2rem] lg:rounded-b-[2.5rem] shadow-xl">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-blob"></div>
           <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-yellow-300 font-black text-sm mb-8 animate-fade-in-up">
-            <Flame size={18} fill="currentColor" className="animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-yellow-300 font-bold text-xs mb-6 animate-fade-in-up">
+            <Flame size={14} fill="currentColor" className="animate-pulse" />
             <span>عرض محدود لـ 20 تلميذ فقط هذا الشهر</span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-black mb-6 tracking-tight leading-[1.1] animate-fade-in-up animate-delay-100">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight leading-[1.1] animate-fade-in-up animate-delay-100">
             اضمن تفوقك مع <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-cyan-300">المواكبة الذكية</span>
           </h1>
 
-          <p className="text-lg md:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animate-delay-200 mb-12 font-medium">
+          <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed animate-fade-in-up animate-delay-200 mb-10 font-medium">
             لا تضيع وقتك في المحاولات العشوائية. انضم للبرنامج الذي غيّر مسار آلاف الطلاب المغاربة وحقق حلمك الدراسي.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 animate-fade-in-up animate-delay-300">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animate-delay-300">
             <button
               onClick={() => document.getElementById('registration-card')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto px-12 py-5 bg-primary text-white rounded-full font-black text-xl hover:bg-blue-600 transition-all shadow-2xl shadow-blue-500/40 hover:-translate-y-1 flex items-center justify-center gap-3"
+              className="w-full sm:w-auto px-10 py-4 bg-primary text-white rounded-full font-bold text-lg hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/30 hover:-translate-y-1 flex items-center justify-center gap-2"
             >
               <span>سجل مكاني الآن</span>
-              <ArrowDown size={22} />
+              <ArrowDown size={20} />
             </button>
 
             <button
               onClick={handleDownloadPDF}
               disabled={isGenerating}
-              className="w-full sm:w-auto px-10 py-5 bg-white/5 text-white border-2 border-white/20 rounded-full font-bold text-lg hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full sm:w-auto px-8 py-4 bg-white/5 text-white border border-white/20 rounded-full font-semibold text-base hover:bg-white hover:text-slate-900 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
-              {isGenerating ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+              {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
               <span>تحميل بروشور البرنامج</span>
             </button>
           </div>
@@ -163,9 +163,9 @@ export const CoachingOffer: React.FC = () => {
         {/* Form Card with Psychological Triggers */}
         <div id="registration-card" className="grid grid-cols-1 lg:grid-cols-5 gap-8 animate-fade-in-up animate-delay-300">
 
-          <div className="lg:col-span-3 bg-white rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden relative group">
+          <div className="lg:col-span-3 bg-white rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden relative group">
             {isSuccess ? (
-              <div className="h-full flex flex-col items-center justify-center p-16 text-center bg-gradient-to-b from-white to-green-50">
+              <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-gradient-to-b from-white to-green-50">
                 <div className="w-28 h-28 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-8 animate-bounce-slow shadow-lg shadow-green-200">
                   <CheckCircle size={56} />
                 </div>
@@ -223,10 +223,10 @@ export const CoachingOffer: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="pt-4">
-                      <button type="submit" className="w-full py-6 bg-primary text-white font-black rounded-3xl hover:bg-blue-600 transition-all shadow-2xl shadow-blue-500/30 flex items-center justify-center gap-4 text-xl group transform active:scale-95">
+                    <div className="pt-2">
+                      <button type="submit" className="w-full py-5 bg-primary text-white font-bold rounded-2xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 text-lg group transform active:scale-95">
                         <span>أريد الانضمام للبرنامج</span>
-                        <ArrowLeft size={24} className="group-hover:-translate-x-2 transition-transform" />
+                        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </form>
@@ -281,52 +281,7 @@ export const CoachingOffer: React.FC = () => {
         </div>
 
         {/* Enhanced Premium Special Offer Card */}
-        <div className="max-w-5xl mx-auto">
-          <div className="relative p-1 lg:p-2 rounded-[3.5rem] bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-500 shadow-2xl shadow-yellow-500/20 overflow-hidden group">
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-20 group-hover:scale-110 transition-transform duration-1000"></div>
 
-            <div className="relative bg-slate-900 rounded-[3rem] p-8 md:p-12 text-center overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px] -ml-32 -mb-32"></div>
-
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-5 py-2 bg-yellow-400 text-slate-900 rounded-full text-xs font-black uppercase tracking-widest mb-10 shadow-lg animate-bounce-slow">
-                  <Gift size={16} /> هدية حصرية مجانية
-                </div>
-
-                <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight leading-tight">
-                  دورة <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 italic">"أسرار التوجيه الجامعي"</span>
-                </h2>
-
-                <p className="text-xl md:text-2xl text-slate-300 font-medium mb-12 max-w-3xl mx-auto leading-relaxed">
-                  احصل مجاناً على أقوى دليل شامل للتخطيط لمسارك بعد الباكالوريا (المدارس العليا، الأقسام التحضيرية، كليات الطب) بقيمة <span className="text-white font-black line-through opacity-50">499 درهم</span>.
-                </p>
-
-                <div className="flex flex-col md:flex-row items-center justify-center gap-10">
-                  <div className="flex items-center gap-5 text-right">
-                    <div className="w-16 h-16 bg-white/5 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10">
-                      <CheckCircle size={32} className="text-yellow-400" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold text-lg">تحليل جميع المدارس</h4>
-                      <p className="text-slate-500 text-xs font-bold uppercase tracking-wide">عتبات الانتقاء وطرق الولوج</p>
-                    </div>
-                  </div>
-                  <div className="w-px h-12 bg-white/10 hidden md:block"></div>
-                  <div className="flex items-center gap-5 text-right">
-                    <div className="w-16 h-16 bg-white/5 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10">
-                      <Brain size={32} className="text-yellow-400" />
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold text-lg">تحديد الشغف المهني</h4>
-                      <p className="text-slate-500 text-xs font-bold uppercase tracking-wide">اختبارات الميول الذكية</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Features Grid - Already Refined */}
         <div className="max-w-7xl mx-auto">
@@ -341,16 +296,16 @@ export const CoachingOffer: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => (
-              <div key={feature.id} className="group relative bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
-                <div className={`absolute top-0 right-0 w-32 h-32 ${feature.color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`}></div>
+              <div key={feature.id} className="group relative bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 overflow-hidden">
+                <div className={`absolute top-0 right-0 w-24 h-24 ${feature.color} opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity`}></div>
 
                 <div className="relative z-10 flex flex-col h-full">
-                  <div className={`w-16 h-16 ${feature.color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg transform group-hover:rotate-6 transition-transform duration-500`}>
-                    <feature.icon size={32} />
+                  <div className={`w-14 h-14 ${feature.color} text-white rounded-xl flex items-center justify-center mb-5 shadow-md transform group-hover:rotate-6 transition-transform duration-500`}>
+                    <feature.icon size={28} />
                   </div>
 
-                  <h3 className="text-xl font-black text-slate-900 mb-3 leading-tight group-hover:text-primary transition-colors">{feature.title}</h3>
-                  <p className="text-slate-500 leading-relaxed font-bold text-sm mt-auto opacity-90">{feature.text}</p>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight group-hover:text-primary transition-colors">{feature.title}</h3>
+                  <p className="text-slate-500 leading-relaxed font-medium text-sm mt-auto opacity-90">{feature.text}</p>
                 </div>
               </div>
             ))}
