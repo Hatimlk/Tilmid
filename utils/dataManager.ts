@@ -1,4 +1,3 @@
-
 import { BlogPost, Student, Appointment, SuccessStory, StudyResource } from '../types';
 import { IMAGES } from '../constants/images';
 import { BLOG_POSTS } from '../constants';
@@ -81,7 +80,25 @@ export const dataManager = {
     apps.push(app);
     localStorage.setItem(KEYS.APPOINTMENTS, JSON.stringify(apps));
   },
-  getStories: (): SuccessStory[] => JSON.parse(localStorage.getItem(KEYS.STORIES) || '[]')
+  getStories: (): SuccessStory[] => JSON.parse(localStorage.getItem(KEYS.STORIES) || '[]'),
+
+  // --- Post Management ---
+  savePost: (post: BlogPost) => {
+    const posts = dataManager.getPosts();
+    const index = posts.findIndex(p => p.id === post.id);
+    if (index >= 0) {
+      posts[index] = post;
+    } else {
+      posts.unshift(post); // Add new posts to the top
+    }
+    localStorage.setItem(KEYS.POSTS, JSON.stringify(posts));
+  },
+
+  deletePost: (id: string) => {
+    const posts = dataManager.getPosts();
+    const updatedPosts = posts.filter(p => p.id !== id);
+    localStorage.setItem(KEYS.POSTS, JSON.stringify(updatedPosts));
+  }
 };
 
 dataManager.init();

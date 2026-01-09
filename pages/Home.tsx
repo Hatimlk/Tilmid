@@ -5,7 +5,8 @@ import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost, SuccessStory, VideoReel } from '../types';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, ArrowUp } from 'lucide-react';
+import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LatestArticles } from '../components/LatestArticles';
 
 const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   const [days, setDays] = useState<number>(0);
@@ -148,6 +149,19 @@ const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string 
 
 export const Home: React.FC = () => {
   const [successStories, setSuccessStories] = useState<SuccessStory[]>([]);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     setSuccessStories(dataManager.getStories());
@@ -320,7 +334,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Services Grid - Interactive Cards */}
+{/* Services Grid - Interactive Cards */}
       <section id="services" className="py-32 bg-[#f8fafc] pt-40 lg:pt-52 relative">
         {/* Decorative Background Elements */}
         <div className="absolute top-1/4 left-0 w-full h-[500px] bg-gradient-to-b from-white/0 via-white/80 to-white/0 skew-y-3 pointer-events-none"></div>
@@ -350,6 +364,11 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Latest Articles Section */}
+      <LatestArticles />
+
+      
+
       {/* Success Stories Slider */}
       <section className="py-32 bg-white overflow-hidden border-t border-slate-100 relative">
         <div className="container mx-auto px-4 lg:px-8 mb-20 text-center relative z-10">
@@ -357,15 +376,28 @@ export const Home: React.FC = () => {
           <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">أبطال تلميذ <span className="text-primary">يشاركون</span> تجربتهم</h2>
         </div>
 
-        <div className="relative w-full overflow-hidden">
-          {/* Fade Edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+        <div className="relative w-full group/slider">
+          {/* Controls */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity">
+            <button onClick={scrollLeft} className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-slate-700 hover:text-primary hover:scale-110 transition-all border border-slate-100">
+              <ChevronLeft size={28} />
+            </button>
+          </div>
+          <div className="absolute top-1/2 -translate-y-1/2 right-4 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity">
+            <button onClick={scrollRight} className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-slate-700 hover:text-primary hover:scale-110 transition-all border border-slate-100">
+              <ChevronRight size={28} />
+            </button>
+          </div>
 
-          <div className="flex gap-8 animate-scroll-rtl hover:[animation-play-state:paused] w-max px-4 py-10">
-            {[...successStories, ...successStories, ...successStories].map((story, i) => (
-              <div key={i} className="w-[380px] md:w-[480px] bg-slate-50/50 p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl hover:bg-white transition-all duration-500 hover:-translate-y-2 group">
-                <div className="flex items-center gap-5 mb-8">
+          {/* Scroll Container */}
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-8 overflow-x-auto snap-x snap-mandatory px-8 lg:px-16 py-10 no-scrollbar scroll-smooth"
+            dir="ltr"
+          >
+            {successStories.map((story, i) => (
+              <div key={i} className="w-[380px] md:w-[480px] bg-slate-50/50 p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl hover:bg-white transition-all duration-500 hover:-translate-y-2 group snap-center">
+                <div className="flex items-center gap-5 mb-8" dir="rtl">
                   <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <img src={story.image} alt={story.name} className="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-md relative z-10" />
@@ -378,8 +410,8 @@ export const Home: React.FC = () => {
                     <Quote size={24} fill="currentColor" />
                   </div>
                 </div>
-                <p className="text-slate-600 font-bold leading-[1.8] text-lg opacity-80 group-hover:opacity-100 transition-opacity">"{story.content}"</p>
-                <div className="mt-8 flex gap-1">
+                <p className="text-slate-600 font-bold leading-[1.8] text-lg opacity-80 group-hover:opacity-100 transition-opacity text-right" dir="rtl">"{story.content}"</p>
+                <div className="mt-8 flex gap-1 justify-end">
                   {[1, 2, 3, 4, 5].map(star => <Star key={star} size={16} className="text-yellow-400 fill-yellow-400" />)}
                 </div>
               </div>
@@ -458,7 +490,7 @@ export const Home: React.FC = () => {
         >
           {/* Progress Ring */}
           <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="48" fill="none" class="stroke-slate-100" stroke-width="4" />
+            <circle cx="50" cy="50" r="48" fill="none" className="stroke-slate-100" strokeWidth="4" />
             <circle
               cx="50" cy="50" r="48"
               fill="none"
