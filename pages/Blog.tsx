@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Calendar, ChevronLeft, ChevronRight, User, Sparkles, BookOpen, ArrowUpRight, Clock, CheckCircle2, Hash, LayoutGrid } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, BookOpen, Sparkles, CheckCircle2 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
 import { BlogPost } from '../types';
 import { IMAGES } from '../constants/images';
+import { BlogCard } from '../components/BlogCard';
 
 export const Blog: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -135,68 +136,7 @@ export const Blog: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
             {currentPosts.map((post, idx) => {
               return (
-                <article
-                  key={post.id}
-                  className="group bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col h-full opacity-0 animate-fade-in-up hover:-translate-y-2 relative"
-                  style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'forwards' }}
-                >
-                  {/* Glassmorphism Shine Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10"></div>
-
-                  {/* Card Image */}
-                  <div className="relative overflow-hidden shrink-0 h-64">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                    />
-                    {/* Category Tag Overlay */}
-                    <div className="absolute top-4 right-4 z-20">
-                      <span className="bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-black px-4 py-2 rounded-xl shadow-lg border border-white/10 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
-                        {post.category}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Body Content */}
-                  <div className="p-8 flex-grow flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-end gap-4 text-xs font-bold text-slate-400 mb-4 dir-ltr">
-                        <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg">
-                          <Clock size={14} className="text-primary" />
-                          <span className="mt-0.5">{post.readingTime || '5 min'}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg">
-                          <Calendar size={14} className="text-primary" />
-                          <span className="mt-0.5">{post.date}</span>
-                        </div>
-                      </div>
-
-                      <h3 className="font-black text-2xl text-slate-900 leading-snug mb-4 group-hover:text-primary transition-colors text-right">
-                        <Link to={`/blog/${post.id}`}>{post.title}</Link>
-                      </h3>
-
-                      <p className="text-slate-500 font-bold leading-relaxed mb-8 text-sm line-clamp-3 text-right">
-                        {post.excerpt}
-                      </p>
-                    </div>
-
-                    {/* Footer - Author & Action */}
-                    <div className="pt-6 border-t border-slate-50 flex items-center justify-between mt-auto">
-                      <Link to={`/blog/${post.id}`} className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-500/30 group-hover:-translate-x-1 group-hover:-translate-y-1">
-                        <ArrowUpRight size={22} strokeWidth={3} />
-                      </Link>
-
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-xs font-black text-slate-900">{post.author?.name || 'الأستاذ ياسين'}</p>
-                        </div>
-                        <img src={post.author?.avatar || IMAGES.AVATARS.YASSINE} className="w-10 h-10 rounded-full border-2 border-white shadow-md ring-2 ring-slate-50" alt="" />
-                      </div>
-                    </div>
-                  </div>
-                </article>
+                <BlogCard key={post.id} post={post} index={idx} />
               );
             })}
           </div>
