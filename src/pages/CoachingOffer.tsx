@@ -36,7 +36,7 @@ import { Link } from 'react-router-dom';
 export const CoachingOffer: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
-  const [spotsLeft, setSpotsLeft] = useState(7);
+
 
   // Form State
   const [formData, setFormData] = useState({
@@ -49,13 +49,7 @@ export const CoachingOffer: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  useEffect(() => {
-    // Randomly decrease spots for scarcity effect
-    const interval = setInterval(() => {
-      setSpotsLeft(prev => prev > 2 ? prev - 1 : prev);
-    }, 45000);
-    return () => clearInterval(interval);
-  }, []);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -123,10 +117,7 @@ export const CoachingOffer: React.FC = () => {
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-yellow-300 font-bold text-xs mb-6 animate-fade-in-up">
-            <Flame size={14} fill="currentColor" className="animate-pulse" />
-            <span>عرض محدود لـ 20 تلميذ فقط هذا الشهر</span>
-          </div>
+
 
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight leading-[1.1] animate-fade-in-up animate-delay-100">
             اضمن تفوقك مع <br />
@@ -185,10 +176,7 @@ export const CoachingOffer: React.FC = () => {
                       <h3 className="text-3xl font-black mb-2 tracking-tight">استمارة الانضمام</h3>
                       <p className="text-blue-200 font-bold opacity-80">املأ بياناتك لنتواصل معك فوراً</p>
                     </div>
-                    <div className="flex flex-col items-center bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 shadow-inner">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-300">المقاعد المتبقية</span>
-                      <span className="text-3xl font-black text-yellow-400 tabular-nums">{spotsLeft} / 20</span>
-                    </div>
+
                   </div>
                 </div>
 
@@ -231,33 +219,14 @@ export const CoachingOffer: React.FC = () => {
                     </div>
                   </form>
 
-                  <div className="mt-12 pt-8 border-t border-slate-50 flex flex-col md:flex-row items-center justify-between gap-6">
 
-                    <div className="flex items-center -space-x-3 space-x-reverse">
-                      {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm">
-                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 50}`} alt="Student" />
-                        </div>
-                      ))}
-                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black border-2 border-white shadow-sm">+500</div>
-                      <span className="mr-4 text-xs font-bold text-slate-400">انضموا إلينا هذا الشهر</span>
-                    </div>
-                  </div>
                 </div>
               </>
             )}
           </div>
 
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gradient-to-br from-primary to-royal p-6 rounded-[2.5rem] text-white shadow-2xl shadow-blue-500/20 text-center relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-white/20 shadow-xl group-hover:rotate-6 transition-transform">
-                <Award size={40} className="text-yellow-300" />
-              </div>
-              <h3 className="font-black text-2xl mb-3">توجيه VIP</h3>
-              <p className="text-blue-100 font-medium text-sm leading-relaxed mb-8 opacity-90">ستحصل على وصول مباشر لرقم الأستاذ ياسين الشخصي للاستشارات الطارئة.</p>
-              <div className="py-3 px-6 bg-white/10 rounded-2xl border border-white/20 text-xs font-black uppercase tracking-widest">ميزة حصرية للمشتركين</div>
-            </div>
+
 
             <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
               <h4 className="font-black text-slate-900 text-lg mb-8 text-center flex items-center justify-center gap-2">
