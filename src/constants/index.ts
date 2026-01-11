@@ -5,8 +5,8 @@ import {
   MessageCircle,
   Brain
 } from 'lucide-react';
-import { ServiceFeature, VideoReel, ProgramData, BlogPost } from './types';
-import { IMAGES } from './constants/images';
+import { ServiceFeature, VideoReel, ProgramData, BlogPost } from '../types';
+import { IMAGES } from './images';
 
 export const NAV_ITEMS = [
   { label: "الرئيسية", href: "/" },
