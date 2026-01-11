@@ -1,3 +1,4 @@
+import YassineImage from '../assets/yassine-image.png';
 
 export const IMAGES = {
   LOGOS: {
@@ -10,7 +11,7 @@ export const IMAGES = {
   },
   ABOUT: {
     // Founder (Professor Yassine) Profile Picture
-    FOUNDER: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    FOUNDER: YassineImage,
     // Team / Meeting Image used in About page
     TEAM: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     // Cover image for the video section
@@ -22,7 +23,7 @@ export const IMAGES = {
   },
   AVATARS: {
     // Common avatars used in testimonials and blog authors
-    YASSINE: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
+    YASSINE: YassineImage,
     SARA: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
     MOHAMED: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
     KARIM: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',

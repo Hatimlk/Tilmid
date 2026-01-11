@@ -25,7 +25,16 @@ const SEED_STORIES: SuccessStory[] = [
 
 export const dataManager = {
   init: () => {
-    // Seed Blog Posts - Ensure readingTime is present
+    // Data Versioning to force updates when constants change
+    const DATA_VERSION = '1.2';
+    const storedVersion = localStorage.getItem('tilmid_data_version');
+
+    if (storedVersion !== DATA_VERSION) {
+      localStorage.removeItem(KEYS.POSTS);
+      // We can optionally clear other keys if needed, but posts are the main focus now
+      localStorage.setItem('tilmid_data_version', DATA_VERSION);
+    }
+
     // Seed Blog Posts - Sync with constants if new posts added or content structure outdated
     const storedPosts = localStorage.getItem(KEYS.POSTS);
     const parsedPosts: BlogPost[] = storedPosts ? JSON.parse(storedPosts) : [];

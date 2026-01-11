@@ -334,7 +334,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-{/* Services Grid - Interactive Cards */}
+      {/* Services Grid - Interactive Cards */}
       <section id="services" className="py-32 bg-[#f8fafc] pt-40 lg:pt-52 relative">
         {/* Decorative Background Elements */}
         <div className="absolute top-1/4 left-0 w-full h-[500px] bg-gradient-to-b from-white/0 via-white/80 to-white/0 skew-y-3 pointer-events-none"></div>
@@ -367,7 +367,7 @@ export const Home: React.FC = () => {
       {/* Latest Articles Section */}
       <LatestArticles />
 
-      
+
 
       {/* Success Stories Slider */}
       <section className="py-32 bg-white overflow-hidden border-t border-slate-100 relative">
@@ -444,25 +444,25 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Final CTA Section - High Button Hierarchy */}
-      <section className="py-24 bg-white">
+      {/* Final CTA Section - Compact Version */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="bg-[#0f172a] rounded-[4rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl border border-white/5">
+          <div className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 text-center relative overflow-hidden shadow-2xl border border-white/5 max-w-5xl mx-auto">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-royal/20 opacity-40"></div>
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
+            <div className="absolute -top-24 -right-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
 
-            <div className="relative z-10 space-y-10 max-w-4xl mx-auto">
-              <div className="w-24 h-24 bg-primary/20 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl border border-primary/30">
-                <Sparkles size={48} className="text-primary animate-pulse" />
+            <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
+              <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl border border-primary/30">
+                <Sparkles size={32} className="text-primary animate-pulse" />
               </div>
-              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight">جاهز لتبدأ رحلة النجاح معنا؟</h2>
-              <p className="text-slate-400 text-xl lg:text-2xl font-bold max-w-2xl mx-auto leading-relaxed">احجز استشارتك الأولى اليوم واكتشف كيف يمكننا تغيير مسارك الدراسي للأفضل.</p>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">جاهز لتبدأ رحلة النجاح معنا؟</h2>
+              <p className="text-slate-400 text-lg font-bold max-w-xl mx-auto leading-relaxed">احجز استشارتك الأولى اليوم واكتشف كيف يمكننا تغيير مسارك الدراسي للأفضل.</p>
 
-              <div className="flex flex-col md:flex-row justify-center items-center gap-6 pt-6">
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 pt-4">
                 {/* Primary Action */}
                 <Link
                   to="/coaching-offer"
-                  className="w-full md:w-auto px-16 py-6 bg-primary text-white rounded-[2.5rem] font-black text-2xl hover:bg-white hover:text-[#0f172a] transition-all shadow-2xl shadow-primary/30 transform hover:-translate-y-2 active:scale-95"
+                  className="w-full md:w-auto px-10 py-4 bg-primary text-white rounded-[2rem] font-black text-lg hover:bg-white hover:text-[#0f172a] transition-all shadow-xl shadow-primary/30 transform hover:-translate-y-1 active:scale-95"
                 >
                   سجل الآن
                 </Link>
@@ -472,9 +472,9 @@ export const Home: React.FC = () => {
                   href="https://wa.me/message/GN4XKUOMHNHGO1"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full md:w-auto px-12 py-6 bg-transparent text-white border-2 border-white/20 hover:border-white hover:bg-white/5 rounded-[2.5rem] font-black text-2xl transition-all flex items-center justify-center gap-4 group active:scale-95"
+                  className="w-full md:w-auto px-8 py-4 bg-transparent text-white border-2 border-white/20 hover:border-white hover:bg-white/5 rounded-[2rem] font-black text-lg transition-all flex items-center justify-center gap-3 group active:scale-95"
                 >
-                  <MessageCircle size={28} className="group-hover:rotate-12 transition-transform" />
+                  <MessageCircle size={22} className="group-hover:rotate-12 transition-transform" />
                   تواصل عبر واتساب
                 </a>
               </div>
