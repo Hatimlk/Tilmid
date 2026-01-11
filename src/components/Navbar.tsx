@@ -132,7 +132,7 @@ export const Navbar: React.FC = () => {
               <img
                 src={IMAGES.LOGOS.OFFICIAL}
                 alt="Tilmid Logo"
-                className="h-10 lg:h-12 w-auto object-contain"
+                className="h-16 lg:h-20 w-auto object-contain"
               />
             </Link>
 
@@ -175,7 +175,7 @@ export const Navbar: React.FC = () => {
           <img
             src={IMAGES.LOGOS.OFFICIAL}
             alt="Tilmid"
-            className="h-8 w-auto"
+            className="h-12 w-auto"
           />
           <button
             onClick={() => setIsOpen(false)}
