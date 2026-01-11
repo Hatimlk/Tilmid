@@ -24,7 +24,7 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   }, [date]);
 
   return (
-    <div className="relative overflow-hidden flex items-center gap-5 bg-slate-800/40 backdrop-blur-md px-6 py-5 rounded-[2.5rem] border border-white/10 flex-1 w-full md:min-w-[240px] group hover:bg-slate-800/60 transition-all duration-300 ring-1 ring-white/5 hover:ring-white/20">
+    <div className="relative overflow-hidden flex items-center gap-5 bg-white/5 backdrop-blur-md px-6 py-5 rounded-[2.5rem] border border-white/10 flex-1 w-full md:min-w-[240px] group hover:bg-white/10 transition-all duration-300 ring-1 ring-white/5 hover:ring-white/20 hover:shadow-lg hover:shadow-blue-500/10">
       {/* Background Glow */}
       <div className="absolute -left-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -52,76 +52,83 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   );
 };
 
-const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => (
-  <div className="group relative flex flex-col items-center w-full">
-    {/* Gradient Border Container */}
-    <div className="relative w-full max-w-[340px] p-[2px] rounded-[3rem] bg-gradient-to-b from-white/20 via-white/5 to-white/10 group-hover:from-primary/60 group-hover:via-blue-500/30 group-hover:to-primary/60 transition-all duration-500 shadow-xl group-hover:shadow-primary/20 group-hover:-translate-y-4">
-      {/* Glassmorphic Card Content */}
-      <div className="relative bg-slate-900/60 backdrop-blur-xl rounded-[2.9rem] p-3 h-full mix-blend-normal">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-black aspect-[9/16] w-full shadow-inner ring-1 ring-white/10">
-          <iframe
-            src={`https://www.instagram.com/reel/${reel.reelId}/embed/`}
-            className="w-full h-full border-0"
-            allowFullScreen
-            title={reel.title}
-            scrolling="no"
-            loading="lazy"
-          ></iframe>
+const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
 
-          {/* Play Overlay - Visible on Hover (Click-through enabled) */}
-          <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-all duration-500 flex items-center justify-center z-20 pointer-events-none">
-            <div className="w-20 h-20 relative flex items-center justify-center">
-              {/* Pulse Effect */}
-              <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-0 group-hover:opacity-100 duration-1000"></div>
-              {/* Button */}
-              <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500">
-                <Play size={36} fill="white" className="text-white ml-2 opacity-90" />
+  return (
+    <div className="group relative flex flex-col items-center w-full">
+      {/* Gradient Border Container */}
+      <div className="relative w-full max-w-[340px] p-[2px] rounded-[3rem] bg-gradient-to-b from-slate-200 via-white to-slate-200 group-hover:from-primary/60 group-hover:via-blue-500/30 group-hover:to-primary/60 transition-all duration-500 shadow-xl shadow-slate-200/50 group-hover:shadow-primary/20 group-hover:-translate-y-4">
+        {/* Glassmorphic Card Content */}
+        <div className="relative bg-white rounded-[2.9rem] p-3 h-full mix-blend-normal ring-1 ring-slate-100">
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-black aspect-[9/16] w-full shadow-inner ring-1 ring-white/10">
+            <iframe
+              src={`https://www.instagram.com/reel/${reel.reelId}/embed/`}
+              className="w-full h-full border-0"
+              allowFullScreen
+              title={reel.title}
+              scrolling="no"
+              loading="lazy"
+            ></iframe>
+
+            {/* Play Overlay - Interactive */}
+            <div
+              onClick={() => setIsPlaying(true)}
+              className={`absolute inset-0 bg-black/30 group-hover:bg-transparent transition-all duration-500 flex items-center justify-center z-20 cursor-pointer ${isPlaying ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            >
+              <div className="w-20 h-20 relative flex items-center justify-center">
+                {/* Pulse Effect */}
+                <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-0 group-hover:opacity-100 duration-1000"></div>
+                {/* Button */}
+                <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500">
+                  <Play size={36} fill="white" className="text-white ml-2 opacity-90" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Bottom Gradient Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-10 pointer-events-none"></div>
+            {/* Bottom Gradient Overlay */}
+            <div className={`absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-10 pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}></div>
 
-          {/* Caption */}
-          <div className="absolute bottom-6 inset-x-6 z-20 text-right pointer-events-none">
-            <div className="flex items-center justify-end gap-2 mb-2">
-              <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-white/10 flex items-center gap-1.5 direction-rtl">
-                <Globe size={10} className="text-blue-400" />
-                ريلز
-              </span>
-            </div>
-            <h4 className="text-white font-black text-sm leading-relaxed line-clamp-2 drop-shadow-md pb-2" dir="rtl">
-              {reel.title}
-            </h4>
-            <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
-              <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-1">
-                {reel.views} مشاهدة
-              </span>
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+            {/* Caption */}
+            <div className={`absolute bottom-6 inset-x-6 z-20 text-right pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
+              <div className="flex items-center justify-end gap-2 mb-2">
+                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-white/10 flex items-center gap-1.5 direction-rtl">
+                  <Globe size={10} className="text-blue-400" />
+                  ريلز
+                </span>
+              </div>
+              <h4 className="text-white font-black text-sm leading-relaxed line-clamp-2 drop-shadow-md pb-2" dir="rtl">
+                {reel.title}
+              </h4>
+              <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
+                <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-1">
+                  {reel.views} مشاهدة
+                </span>
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <a
-      href={reel.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="mt-6 group/link flex items-center gap-3 px-6 py-3 rounded-full bg-slate-800/50 border border-slate-700 hover:border-primary/50 hover:bg-slate-800 transition-all duration-300"
-    >
-      <span className="text-slate-300 font-bold text-sm group-hover/link:text-white transition-colors">مشاهدة على إنستغرام</span>
-      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-orange-500 flex items-center justify-center text-white scale-90 group-hover/link:scale-110 transition-transform">
-        <ArrowLeftIcon size={14} />
-      </div>
-    </a>
-  </div>
-);
+      <a
+        href={reel.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 group/link flex items-center gap-3 px-6 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-primary/30 hover:shadow-md hover:bg-slate-50 transition-all duration-300"
+      >
+        <span className="text-slate-600 font-bold text-sm group-hover/link:text-primary transition-colors">مشاهدة على إنستغرام</span>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-orange-500 flex items-center justify-center text-white scale-90 group-hover/link:scale-110 transition-transform">
+          <ArrowLeftIcon size={14} />
+        </div>
+      </a>
+    </div>
+  );
+};
 
 const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string }> = ({ data, icon: Icon, color, link }) => (
   <Link to={link} className="group relative bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/50 shadow-lg hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-3 overflow-hidden flex flex-col h-full ring-1 ring-slate-100">
@@ -132,8 +139,8 @@ const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string 
     <div className={`absolute -top-10 -right-10 w-40 h-40 ${color} opacity-10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
 
     <div className="relative z-10">
-      <div className={`w-18 h-18 ${color.replace('bg-', 'bg-')}/10 text-${color.split('-')[1]}-${color.split('-')[2] || '600'} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-${color.split('-')[1]}-100`}>
-        <Icon size={36} className={`${color.replace('bg-', 'text-')} drop-shadow-sm`} />
+      <div className="w-18 h-18 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+        <Icon size={48} className={`${color.replace('bg-', 'text-')} drop-shadow-sm`} />
       </div>
 
       <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight group-hover:text-primary transition-colors">{data.title}</h3>
@@ -309,7 +316,7 @@ export const Home: React.FC = () => {
       {/* Modern Exam Countdown Banner - Responsive & High Contrast */}
       <section className="relative z-30 mt-12 lg:mt-24 px-4">
         <div className="container mx-auto max-w-7xl">
-          <div className="bg-[#0f172a] rounded-[3.5rem] md:rounded-[4rem] px-6 py-10 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/5">
+          <div className="bg-slate-900 bg-gradient-to-br from-slate-900 via-[#0f172a] to-slate-900 rounded-[3.5rem] md:rounded-[4rem] px-6 py-10 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(15,23,42,0.6)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/10 ring-1 ring-white/5">
             <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
 
             <div className="text-center lg:text-right shrink-0 lg:max-w-[250px] space-y-2">
@@ -364,13 +371,38 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Media & Reels Section - Visual Video Cards */}
+      <section id="media" className="py-32 bg-[#f8fafc] relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob"></div>
+          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob animation-delay-2000"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-multiply"></div>
+        </div>
+        <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
+          <div className="max-w-3xl mx-auto mb-20 space-y-6">
+            <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+              الأكثر مشاهدة على تلميذ 🔥
+            </h2>
+            <p className="text-slate-500 text-lg font-bold">جرعات من التحفيز والنصائح الدراسية السريعة</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 max-w-6xl mx-auto">
+            {INSTAGRAM_REELS.map((reel) => (
+              <VideoCard key={reel.id} reel={reel} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+
       {/* Latest Articles Section */}
       <LatestArticles />
 
 
 
       {/* Success Stories Slider */}
-      <section className="py-32 bg-white overflow-hidden border-t border-slate-100 relative">
+      <section className="py-32 bg-[#f8fafc] overflow-hidden border-t border-slate-100 relative">
         <div className="container mx-auto px-4 lg:px-8 mb-20 text-center relative z-10">
           <span className="text-primary font-black tracking-widest text-xs uppercase block mb-4">قصص نجاح</span>
           <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">أبطال تلميذ <span className="text-primary">يشاركون</span> تجربتهم</h2>
@@ -396,7 +428,7 @@ export const Home: React.FC = () => {
             dir="ltr"
           >
             {successStories.map((story, i) => (
-              <div key={i} className="w-[380px] md:w-[480px] bg-slate-50/50 p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl hover:bg-white transition-all duration-500 hover:-translate-y-2 group snap-center">
+              <div key={i} className="w-[380px] md:w-[480px] bg-white p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group snap-center">
                 <div className="flex items-center gap-5 mb-8" dir="rtl">
                   <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -406,7 +438,7 @@ export const Home: React.FC = () => {
                     <h4 className="font-black text-slate-900 text-xl">{story.name}</h4>
                     <span className="text-primary text-xs font-bold uppercase tracking-wider bg-primary/5 px-2 py-1 rounded-full">{story.role}</span>
                   </div>
-                  <div className="mr-auto w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-200 shadow-sm border border-slate-50 group-hover:text-primary/20 group-hover:scale-110 transition-all">
+                  <div className="mr-auto w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 shadow-sm border border-slate-100 group-hover:text-primary/20 group-hover:scale-110 transition-all">
                     <Quote size={24} fill="currentColor" />
                   </div>
                 </div>
@@ -420,32 +452,8 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Media & Reels Section - Visual Video Cards */}
-      <section id="media" className="py-32 bg-[#0a0f1c] relative overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen opacity-30 animate-blob"></div>
-          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen opacity-30 animate-blob animation-delay-2000"></div>
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
-        </div>
-        <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
-          <div className="max-w-3xl mx-auto mb-20 space-y-6">
-            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight">
-              الأكثر مشاهدة على تلميذ 🔥
-            </h2>
-            <p className="text-slate-400 text-lg font-bold">جرعات من التحفيز والنصائح الدراسية السريعة</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 max-w-6xl mx-auto">
-            {INSTAGRAM_REELS.map((reel) => (
-              <VideoCard key={reel.id} reel={reel} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Final CTA Section - Compact Version */}
-      <section className="py-16 bg-white">
+      <section className="py-24 bg-[#f8fafc]">
         <div className="container mx-auto px-4">
           <div className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 text-center relative overflow-hidden shadow-2xl border border-white/5 max-w-5xl mx-auto">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-royal/20 opacity-40"></div>

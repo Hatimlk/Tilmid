@@ -28,7 +28,7 @@ export const LatestArticles: React.FC = () => {
   if (latestPosts.length === 0) return null;
 
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="py-32 bg-[#f8fafc] relative overflow-hidden">
       {/* Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-blue-50 rounded-full blur-[80px] opacity-60 mix-blend-multiply"></div>

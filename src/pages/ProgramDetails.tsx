@@ -31,6 +31,7 @@ import {
   Gift,
   Brain
 } from 'lucide-react';
+import { BlogCard } from '../components/BlogCard';
 
 const FeatureStep: React.FC<{
   feature: { title: string; description: string };
@@ -60,31 +61,36 @@ const FeatureStep: React.FC<{
   return (
     <div
       ref={stepRef}
-      className={`group relative p-6 bg-white rounded-[2rem] border border-gray-100 hover:shadow-lg transition-all duration-700 flex flex-col items-start min-h-[240px]
+      className={`group relative p-8 bg-white rounded-[2.5rem] border border-gray-100 hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.05)] transition-all duration-700 flex flex-col items-start min-h-[280px] overflow-hidden
       ${isActive
           ? 'opacity-100 translate-y-0 scale-100'
-          : 'opacity-40 translate-y-8 scale-95 grayscale'}`}
+          : 'opacity-0 translate-y-12 scale-90'}`}
     >
-      <div className={`absolute top-0 right-0 w-32 h-full ${lightThemeBg} opacity-20 filter blur-2xl transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
+      <div className={`absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-${themeColor.split('-')[1]}-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700`}>\</div>
+      <div className={`absolute -right-10 -top-10 w-32 h-32 ${lightThemeBg} rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
 
       {/* Icon Circle */}
-      <div className="w-full flex justify-start mb-5">
-        <div className={`w-14 h-14 rounded-[1rem] flex items-center justify-center transition-all duration-1000 relative z-20 shadow-sm
+      <div className="w-full flex justify-between items-start mb-6 relative z-10">
+        <div className={`w-16 h-16 rounded-[1.2rem] flex items-center justify-center transition-all duration-700 shadow-sm border border-transparent group-hover:scale-110
         ${isActive
-            ? `${lightThemeBg} ${themeColor}`
+            ? `${lightThemeBg} ${themeColor} border-${borderColor.split('-')[1]}-100`
             : 'bg-slate-50 text-slate-300'}`}>
-          <Icon size={28} strokeWidth={1.5} />
+          <Icon size={32} strokeWidth={1.5} />
         </div>
+        <span className="text-[10px] font-black text-slate-200 group-hover:text-slate-300 transition-colors">0{index + 1}</span>
       </div>
 
       <div className="relative z-10 text-right w-full mt-auto">
-        <h3 className="text-lg md:text-xl font-bold mb-3 transition-colors duration-700 text-slate-900 leading-tight">
+        <h3 className="text-xl md:text-2xl font-black mb-4 transition-colors duration-700 text-slate-900 leading-tight group-hover:text-primary">
           {feature.title}
         </h3>
-        <p className="leading-relaxed text-sm text-slate-500 font-medium">
+        <p className="leading-relaxed text-base text-slate-500 font-medium group-hover:text-slate-600 transition-colors">
           {feature.description}
         </p>
       </div>
+
+      {/* Decorative Line */}
+      <div className={`absolute bottom-0 right-0 h-1 bg-gradient-to-r ${isActive ? 'from-' + themeColor.split('-')[1] + '-500 to-transparent w-full' : 'w-0'} transition-all duration-1000 delay-300`}></div>
     </div>
   );
 };
@@ -261,7 +267,7 @@ export const ProgramDetails: React.FC = () => {
   let theme = {
     primary: 'text-primary',
     bg: 'bg-primary',
-    gradient: 'from-blue-600 via-primary to-cyan-500',
+    gradient: 'from-[#0037ff] via-[#2563eb] to-[#06b6d4]', // Richer blue gradient
     lightBg: 'bg-blue-50',
     border: 'border-blue-100',
     accent: 'text-cyan-600',
@@ -278,7 +284,7 @@ export const ProgramDetails: React.FC = () => {
       theme = {
         primary: 'text-emerald-600',
         bg: 'bg-emerald-600',
-        gradient: 'from-emerald-800 via-teal-600 to-emerald-500',
+        gradient: 'from-[#064e3b] via-[#059669] to-[#34d399]', // Richer emerald gradient
         lightBg: 'bg-emerald-50',
         border: 'border-emerald-100',
         accent: 'text-teal-500',
@@ -294,7 +300,7 @@ export const ProgramDetails: React.FC = () => {
       theme = {
         primary: 'text-blue-600',
         bg: 'bg-blue-600',
-        gradient: 'from-blue-700 via-blue-600 to-cyan-500',
+        gradient: 'from-[#1e3a8a] via-[#2563eb] to-[#06b6d4]', // Richer blue gradient
         lightBg: 'bg-blue-50',
         border: 'border-blue-100',
         accent: 'text-cyan-500',
@@ -310,12 +316,12 @@ export const ProgramDetails: React.FC = () => {
       theme = {
         primary: 'text-violet-600',
         bg: 'bg-violet-600',
-        gradient: 'from-violet-800 via-purple-600 to-fuchsia-500',
+        gradient: 'from-[#2e1065] via-[#7c3aed] to-[#d946ef]', // Richer violet gradient
         lightBg: 'bg-violet-50',
         border: 'border-violet-100',
         accent: 'text-fuchsia-500',
-        blob1: 'bg-fuchsia-300',
-        blob2: 'bg-violet-300',
+        blob1: 'bg-fuchsia-400',
+        blob2: 'bg-violet-400',
         button: 'bg-violet-600 hover:bg-violet-700',
         iconBg: 'bg-violet-900/10'
       };
@@ -338,64 +344,71 @@ export const ProgramDetails: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30">
 
       {/* Hero Section */}
-      <div className={`relative pt-28 pb-24 lg:pt-40 lg:pb-48 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
+      <div className={`relative pt-32 pb-32 lg:pt-48 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] opacity-20 animate-blob ${theme.blob1}`}></div>
-          <div className={`absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[80px] opacity-20 animate-blob animation-delay-2000 ${theme.blob2}`}></div>
-          <div className="absolute top-[40%] left-[20%] w-[300px] h-[300px] bg-white rounded-full blur-[80px] opacity-10 animate-pulse"></div>
+          <div className={`absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[120px] opacity-30 animate-blob ${theme.blob1}`}></div>
+          <div className={`absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] opacity-30 animate-blob animation-delay-2000 ${theme.blob2}`}></div>
+          <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-white rounded-full blur-[90px] opacity-10 animate-pulse"></div>
+
+          {/* Grid Pattern */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05] mix-blend-overlay"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent"></div>
         </div>
 
-        {/* Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
-
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
+          <div className="max-w-5xl mx-auto text-center animate-fade-in-up">
 
-            <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold shadow-sm animate-bounce-slow">
-              <Sparkles size={14} className="text-yellow-300" />
-              <span>البرنامج الأكثر طلباً هذا الموسم</span>
+            <div className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-bold shadow-lg animate-bounce-slow ring-1 ring-white/10">
+              <Sparkles size={16} className="text-yellow-400 fill-current" />
+              <span className="tracking-wide">البرنامج الأكثر طلباً هذا الموسم</span>
             </div>
 
-            <div className="w-20 h-20 md:w-28 md:h-28 bg-white/10 backdrop-blur-xl rounded-[2rem] mb-8 shadow-xl border border-white/20 transform hover:rotate-6 transition-all duration-500 mx-auto flex items-center justify-center group/icon relative">
-              <div className="absolute inset-0 bg-white/20 blur-xl rounded-[2rem] -z-10 group-hover/icon:blur-2xl transition-all"></div>
-              <ProgramIcon size={48} className="text-white group-hover/icon:scale-110 transition-transform drop-shadow-md" strokeWidth={1.5} />
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-2xl rounded-[2.5rem] mb-10 shadow-2xl border border-white/20 transform hover:rotate-6 transition-all duration-500 mx-auto flex items-center justify-center group/icon relative">
+              <div className="absolute inset-0 bg-white/30 blur-2xl rounded-[2.5rem] -z-10 group-hover/icon:blur-3xl transition-all opacity-50"></div>
+              <ProgramIcon size={56} className="text-white group-hover/icon:scale-110 transition-transform drop-shadow-[0_10px_10px_rgba(0,0,0,0.2)]" strokeWidth={1.5} />
             </div>
 
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight leading-[1.1] drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 tracking-tight leading-[1.1] drop-shadow-xl">
               {data.title}
             </h1>
 
-            <p className="text-lg sm:text-xl md:text-2xl text-blue-50/90 font-medium leading-relaxed max-w-2xl mx-auto opacity-90">
+            <p className="text-xl md:text-3xl text-blue-50/90 font-bold leading-relaxed max-w-3xl mx-auto opacity-90 drop-shadow-md">
               {data.subtitle}
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-3.5 bg-white text-slate-900 rounded-2xl font-bold text-base hover:bg-slate-50 transition-all shadow-lg hover:-translate-y-1 flex items-center gap-2">
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
+              <button
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-10 py-4 bg-white text-slate-900 rounded-[2rem] font-black text-lg hover:bg-slate-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center gap-3 group"
+              >
                 <span>اكتشف البرنامج</span>
-                <ArrowDown size={18} className="animate-bounce" />
+                <ArrowDown size={20} className="animate-bounce group-hover:text-primary transition-colors" />
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 lg:px-8 -mt-20 lg:-mt-28 relative z-20">
+      <div className="container mx-auto px-4 lg:px-8 -mt-24 lg:-mt-32 relative z-20">
 
-        {/* Polished Stats Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] p-4 md:p-6 mb-12 border border-white/60 relative z-30 max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 items-center">
+        {/* Polished Stats Card - Hovering Glass Effect */}
+        <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] p-6 md:p-10 mb-20 border border-white/50 relative z-30 max-w-5xl mx-auto overflow-hidden group">
+          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${theme.gradient} opacity-50`}></div>
+          <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-slate-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 items-center relative z-10">
             {stats.map((stat, idx) => (
-              <div key={idx} className={`flex flex-col items-center text-center gap-2 p-3 rounded-2xl group transition-all duration-500 ${idx === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
-                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${idx === 1 ? 'bg-yellow-50 text-yellow-500 border-yellow-100' : theme.lightBg + ' ' + theme.primary + ' ' + theme.border} border flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform bg-white relative z-10`}>
-                  <stat.icon size={24} strokeWidth={2} />
+              <div key={idx} className={`flex flex-col items-center text-center gap-3 p-4 rounded-3xl group/stat hover:bg-white/50 transition-colors duration-300 ${idx === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
+                <div className={`w-16 h-16 rounded-[1.5rem] ${idx === 1 ? 'bg-yellow-100 text-yellow-600 border-yellow-200' : theme.lightBg + ' ' + theme.primary + ' ' + theme.border} border-2 flex items-center justify-center shadow-lg group-hover/stat:scale-110 transition-transform bg-white relative z-10`}>
+                  <stat.icon size={32} strokeWidth={2} />
                 </div>
                 <div>
-                  <h4 className="text-xl md:text-2xl font-bold text-slate-900 mb-0.5 tracking-tight tabular-nums">{stat.value}</h4>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{stat.label}</p>
+                  <h4 className="text-3xl font-black text-slate-900 mb-1 tracking-tight tabular-nums">{stat.value}</h4>
+                  <p className="text-xs text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -435,43 +448,53 @@ export const ProgramDetails: React.FC = () => {
 
             {/* Bonus Course Card - Exclusive for Tawjih - Moved Here */}
             {id === 'tawjih' && (
-              <div className="w-full mb-12 mt-8">
-                <div className="relative p-1 lg:p-2 rounded-[2.5rem] bg-gradient-to-r from-yellow-300 via-orange-400 to-yellow-500 shadow-lg shadow-yellow-500/10 overflow-hidden group">
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-20 group-hover:scale-110 transition-transform duration-1000"></div>
+              <div className="w-full mb-16 mt-12">
+                <div className="relative p-1 rounded-[3rem] bg-gradient-to-r from-yellow-200 via-amber-400 to-yellow-600 shadow-2xl shadow-yellow-500/20 overflow-hidden group hover:scale-[1.02] transition-transform duration-500">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-20 mix-blend-overlay group-hover:opacity-30 transition-opacity"></div>
 
-                  <div className="relative bg-slate-900 rounded-[2rem] p-6 md:p-10 text-center overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[100px] -ml-32 -mb-32"></div>
+                  {/* Shimmer Effect */}
+                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-[200%] group-hover:animate-shimmer z-20 pointer-events-none"></div>
+
+                  <div className="relative bg-slate-900 rounded-[2.9rem] p-8 md:p-14 text-center overflow-hidden border-4 border-slate-900">
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-500/10 rounded-full blur-[100px] -mr-40 -mt-40 animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-600/10 rounded-full blur-[100px] -ml-40 -mb-40"></div>
 
                     <div className="relative z-10">
-                      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-400 text-slate-900 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 shadow-lg animate-bounce-slow">
-                        <Gift size={14} /> هدية حصرية مجانية
+                      <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 rounded-full text-xs font-black uppercase tracking-widest mb-8 shadow-lg shadow-yellow-500/20 animate-bounce-slow">
+                        <Gift size={16} /> هدية حصرية بقيمة 999 درهم
                       </div>
 
-                      <h2 className="text-2xl md:text-3xl font-black text-white mb-4 tracking-tight leading-tight">
-                        دورة <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 italic">"أسرار التوجيه الجامعي"</span>
+                      <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
+                        احصل مجاناً على دورة <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-100 italic">"أسرار التوجيه الجامعي"</span>
                       </h2>
 
-                      <p className="text-base md:text-lg text-slate-300 font-medium mb-8 max-w-xl mx-auto leading-relaxed">
-                        احصل مجاناً على أقوى دليل شامل للتخطيط لمسارك بعد الباكالوريا (المدارس العليا، الأقسام التحضيرية، كليات الطب).
+                      <p className="text-lg md:text-xl text-slate-300 font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
+                        الدليل الشامل للتخطيط لمسارك بعد الباكالوريا (المدارس العليا، الأقسام التحضيرية، كليات الطب) بين يديك الآن.
                       </p>
 
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <div className="flex items-center gap-3 text-right">
-                          <div className="w-10 h-10 bg-white/5 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
-                            <CheckCircle size={20} className="text-yellow-400" />
+                      <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] p-6 border border-white/10 max-w-3xl mx-auto">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                          <div className="flex items-center gap-4 text-right flex-1 p-2">
+                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shrink-0">
+                              <CheckCircle size={24} className="text-slate-900" />
+                            </div>
+                            <div className="flex flex-col">
+                              <h4 className="text-white font-bold text-lg mb-1">تحليل مفصل للمدارس</h4>
+                              <span className="text-slate-400 text-sm">شروط الولوج، الآفاق، وعتبات الانتقاء</span>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-white font-bold text-sm">تحليل جميع المدارس</h4>
-                          </div>
-                        </div>
-                        <div className="w-px h-8 bg-white/10 hidden sm:block"></div>
-                        <div className="flex items-center gap-3 text-right">
-                          <div className="w-10 h-10 bg-white/5 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
-                            <Brain size={20} className="text-yellow-400" />
-                          </div>
-                          <div>
-                            <h4 className="text-white font-bold text-sm">تحديد الشغف المهني</h4>
+
+                          <div className="w-full h-px sm:w-px sm:h-12 bg-white/10"></div>
+
+                          <div className="flex items-center gap-4 text-right flex-1 p-2">
+                            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shrink-0">
+                              <Brain size={24} className="text-slate-900" />
+                            </div>
+                            <div className="flex flex-col">
+                              <h4 className="text-white font-bold text-lg mb-1">اكتشاف الشغف المهني</h4>
+                              <span className="text-slate-400 text-sm">اختبارات وتطبيقات عملية لتحديد مسارك</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -492,56 +515,12 @@ export const ProgramDetails: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {data.relatedBlogIds.map((id) => {
+                  {data.relatedBlogIds.map((id, idx) => {
                     const post = BLOG_POSTS.find(p => p.id === id);
                     if (!post) return null;
 
                     return (
-                      <Link to={`/blog/${post.id}`} key={post.id} className="group relative flex flex-col bg-white rounded-[2rem] overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
-                        {/* Image Container */}
-                        <div className="relative h-48 overflow-hidden">
-                          <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors z-10"></div>
-                          <img
-                            src={post.image}
-                            alt={post.title}
-                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                          />
-                          <div className="absolute top-4 right-4 z-20">
-                            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-xs font-bold text-slate-900 shadow-sm border border-white/20">
-                              {post.category}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 flex flex-col flex-grow relative z-20">
-                          {/* Date & Time */}
-                          <div className="flex items-center gap-3 text-xs text-slate-400 font-bold mb-3">
-                            <span className="flex items-center gap-1"><Calendar size={12} /> {post.date}</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                            <span className="flex items-center gap-1"><Clock size={12} /> {post.readingTime || '5 min'}</span>
-                          </div>
-
-                          <h4 className="text-xl font-black text-slate-900 mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                            {post.title}
-                          </h4>
-
-                          <p className="text-slate-500 text-sm font-semibold leading-relaxed mb-6 line-clamp-2">
-                            {post.excerpt}
-                          </p>
-
-                          {/* Footer */}
-                          <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
-                            <div className="flex items-center gap-2">
-                              <img src={post.author?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'} alt={post.author?.name || 'Admin'} className="w-8 h-8 rounded-full border border-gray-100" />
-                              <span className="text-xs font-bold text-slate-700">{post.author?.name || 'Admin'}</span>
-                            </div>
-                            <div className={`w-8 h-8 rounded-full ${theme.lightBg} flex items-center justify-center ${theme.primary} group-hover:bg-primary group-hover:text-white transition-all`}>
-                              <ArrowUpRight size={16} />
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                      <BlogCard key={post.id} post={post} index={idx} />
                     );
                   })}
                 </div>
@@ -551,59 +530,75 @@ export const ProgramDetails: React.FC = () => {
 
           {/* 4. Sticky Sidebar Column - Optimized for visibility and containment */}
           <div className="lg:col-span-4 relative">
-            <div className="sticky top-28 space-y-8">
-              {/* Booking Form Card */}
-              <div id="registration-card" className="bg-white rounded-[2rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] p-5 border border-gray-100 text-center relative overflow-hidden group hover:shadow-lg transition-all duration-500">
-                <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${theme.gradient}`}></div>
-                <div className="relative z-10">
-                  <div className={`w-20 h-20 mx-auto rounded-[1.5rem] ${theme.lightBg} flex items-center justify-center ${theme.primary} mb-6 shadow-md border-2 border-white group-hover:scale-105 transition-transform duration-700`}>
-                    <MessageCircle size={36} strokeWidth={2} />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">هل تحتاج استشارة؟</h3>
-                  <p className="text-slate-500 mb-6 text-base font-medium leading-relaxed">فريقنا المختص جاهز للإجابة على جميع تساؤلاتك وتوجيهك نحو التفوق.</p>
+            <div className="sticky top-32 space-y-8">
+              {/* Premium Booking Card */}
+              <div id="registration-card" className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-6 border border-slate-100 text-center relative overflow-hidden group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 ring-4 ring-slate-50/50">
+                <div className={`absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r ${theme.gradient}`}></div>
 
-                  <div className="space-y-3">
-                    <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noreferrer" className="w-full py-4 bg-[#25D366] hover:bg-[#1da851] text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 text-lg group active:scale-95 transition-all">
-                      <MessageCircle size={22} fill="white" className="group-hover:rotate-12 transition-transform" />
-                      <span>تحدث معنا الآن</span>
+                <div className="relative z-10">
+                  <div className={`w-24 h-24 mx-auto rounded-[2rem] ${theme.lightBg} flex items-center justify-center ${theme.primary} mb-6 shadow-inner border-4 border-white group-hover:scale-110 transition-transform duration-700 relative`}>
+                    <MessageCircle size={40} strokeWidth={2} />
+                    <div className="absolute top-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                  </div>
+
+                  <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">هل تحتاج مساعدة؟</h3>
+                  <p className="text-slate-500 mb-8 text-base font-bold leading-relaxed px-2">فريقنا المختص جاهز للإجابة على جميع تساؤلاتك وتوجيهك نحو التفوق.</p>
+
+                  <div className="space-y-4">
+                    <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noreferrer" className="w-full py-4 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 text-lg group/btn active:scale-95 transition-all relative overflow-hidden">
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+                      <MessageCircle size={24} fill="white" className="group-hover/btn:rotate-12 transition-transform relative z-10" />
+                      <span className="relative z-10">تحدث معنا عبر واتساب</span>
                     </a>
-                    <Link to="/contact" className={`w-full py-4 bg-white border rounded-2xl font-bold transition-all flex items-center justify-center gap-2 text-lg hover:bg-slate-50 active:scale-95 ${theme.primary} ${theme.border}`}>
-                      <span>حجز موعد</span>
-                      <Calendar size={20} />
+
+                    <Link to="/contact" className={`w-full py-4 bg-white border-2 rounded-2xl font-black transition-all flex items-center justify-center gap-2 text-lg hover:bg-slate-50 active:scale-95 group/cal ${theme.primary} ${theme.border}`}>
+                      <span>حجز موعد استشارة</span>
+                      <Calendar size={20} className="group-hover/cal:-translate-y-1 transition-transform" />
                     </Link>
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-gray-50">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="flex -space-x-2 space-x-reverse">
+                <div className="mt-8 pt-6 border-t border-slate-50">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex -space-x-3 space-x-reverse">
                       {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-all">
-                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + id!}`} alt="Student" />
+                        <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-100 overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-transform cursor-pointer">
+                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + id! + 'student'}`} alt="Student" className="w-full h-full object-cover" />
                         </div>
                       ))}
-                      <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[8px] font-bold border-2 border-white shadow-sm">+3k</div>
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black border-4 border-white shadow-sm">+3k</div>
                     </div>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">انضم إلى مجتمع المتفوقين في المغرب</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">انضم إلى مجتمع المتفوقين</p>
                   </div>
                 </div>
               </div>
 
-              {/* Guarantee Card */}
-              <div className={`p-6 rounded-[2rem] ${theme.bg} text-white shadow-xl relative overflow-hidden group hover:rotate-1 transition-all duration-500`}>
-                <div className="absolute -right-16 -bottom-16 opacity-10 rotate-12 group-hover:scale-110 group-hover:rotate-0 transition-all duration-1000">
-                  <ProgramIcon size={200} />
+              {/* Premium Guarantee Card */}
+              <div className={`p-8 rounded-[3rem] ${theme.bg} text-white shadow-2xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-500`}>
+                <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent pointer-events-none"></div>
+                <div className="absolute -right-20 -bottom-20 opacity-20 rotate-12 group-hover:scale-110 group-hover:rotate-6 transition-all duration-1000">
+                  <ProgramIcon size={240} />
                 </div>
-                <div className="relative z-10 flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/20 rounded-[1.2rem] backdrop-blur-md shadow-inner ring-1 ring-white/30">
-                      <ShieldCheck size={36} />
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-14 h-14 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center shadow-inner ring-1 ring-white/30 transform group-hover:rotate-12 transition-transform duration-500">
+                      <ShieldCheck size={32} strokeWidth={2.5} />
                     </div>
-                    <h4 className="font-black text-2xl tracking-tight leading-none">ضمان تلميـذ</h4>
+                    <div>
+                      <h4 className="font-black text-2xl tracking-tighter leading-none mb-1">ضمان تلميـذ</h4>
+                      <div className="h-1 w-12 bg-white/30 rounded-full"></div>
+                    </div>
                   </div>
-                  <p className="text-white/95 text-lg leading-relaxed font-bold">
-                    نحن نلتزم بتقديم أعلى جودة تعليمية ومواكبة دقيقة لكل تلميذ حتى تحقيق هدفه الدراسي.
+
+                  <p className="text-white/90 text-lg leading-relaxed font-bold mb-4">
+                    نحن نلتزم بتقديم أعلى جودة تعليمية. إذا لم تكن راضياً عن المحتوى في أول 7 أيام، نسترجع لك مبلغ اشتراكك بالكامل.
                   </p>
+
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg text-xs font-bold border border-white/20">
+                    <Check size={12} strokeWidth={4} />
+                    <span>ضمان استرجاع الأموال 100%</span>
+                  </div>
                 </div>
               </div>
             </div>

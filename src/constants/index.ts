@@ -44,18 +44,18 @@ export const MAIN_SERVICES: ServiceFeature[] = [
 export const INSTAGRAM_REELS: VideoReel[] = [
   {
     id: '1',
-    reelId: 'DFLrYS7gUDa',
+    reelId: 'C7J4pnzC-VR',
     thumbnail: 'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    title: 'ثلاثة أشهر لي بقات كافية أنك تغير و توصل لأفضل نتيجة 🔥',
+    title: 'جرعة أمل، و الله حتا تفرحوا براسكوم.. ماتستاسلموش ✌️❤️🫡',
     duration: '0:47',
     views: '125.5K',
-    url: 'https://www.instagram.com/reel/DFLrYS7gUDa/'
+    url: 'https://www.instagram.com/reel/C7J4pnzC-VR/'
   },
   {
     id: '2',
     reelId: 'C4ob4c3iLkv',
     thumbnail: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    title: 'جرعة أمل: والله حتا تتفرجو براسكم ماتستسلمووش 💪',
+    title: 'إلى يالاه بديتي المراجعة هاد النصائح الثمينة ليك',
     duration: '0:27',
     views: '98.2K',
     url: 'https://www.instagram.com/reel/C4ob4c3iLkv/'
@@ -64,7 +64,7 @@ export const INSTAGRAM_REELS: VideoReel[] = [
     id: '3',
     reelId: 'C6wzMqkrN_x',
     thumbnail: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    title: 'عنداك تنسا تختار راسك وانتابه لداكشي لي قلت وسط الفيديو 🛑',
+    title: 'حداااااااري من وهم المراجعة',
     duration: '1:02',
     views: '150.1K',
     url: 'https://www.instagram.com/reel/C6wzMqkrN_x/'
@@ -181,7 +181,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '1',
     title: "هاد التقنية غادي تنفعك إلى كنتي كاتعاني من التسويف",
     category: "تقنية POMODORO",
-    date: "1 شتنبر 2023",
+    date: "15 نونبر 2025",
     image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "تعرف على كيفية استخدام تقنية بومودورو لزيادة الإنتاجية.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -211,7 +211,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '2',
     title: "هاد التقنية كاتقوليك إلى بغيتي تكون سبع مرحبا بيك",
     category: "تقنية MURDER",
-    date: "3 شتنبر 2023",
+    date: "20 نونبر 2025",
     image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "استراتيجية ميردر للمذاكرة الفعالة والحفظ السريع.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -237,7 +237,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '3',
     title: "تخيل فرضو عليك تاكل ضفدع أو يتم قتلك",
     category: "تقنية أكل الضفدع",
-    date: "4 شتنبر 2023",
+    date: "25 نونبر 2025",
     image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "كيف تبدأ بأصعب المهام في يومك لتضمن النجاح.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -263,7 +263,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '4',
     title: "من أكثر التقنيات الرائعة ولي غادي تخليك منظم",
     category: "تقنية كانبان",
-    date: "5 شتنبر 2023",
+    date: "30 نونبر 2025",
     image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "نظام كانبان الياباني لتنظيم المهام الدراسية.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -289,7 +289,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '5',
     title: "أسرار التفوق: كيف تجعل عقلك يعمل لصالحك",
     category: "تطوير الذات",
-    date: "10 شتنبر 2023",
+    date: "05 دجنبر 2025",
     image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "اكتشف كيف تحول العادات اليومية البسيطة إلى محفزات للنجاح الدراسي.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -315,7 +315,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '6',
     title: "الخرائط الذهنية: سلاحك السري للمراجعة",
     category: "تقنيات",
-    date: "12 شتنبر 2023",
+    date: "10 دجنبر 2025",
     image: "https://images.unsplash.com/photo-1557318041-1ce374d55ebf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "تعلم كيف تلخص دروساً كاملة في صفحة واحدة باستخدام الخرائط الذهنية.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -341,7 +341,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '7',
     title: "النوم والذاكرة: لماذا السهر عدوك الأول؟",
     category: "الصحة والدراسة",
-    date: "15 شتنبر 2023",
+    date: "15 دجنبر 2025",
     image: "https://images.unsplash.com/photo-1517898547294-89c25da730a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "دراسات علمية تؤكد علاقة النوم الجيد بترسيخ المعلومات في الذاكرة طويلة المدى.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -367,7 +367,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '8',
     title: "كيف تتعامل مع قلق الامتحانات؟",
     category: "نصائح",
-    date: "20 شتنبر 2023",
+    date: "20 دجنبر 2025",
     image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "خطوات عملية للسيطرة على التوتر وتحويله إلى طاقة إيجابية يوم الامتحان.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -393,7 +393,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '9',
     title: "دليل المدارس العليا بعد البكالوريا",
     category: "توجيه",
-    date: "22 شتنبر 2023",
+    date: "25 دجنبر 2025",
     image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "شرح مفصل للفرق بين الجامعات، المدارس العليا، والمعاهد المتخصصة.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -424,7 +424,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '10',
     title: "كيف تختار تخصصك الجامعي بذكاء؟",
     category: "توجيه",
-    date: "25 شتنبر 2023",
+    date: "30 دجنبر 2025",
     image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "خطوات عملية لاكتشاف شغفك واختيار المسار الذي يناسب قدراتك.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
@@ -455,7 +455,7 @@ export const BLOG_POSTS: BlogPost[] = [
     id: '11',
     title: "كل ما تحتاج معرفته عن المنح الدراسية",
     category: "منح وتوجيه",
-    date: "28 شتنبر 2023",
+    date: "04 يناير 2026",
     image: "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     excerpt: "دليل شامل للحصول على منح دراسية داخل وخارج الوطن.",
     author: { name: "الأستاذ ياسين", avatar: IMAGES.AVATARS.YASSINE },
