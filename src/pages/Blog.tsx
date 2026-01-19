@@ -190,10 +190,15 @@ export const Blog: React.FC = () => {
               توصل بأحدث المقالات، ملخصات الدروس، ونصائح التوجيه مباشرة عبر الواتساب. كن جزءاً من عائلة تلميذ.
             </p>
 
-            <button className="px-10 py-5 bg-white text-blue-700 rounded-2xl font-black text-xl hover:bg-yellow-300 hover:text-slate-900 transition-all shadow-xl hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 mx-auto">
+            <a
+              href="https://whatsapp.com/channel/0029Va6t2S24tRro8WldHJ1K"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-10 py-5 bg-white text-blue-700 rounded-2xl font-black text-xl hover:bg-yellow-300 hover:text-slate-900 transition-all shadow-xl hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 mx-auto w-fit"
+            >
               <CheckCircle2 size={24} />
               <span>انضم للمجموعة مجاناً</span>
-            </button>
+            </a>
           </div>
         </div>
       </div>

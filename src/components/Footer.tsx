@@ -89,7 +89,7 @@ export const Footer: React.FC = () => {
                   ), href: 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc', label: 'TikTok'
                 },
                 { icon: Facebook, href: 'https://web.facebook.com/profile.php?id=61568646044886', label: 'Facebook' },
-                { icon: Youtube, href: '#', label: 'YouTube' }
+                { icon: Youtube, href: 'https://www.youtube.com/@tilmid.official', label: 'YouTube' }
               ].map((social) => (
                 <a
                   key={social.label}
