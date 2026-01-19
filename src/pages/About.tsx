@@ -36,30 +36,16 @@ export const About: React.FC = () => {
       <section className="relative z-20 -mt-20 lg:-mt-32 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl shadow-blue-900/20 border-[8px] border-white/10 bg-slate-900 aspect-video group animate-fade-in-up animate-delay-300 backdrop-blur-sm">
-            {/* Placeholder Image for Video */}
-            <img
-              src={IMAGES.ABOUT.VIDEO_COVER}
-              alt="Tilmid Presentation"
-              className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity duration-700 scale-100 group-hover:scale-105"
-            />
-
-            {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90"></div>
-
-            {/* Play Button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button className="relative w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center group/btn focus:outline-none">
-                <div className="absolute inset-0 bg-primary/90 rounded-full animate-ping opacity-20 duration-1000"></div>
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-md rounded-full border border-white/30 transition-all duration-300 group-hover/btn:scale-110 group-hover/btn:bg-primary group-hover/btn:border-transparent"></div>
-                <Play size={32} fill="currentColor" className="relative z-10 text-white ml-1 transition-transform duration-300 group-hover/btn:scale-110" />
-              </button>
-            </div>
-
-            {/* Video Text */}
-            <div className="absolute bottom-0 right-0 p-8 lg:p-12 text-white text-right w-full bg-gradient-to-t from-slate-900/80 to-transparent">
-              <h3 className="text-2xl font-bold mb-2">قصة تلميذ</h3>
-              <p className="text-slate-300 text-sm font-medium">تعرف على رؤيتنا وكيف نساعد الطلاب في دقيقتين.</p>
-            </div>
+            {/* Video Player */}
+            <video
+              src={IMAGES.ABOUT.VIDEO_MAIN}
+              controls
+              poster={IMAGES.ABOUT.VIDEO_COVER}
+              className="w-full h-full object-cover"
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
           </div>
         </div>
       </section>

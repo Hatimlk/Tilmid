@@ -1,5 +1,7 @@
 import YassineImage from '../assets/yassine-image.png';
 import TilmidHomeHero from '../assets/tilmid-home page.jpg';
+import TilmidVideo from '../assets/tilmidesite web.mov';
+import TilmidVideoThumbnail from '../assets/tilmid-video-thumbnail.png';
 
 export const IMAGES = {
   LOGOS: {
@@ -15,8 +17,10 @@ export const IMAGES = {
     FOUNDER: YassineImage,
     // Team / Meeting Image used in About page
     TEAM: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    // Cover image for the video section
-    VIDEO_COVER: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80',
+    // Main Video File
+    VIDEO_MAIN: TilmidVideo,
+    // Cover image for the video section (Fallback)
+    VIDEO_COVER: TilmidVideoThumbnail,
   },
   BLOG: {
     // Default SEO Image for Blog
