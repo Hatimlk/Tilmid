@@ -4,7 +4,7 @@ import {
   Shield, LayoutDashboard, FilePlus, LogOut, Trash2, Eye,
   CheckCircle, Users, Calendar,
   Search, PenTool, Settings,
-  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText, Sparkles, Wand2, Loader2
+  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText, Sparkles, Wand2, Loader2, Send, Image
 } from 'lucide-react';
 import { ADMIN_CREDENTIALS, CUSTOM_POSTS_KEY, BLOG_POSTS, GLOBAL_APPOINTMENTS_KEY, STUDENT_ACCOUNTS, GLOBAL_STUDENTS_KEY } from '../constants';
 import { BlogPost, Appointment, Student } from '../types';
@@ -221,7 +221,7 @@ export const AdminDashboard: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'students' | 'appointments'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'create-post' | 'posts-list' | 'students' | 'appointments'>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Data States
@@ -247,6 +247,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Post Form State
   const [isEditingPost, setIsEditingPost] = useState(false);
+  const [creationMode, setCreationMode] = useState<'selection' | 'editor'>('selection');
   const [showAiModal, setShowAiModal] = useState(false);
   const [newPost, setNewPost] = useState<BlogPost>({
     id: '',
@@ -320,7 +321,9 @@ export const AdminDashboard: React.FC = () => {
   const handleTabChange = (tab: any) => {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
-    if (tab === 'posts') resetPostForm();
+    if (tab === 'create-post' && !isEditingPost) {
+      resetPostForm();
+    }
   };
 
   const handleSavePost = (e: React.FormEvent) => {
@@ -363,12 +366,15 @@ export const AdminDashboard: React.FC = () => {
   const handleEditPost = (post: BlogPost) => {
     setNewPost(post);
     setIsEditingPost(true);
+    setActiveTab('create-post');
+    setCreationMode('editor');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetPostForm = () => {
-    setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', image: '', status: 'published' });
+    setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', html: '', image: '', status: 'published' });
     setIsEditingPost(false);
+    setCreationMode('selection');
   };
 
   const handleOpenStudentModal = (student?: Student) => {
@@ -526,6 +532,7 @@ export const AdminDashboard: React.FC = () => {
       category: data.category
       // Image is intentionally left manual or could be set if Simulate image worked
     }));
+    setCreationMode('editor');
   };
 
   return (
@@ -551,7 +558,12 @@ export const AdminDashboard: React.FC = () => {
 
         <nav className="flex-grow space-y-3">
           <SidebarItem id="overview" label="نظرة عامة" icon={LayoutDashboard} activeTab={activeTab} onClick={handleTabChange} />
-          <SidebarItem id="posts" label="إدارة المحتوى" icon={FilePlus} activeTab={activeTab} onClick={handleTabChange} />
+
+          <div className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider mt-4">المحتوى</div>
+          <SidebarItem id="create-post" label="إنشاء مقال" icon={PenTool} activeTab={activeTab} onClick={handleTabChange} />
+          <SidebarItem id="posts-list" label="المقالات" icon={FileText} activeTab={activeTab} onClick={handleTabChange} />
+
+          <div className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider mt-4">الإدارة</div>
           <SidebarItem id="students" label="الطلاب" icon={Users} activeTab={activeTab} onClick={handleTabChange} />
           <SidebarItem id="appointments" label="المواعيد" icon={Calendar} activeTab={activeTab} onClick={handleTabChange} />
         </nav>
@@ -573,7 +585,8 @@ export const AdminDashboard: React.FC = () => {
             </button>
             <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
               {activeTab === 'overview' && 'نظرة عامة'}
-              {activeTab === 'posts' && 'إدارة المحتوى'}
+              {activeTab === 'create-post' && 'إنشاء مقال جديد'}
+              {activeTab === 'posts-list' && 'مكتبة المقالات'}
               {activeTab === 'students' && 'قاعدة بيانات الطلاب'}
               {activeTab === 'appointments' && 'المواعيد'}
             </h2>
@@ -695,96 +708,220 @@ export const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* --- POSTS TAB --- */}
-          {activeTab === 'posts' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4">
-              <div className="lg:col-span-1 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-fit lg:sticky lg:top-32 order-2 lg:order-1">
-                <div className="flex justify-between items-center mb-8">
-                  <h3 className="font-extrabold text-xl text-slate-900">
-                    {isEditingPost ? 'تعديل المقال' : 'إنشاء مقال جديد'}
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowAiModal(true)}
-                      className="text-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-1.5 animate-pulse"
-                    >
-                      <Sparkles size={12} />
-                      <span>توليد بالذكاء الاصطناعي</span>
-                    </button>
-                    {isEditingPost && <button onClick={resetPostForm} className="text-xs bg-slate-100 px-3 py-1 rounded-full font-bold text-slate-500 hover:bg-slate-200">إلغاء</button>}
-                  </div>
-                </div>
-                <form onSubmit={handleSavePost} className="space-y-6">
-                  <div>
-                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">العنوان</label>
-                    <input type="text" required value={newPost.title || ''} onChange={e => setNewPost({ ...newPost, title: e.target.value })} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none bg-slate-50 focus:bg-white transition-all font-bold text-slate-800" placeholder="عنوان جذاب للمقال..." />
-                  </div>
-                  <div>
-                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">التصنيف</label>
-                    <div className="relative">
-                      <select value={newPost.category || 'نصائح'} onChange={e => setNewPost({ ...newPost, category: e.target.value })} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none bg-slate-50 focus:bg-white font-bold text-slate-800 appearance-none cursor-pointer">
-                        <option>نصائح</option><option>تقنيات</option><option>توجيه</option><option>الحفظ والمراجعة</option><option>الصحة والدراسة</option>
-                      </select>
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><Filter size={18} /></div>
+          {/* --- CREATE POST TAB --- */}
+          {activeTab === 'create-post' && (
+            <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 pb-20">
+              <form onSubmit={handleSavePost} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+                {/* Left Column: Main Editor */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Title & Quick Actions */}
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col gap-6">
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2">
+                        <PenTool className="text-primary" size={24} />
+                        {isEditingPost ? 'تعديل المقال' : 'كتابة مقال جديد'}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setShowAiModal(true)}
+                        className="text-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-2 animate-pulse"
+                      >
+                        <Sparkles size={14} />
+                        <span>مساعد الذكاء الاصطناعي</span>
+                      </button>
+                    </div>
+
+                    <div className="relative group">
+                      <input
+                        type="text"
+                        required
+                        value={newPost.title || ''}
+                        onChange={e => setNewPost({ ...newPost, title: e.target.value })}
+                        className="w-full text-3xl lg:text-4xl font-black text-slate-800 placeholder:text-slate-300 border-none outline-none bg-transparent px-0 py-2 focus:ring-0 leading-tight"
+                        placeholder="أدخل عنوان المقال هنا..."
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-100 group-hover:bg-slate-200 transition-colors"></div>
                     </div>
                   </div>
-                  <div>
-                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">صورة الغلاف (URL)</label>
-                    <input type="text" value={newPost.image || ''} onChange={e => setNewPost({ ...newPost, image: e.target.value })} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none text-sm font-medium bg-slate-50 focus:bg-white transition-all" placeholder="https://example.com/image.jpg" dir="ltr" />
+
+                  {/* Content Editor */}
+                  <div className="bg-white p-1 rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                    <textarea
+                      required
+                      value={newPost.content || ''}
+                      onChange={e => setNewPost({ ...newPost, content: e.target.value })}
+                      className="w-full p-8 min-h-[500px] resize-none text-base font-medium bg-white focus:bg-slate-50/50 transition-all leading-relaxed outline-none rounded-[2.5rem] placeholder:text-slate-300"
+                      placeholder="ابدأ في كتابة قصتك الرائعة هنا..."
+                    ></textarea>
                   </div>
-                  <div>
-                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">مقتطف قصير</label>
-                    <textarea required value={newPost.excerpt || ''} onChange={e => setNewPost({ ...newPost, excerpt: e.target.value })} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none h-32 resize-none text-sm font-medium bg-slate-50 focus:bg-white transition-all leading-relaxed"></textarea>
+
+                  {/* Excerpt Section */}
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FileText size={20} className="text-slate-400" />
+                      <label className="text-sm font-black text-slate-700 uppercase tracking-wider">مقتطف قصير (لتحسين SEO)</label>
+                    </div>
+                    <textarea
+                      required
+                      value={newPost.excerpt || ''}
+                      onChange={e => setNewPost({ ...newPost, excerpt: e.target.value })}
+                      className="w-full p-6 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none h-32 resize-none text-sm font-medium bg-slate-50 focus:bg-white transition-all leading-relaxed"
+                      placeholder="اكتب وصفاً مختصراً وجذاباً للمقال يظهر في محركات البحث..."
+                    ></textarea>
                   </div>
-                  <div>
-                    <label className="text-xs font-black text-slate-400 mb-2 block uppercase tracking-wider ml-1">محتوى المقال</label>
-                    <textarea required value={newPost.content || ''} onChange={e => setNewPost({ ...newPost, content: e.target.value })} className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none h-64 resize-none text-sm font-medium bg-slate-50 focus:bg-white transition-all leading-relaxed"></textarea>
+
+                  {/* HTML Editor (Collapsible) */}
+                  <div className="bg-slate-900 rounded-[2.5rem] shadow-lg border border-slate-800 overflow-hidden group">
+                    <details className="w-full">
+                      <summary className="p-6 cursor-pointer flex items-center justify-between text-slate-400 hover:text-white transition-colors select-none list-none">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-slate-800 rounded-lg"><code className="text-xs">&lt;/&gt;</code></div>
+                          <span className="font-bold text-sm uppercase tracking-wider">محرر HTML المتقدم</span>
+                        </div>
+                        <ChevronLeft className="rotate-0 group-open:-rotate-90 transition-transform duration-300" />
+                      </summary>
+                      <div className="border-t border-slate-800 p-1 bg-[#0f172a]">
+                        <div className="relative">
+                          <div className="absolute top-0 right-0 p-2 opacity-50 pointer-events-none text-[10px] text-slate-500 font-mono">HTML MODE</div>
+                          <textarea
+                            value={newPost.html || ''}
+                            onChange={e => setNewPost({ ...newPost, html: e.target.value })}
+                            className="w-full p-6 text-sm font-mono bg-[#0f172a] text-emerald-400 placeholder:text-slate-700 outline-none h-80 resize-y leading-relaxed"
+                            dir="ltr"
+                            placeholder="<!-- Add custom HTML blocks here -->"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </details>
                   </div>
-                  <button type="submit" className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-royal shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
-                    {isEditingPost ? <Save size={20} /> : <FilePlus size={20} />}
-                    <span>{isEditingPost ? 'حفظ التعديلات' : 'نشر المقال'}</span>
-                  </button>
-                </form>
-              </div>
-              <div className="lg:col-span-2 space-y-6 order-1 lg:order-2">
-                <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="p-8 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2"><FileText size={24} className="text-blue-500" /> مكتبة المقالات</h3>
-                    <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold">{customPosts.length} مقال</span>
+                </div>
+
+                {/* Right Column: Sidebar Settings */}
+                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-32">
+
+                  {/* Publish Actions */}
+                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                    <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Send size={18} className="text-blue-500" /> النشر</h4>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <span className="text-sm font-bold text-slate-500">الحالة:</span>
+                        <select
+                          value={newPost.status || 'published'}
+                          onChange={e => setNewPost({ ...newPost, status: e.target.value as 'published' | 'draft' })}
+                          className="bg-transparent font-bold text-slate-800 outline-none text-sm cursor-pointer"
+                        >
+                          <option value="published">منشور</option>
+                          <option value="draft">مسودة</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl mb-2">
+                        <span className="text-sm font-bold text-slate-500">التاريخ:</span>
+                        <input
+                          type="text"
+                          value={newPost.date || new Date().toLocaleDateString('ar-MA')}
+                          disabled
+                          className="bg-transparent font-bold text-slate-800 outline-none text-sm text-left w-24 opacity-60 cursor-not-allowed"
+                        />
+                      </div>
+
+                      <button type="submit" className="w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-royal shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
+                        {isEditingPost ? <Save size={18} /> : <Send size={18} />}
+                        <span>{isEditingPost ? 'حفظ التغييرات' : 'نشر الآن'}</span>
+                      </button>
+
+                      {isEditingPost && (
+                        <button
+                          type="button"
+                          onClick={resetPostForm}
+                          className="w-full py-3 bg-white border-2 border-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition-all"
+                        >
+                          إلغاء التعديل
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-right">
-                      <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase border-b border-gray-100">
-                        <tr><th className="p-6">المقال</th><th className="p-6 hidden sm:table-cell">الحالة</th><th className="p-6 hidden md:table-cell">التاريخ</th><th className="p-6 text-center">إجراءات</th></tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {customPosts.map(post => (
-                          <tr key={post.id} className="hover:bg-blue-50/30 transition-colors group">
-                            <td className="p-6">
-                              <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm shrink-0">
-                                  <img src={post.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
-                                </div>
-                                <div>
-                                  <p className="font-bold text-slate-900 text-base line-clamp-1 mb-1.5">{post.title}</p>
-                                  <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md border border-slate-200">{post.category}</span>
-                                </div>
+
+                  {/* Category */}
+                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                    <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Filter size={18} className="text-purple-500" /> التصنيف</h4>
+                    <div className="relative">
+                      <select value={newPost.category || 'نصائح'} onChange={e => setNewPost({ ...newPost, category: e.target.value })} className="w-full p-4 rounded-xl border-2 border-slate-100 focus:border-purple-500 outline-none bg-slate-50 focus:bg-white font-bold text-slate-800 appearance-none cursor-pointer transition-all">
+                        <option>نصائح</option><option>تقنيات</option><option>توجيه</option><option>الحفظ والمراجعة</option><option>الصحة والدراسة</option>
+                      </select>
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><ChevronLeft size={18} className="-rotate-90" /></div>
+                    </div>
+                  </div>
+
+                  {/* Featured Image */}
+                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                    <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Image size={18} className="text-emerald-500" /> صورة الغلاف</h4>
+                    <div className="space-y-4">
+                      <div className="relative group overflow-hidden rounded-2xl bg-slate-100 aspect-video border-2 border-dashed border-slate-300 flex items-center justify-center">
+                        {newPost.image ? (
+                          <img src={newPost.image} alt="Cover Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Invalid+Image')} />
+                        ) : (
+                          <div className="text-center text-slate-400 p-4">
+                            <Image size={32} className="mx-auto mb-2 opacity-50" />
+                            <p className="text-xs font-bold">معاينة الصورة</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={newPost.image || ''}
+                        onChange={e => setNewPost({ ...newPost, image: e.target.value })}
+                        className="w-full p-3 text-xs font-medium rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white transition-all"
+                        placeholder="أدخل رابط الصورة (URL)..."
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* --- POSTS LIST TAB --- */}
+          {activeTab === 'posts-list' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4">
+              <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2"><FileText size={24} className="text-blue-500" /> مكتبة المقالات</h3>
+                  <span className="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold">{customPosts.length} مقال</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right">
+                    <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase border-b border-gray-100">
+                      <tr><th className="p-6">المقال</th><th className="p-6 hidden sm:table-cell">الحالة</th><th className="p-6 hidden md:table-cell">التاريخ</th><th className="p-6 text-center">إجراءات</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {customPosts.map(post => (
+                        <tr key={post.id} className="hover:bg-blue-50/30 transition-colors group">
+                          <td className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm shrink-0">
+                                <img src={post.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
                               </div>
-                            </td>
-                            <td className="p-6 hidden sm:table-cell"><StatusBadge status={post.status || 'published'} /></td>
-                            <td className="p-6 text-sm font-bold text-slate-400 hidden md:table-cell">{post.date}</td>
-                            <td className="p-6">
-                              <div className="flex justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => handleEditPost(post)} className="p-2.5 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 hover:scale-110 transition-all" title="تعديل"><PenTool size={18} /></button>
-                                <button onClick={() => handleDeletePost(post.id)} className="p-2.5 text-red-600 bg-red-50 rounded-xl hover:bg-red-100 hover:scale-110 transition-all" title="حذف"><Trash2 size={18} /></button>
+                              <div>
+                                <p className="font-bold text-slate-900 text-base line-clamp-1 mb-1.5">{post.title}</p>
+                                <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md border border-slate-200">{post.category}</span>
                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                            </div>
+                          </td>
+                          <td className="p-6 hidden sm:table-cell"><StatusBadge status={post.status || 'published'} /></td>
+                          <td className="p-6 text-sm font-bold text-slate-400 hidden md:table-cell">{post.date}</td>
+                          <td className="p-6">
+                            <div className="flex justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => handleEditPost(post)} className="p-2.5 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 hover:scale-110 transition-all" title="تعديل"><PenTool size={18} /></button>
+                              <button onClick={() => handleDeletePost(post.id)} className="p-2.5 text-red-600 bg-red-50 rounded-xl hover:bg-red-100 hover:scale-110 transition-all" title="حذف"><Trash2 size={18} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
