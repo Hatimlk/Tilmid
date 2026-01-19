@@ -23,6 +23,7 @@ export interface BlogPost {
   image: string;
   excerpt: string;
   content?: string;
+  html?: string;
   status?: 'published' | 'draft';
   views?: number;
   readingTime?: string;
