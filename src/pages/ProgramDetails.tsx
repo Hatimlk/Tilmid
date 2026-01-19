@@ -347,7 +347,7 @@ export const ProgramDetails: React.FC = () => {
     <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30">
 
       {/* Hero Section */}
-      <div className={`relative pt-32 pb-32 lg:pt-48 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
+      <div className={`relative pt-16 pb-32 lg:pt-24 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className={`absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[120px] opacity-30 animate-blob ${theme.blob1}`}></div>

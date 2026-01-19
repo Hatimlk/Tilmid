@@ -110,7 +110,7 @@ export const CoachingOffer: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden font-sans w-full max-w-full">
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-16 lg:pt-36 lg:pb-24 bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white overflow-hidden rounded-b-[2rem] lg:rounded-b-[2.5rem] shadow-xl">
+      <section className="relative pt-16 pb-16 lg:pt-24 lg:pb-24 bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white overflow-hidden rounded-b-[2rem] lg:rounded-b-[2.5rem] shadow-xl">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-blob"></div>
           <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
@@ -204,7 +204,7 @@ export const CoachingOffer: React.FC = () => {
                       <label className="block text-sm font-black text-slate-700 mr-2 uppercase tracking-wide">المستوى الدراسي</label>
                       <div className="relative">
                         <select name="grade" value={formData.grade} onChange={handleInputChange} className="w-full pl-4 pr-12 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-primary outline-none transition-all font-black text-lg appearance-none cursor-pointer">
-                          <option>2 باكالوريا</option><option>1 باكالوريا</option><option>جذع مشترك</option>
+                          <option>التعليم العالي</option><option>2 باكالوريا</option><option>1 باكالوريا</option><option>جذع مشترك</option>
                         </select>
                         <GraduationCap size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" />
                         <ChevronDown size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />

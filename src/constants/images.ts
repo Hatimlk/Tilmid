@@ -1,4 +1,5 @@
 import YassineImage from '../assets/yassine-image.png';
+import TilmidHomeHero from '../assets/tilmid-home page.jpg';
 
 export const IMAGES = {
   LOGOS: {
@@ -7,7 +8,7 @@ export const IMAGES = {
   },
   HERO: {
     // Main Hero Image on Home Page
-    HOME_MAIN: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    HOME_MAIN: TilmidHomeHero,
   },
   ABOUT: {
     // Founder (Professor Yassine) Profile Picture

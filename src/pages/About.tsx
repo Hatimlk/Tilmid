@@ -9,7 +9,7 @@ export const About: React.FC = () => {
     <div className="min-h-screen bg-white overflow-hidden font-sans">
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 bg-slate-900 text-white overflow-hidden">
+      <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-32 bg-slate-900 text-white overflow-hidden">
         {/* Background Effects */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-blob"></div>
