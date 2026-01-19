@@ -211,13 +211,13 @@ export const Home: React.FC = () => {
     return target;
   };
 
-  const nationalDate = useMemo(() => getExamDate(5, 10), []);
-  const regionalDate = useMemo(() => getExamDate(5, 15), []);
+  const nationalDate = useMemo(() => getExamDate(5, 4), []);
+  const regionalDate = useMemo(() => getExamDate(5, 1), []);
 
   return (
     <>
       {/* Hero Section - Optimized Stacking for Mobile */}
-      <section className="relative pt-24 pb-32 lg:pt-48 lg:pb-48 overflow-hidden bg-[#f8fafc]">
+      <section className="relative pt-8 pb-32 lg:pt-16 lg:pb-48 overflow-hidden bg-[#f8fafc]">
         {/* Global Grain Overlay */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] mix-blend-overlay">
           <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -270,7 +270,7 @@ export const Home: React.FC = () => {
               <div className="relative z-10 group perspective-1000">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 to-purple-600/30 rounded-[3.5rem] blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-700 animate-pulse-slow"></div>
                 <div className="relative bg-white/40 backdrop-blur-sm p-4 rounded-[3.5rem] shadow-2xl border border-white/50 transform transition-transform duration-700 hover:rotate-1 hover:scale-[1.01]">
-                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="rounded-[3rem] w-full object-cover h-[400px] sm:h-[550px] lg:h-[650px] shadow-lg" loading="eager" />
+                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="rounded-[3rem] w-full h-auto object-contain shadow-lg" loading="eager" />
 
                   {/* Floating Stats Card - Glassmorphism */}
                   <div className="absolute -bottom-8 -right-8 bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] border border-white/60 animate-float hidden md:flex items-center gap-5 ring-1 ring-slate-100">
@@ -288,7 +288,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Programs Showcase Section */}
-      <section className="relative z-20 -mt-20 px-4 mb-24">
+      <section className="relative z-20 -mt-20 px-4 mb-12">
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ProgramCard
@@ -314,7 +314,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Modern Exam Countdown Banner - Responsive & High Contrast */}
-      <section className="relative z-30 mt-12 lg:mt-24 px-4">
+      <section className="relative z-30 mt-8 lg:mt-12 px-4">
         <div className="container mx-auto max-w-7xl">
           <div className="bg-slate-900 bg-gradient-to-br from-slate-900 via-[#0f172a] to-slate-900 rounded-[3.5rem] md:rounded-[4rem] px-6 py-10 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(15,23,42,0.6)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/10 ring-1 ring-white/5">
             <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
@@ -342,7 +342,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Services Grid - Interactive Cards */}
-      <section id="services" className="py-32 bg-[#f8fafc] pt-40 lg:pt-52 relative">
+      <section id="services" className="py-16 bg-[#f8fafc] pt-24 lg:pt-32 relative">
         {/* Decorative Background Elements */}
         <div className="absolute top-1/4 left-0 w-full h-[500px] bg-gradient-to-b from-white/0 via-white/80 to-white/0 skew-y-3 pointer-events-none"></div>
 
@@ -372,7 +372,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Media & Reels Section - Visual Video Cards */}
-      <section id="media" className="py-32 bg-[#f8fafc] relative overflow-hidden">
+      <section id="media" className="py-10 bg-[#f8fafc] relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob"></div>
@@ -402,7 +402,7 @@ export const Home: React.FC = () => {
 
 
       {/* Success Stories Slider */}
-      <section className="py-32 bg-[#f8fafc] overflow-hidden border-t border-slate-100 relative">
+      <section className="py-10 bg-[#f8fafc] overflow-hidden border-t border-slate-100 relative">
         <div className="container mx-auto px-4 lg:px-8 mb-20 text-center relative z-10">
           <span className="text-primary font-black tracking-widest text-xs uppercase block mb-4">قصص نجاح</span>
           <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">أبطال تلميذ <span className="text-primary">يشاركون</span> تجربتهم</h2>
@@ -453,7 +453,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Final CTA Section - Compact Version */}
-      <section className="py-24 bg-[#f8fafc]">
+      <section className="py-16 bg-[#f8fafc]">
         <div className="container mx-auto px-4">
           <div className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 text-center relative overflow-hidden shadow-2xl border border-white/5 max-w-5xl mx-auto">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-royal/20 opacity-40"></div>

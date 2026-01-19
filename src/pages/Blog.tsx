@@ -52,7 +52,7 @@ export const Blog: React.FC = () => {
 
       {/* 4. Hero Section Background with Texture Pattern */}
       {/* 4. Hero Section Background with Texture Pattern */}
-      <section className="relative bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white pt-32 pb-48 lg:pt-48 lg:pb-72 overflow-hidden rounded-b-[3rem] lg:rounded-b-[5rem] shadow-2xl">
+      <section className="relative bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white pt-16 pb-32 lg:pt-24 lg:pb-48 overflow-hidden rounded-b-[3rem] lg:rounded-b-[5rem] shadow-2xl">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/30 rounded-full blur-[100px] animate-blob"></div>
           <div className="absolute bottom-[0%] right-[-10%] w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px] animate-blob animation-delay-2000"></div>

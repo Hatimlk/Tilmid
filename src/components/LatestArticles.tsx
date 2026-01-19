@@ -28,7 +28,7 @@ export const LatestArticles: React.FC = () => {
   if (latestPosts.length === 0) return null;
 
   return (
-    <section className="py-32 bg-[#f8fafc] relative overflow-hidden">
+    <section className="py-10 bg-[#f8fafc] relative overflow-hidden">
       {/* Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-blue-50 rounded-full blur-[80px] opacity-60 mix-blend-multiply"></div>
@@ -36,7 +36,7 @@ export const LatestArticles: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-6 gap-6">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-primary font-bold text-xs uppercase tracking-wider rounded-full">
               <Sparkles size={14} className="fill-blue-500 text-blue-500" />
