@@ -233,9 +233,9 @@ export const Home: React.FC = () => {
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-2">
             {/* Text Content */}
-            <div className="w-full lg:flex-1 text-center lg:text-right space-y-8 animate-fade-in-up">
+            <div className="w-full lg:w-1/2 text-center lg:text-right space-y-8 animate-fade-in-up order-2 lg:order-1">
               <div className="inline-flex items-center gap-2.5 px-6 py-2.5 bg-white/60 backdrop-blur-md rounded-full text-primary font-bold text-xs lg:text-sm shadow-sm border border-white/60 mx-auto lg:mx-0 ring-1 ring-blue-50">
                 <Sparkles size={16} className="text-yellow-500 fill-yellow-500 animate-pulse" />
                 <span className="tracking-wide">المنصة رقم #1 للتوجيه والمواكبة في المغرب</span>
@@ -266,19 +266,25 @@ export const Home: React.FC = () => {
             </div>
 
             {/* Hero Image */}
-            <div className="w-full lg:flex-1 relative max-w-[550px] lg:max-w-none animate-fade-in-up animate-delay-200">
-              <div className="relative z-10 group perspective-1000">
-                <div className="absolute -inset-4 bg-gradient-to-tr from-primary/30 to-purple-600/30 rounded-[3.5rem] blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-700 animate-pulse-slow"></div>
-                <div className="relative bg-white/40 backdrop-blur-sm p-4 rounded-[3.5rem] shadow-2xl border border-white/50 transform transition-transform duration-700 hover:rotate-1 hover:scale-[1.01]">
-                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="rounded-[3rem] w-full h-auto object-contain shadow-lg" loading="eager" />
+            <div className="w-full lg:w-1/2 relative flex justify-center lg:justify-start animate-fade-in-up animate-delay-200 order-1 lg:order-2 pr-0 lg:pr-12">
+              <div className="relative z-10 w-full max-w-[400px]">
+                {/* Decorative Elements */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-pulse animation-delay-1000"></div>
 
-                  {/* Floating Stats Card - Glassmorphism */}
-                  <div className="absolute -bottom-8 -right-8 bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] border border-white/60 animate-float hidden md:flex items-center gap-5 ring-1 ring-slate-100">
-                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner"><TrendingUp size={28} /></div>
-                    <div>
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">معدل النجاح</div>
-                      <div className="text-2xl font-black text-slate-900">+98% سنوياً</div>
-                    </div>
+                {/* Main Image Container */}
+                <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-slate-900/5 bg-white">
+                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" loading="eager" />
+                </div>
+
+                {/* Floating Stats Card - MOVED TO TOP LEFT */}
+                <div className="absolute top-8 -left-6 bg-white p-4 rounded-2xl shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-float z-20">
+                  <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
+                    <TrendingUp size={24} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">معدل النجاح</div>
+                    <div className="text-xl font-black text-slate-900">+98% سنوياً</div>
                   </div>
                 </div>
               </div>
