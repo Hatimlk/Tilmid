@@ -216,78 +216,97 @@ export const Home: React.FC = () => {
 
   return (
     <>
-      {/* Hero Section - Optimized Stacking for Mobile */}
-      <section className="relative pt-8 pb-32 lg:pt-16 lg:pb-48 overflow-hidden bg-[#f8fafc]">
-        {/* Global Grain Overlay */}
-        <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[100] mix-blend-overlay">
-          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /></filter>
-            <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-          </svg>
-        </div>
-
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-5%] w-[400px] lg:w-[800px] h-[400px] lg:h-[800px] bg-blue-100/50 rounded-full blur-[100px] opacity-60 animate-blob mix-blend-multiply"></div>
-          <div className="absolute bottom-[10%] right-[-5%] w-[400px] lg:w-[600px] h-[400px] lg:h-[600px] bg-indigo-100/50 rounded-full blur-[100px] opacity-60 animate-blob animation-delay-2000 mix-blend-multiply"></div>
-          <div className="absolute top-[20%] right-[20%] w-[300px] h-[300px] bg-purple-100/40 rounded-full blur-[80px] opacity-50 animate-blob animation-delay-4000 mix-blend-multiply"></div>
+      {/* Hero Section - Redesigned */}
+      <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-52 overflow-hidden bg-[#f8fafc]">
+        {/* Background Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full opacity-[0.03]">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /></filter>
+              <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+            </svg>
+          </div>
+          {/* Gradients */}
+          <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-blob"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-400/20 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-blob animation-delay-2000"></div>
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-2">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             {/* Text Content */}
-            <div className="w-full lg:w-1/2 text-center lg:text-right space-y-8 animate-fade-in-up order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2.5 px-6 py-2.5 bg-white/60 backdrop-blur-md rounded-full text-primary font-bold text-xs lg:text-sm shadow-sm border border-white/60 mx-auto lg:mx-0 ring-1 ring-blue-50">
-                <Sparkles size={16} className="text-yellow-500 fill-yellow-500 animate-pulse" />
-                <span className="tracking-wide">المنصة رقم #1 للتوجيه والمواكبة في المغرب</span>
+            <div className="w-full lg:w-1/2 text-center lg:text-right space-y-8 order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-full border border-blue-100 shadow-sm mx-auto lg:mx-0 animate-fade-in-up ring-1 ring-blue-50/50">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                <span className="text-sm font-bold text-slate-700">المنصة رقم 1# للتوجيه والمواكبة في المغرب</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl lg:text-[5.5rem] font-black leading-[1.1] text-slate-900 tracking-tight lg:-mr-1">
-                تلميـذ رفيقك <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-indigo-600 drop-shadow-sm">
-                  نحو قمة التفوق
+              <h1 className="text-5xl sm:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight animate-fade-in-up animate-delay-100">
+                تلميذ رفيقك <br />
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">نحو قمة التفوق</span>
+                  <svg className="absolute w-full h-3 -bottom-1 left-0 text-blue-200/50 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
+                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
+                  </svg>
                 </span>
-                <span className="block text-3xl sm:text-5xl lg:text-6xl mt-2 text-slate-400 font-extrabold tracking-tight">الدراسي والمهني</span>
+                <span className="block text-3xl sm:text-5xl mt-2 text-slate-400 font-extrabold tracking-tight">الدراسي والمهني</span>
               </h1>
 
-              <p className="text-base lg:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 font-medium leading-relaxed opacity-90">
-                اكتشف منهجيات التعلم الحديثة، احصل على توجيه مدرسي دقيق، وانضم لآلاف التلاميذ الذين حققوا أحلامهم الدراسية معنا.
+              <p className="text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0 animate-fade-in-up animate-delay-200">
+                اكتشف منهجيات التعلم الحديثة، احصل على توجيه مدرسي دقيق، وانضم لآلاف التلاميذ الذين حققوا أهدافهم الدراسية معنا.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 w-full sm:w-auto pt-6">
-                <Link to="/coaching-offer" className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-lg hover:bg-primary transition-all duration-300 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.3)] hover:shadow-[0_20px_40px_-15px_rgba(37,99,235,0.4)] flex items-center justify-center gap-3 transform hover:-translate-y-1 ring-4 ring-transparent hover:ring-blue-100 group">
-                  ابدأ رحلتك الآن
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4 animate-fade-in-up animate-delay-300">
+                <Link to="/coaching-offer" className="w-full sm:w-auto px-10 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-1 flex items-center justify-center gap-2 group ring-4 ring-transparent hover:ring-blue-100">
+                  <span>ابدأ رحلتك الآن</span>
                   <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/about" className="w-full sm:w-auto px-10 py-5 bg-white text-slate-700 border border-slate-200 rounded-[2rem] font-black text-lg hover:border-primary/30 hover:text-primary hover:bg-blue-50/30 transition-all duration-300 flex items-center justify-center gap-3 shadow-sm hover:shadow-md transform hover:-translate-y-1">
-                  <PlayCircle size={22} className="fill-slate-100 text-slate-400 group-hover:text-primary group-hover:fill-blue-100 transition-colors" />
-                  تعرف علينا
+                <Link to="/about" className="w-full sm:w-auto px-10 py-4 bg-white text-slate-700 border border-slate-200 rounded-full font-bold text-lg hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md">
+                  <PlayCircle size={20} className="group-hover:text-blue-600" />
+                  <span>تعرف علينا</span>
                 </Link>
               </div>
             </div>
 
             {/* Hero Image */}
-            <div className="w-full lg:w-1/2 relative flex justify-center lg:justify-start animate-fade-in-up animate-delay-200 order-1 lg:order-2 pr-0 lg:pr-12">
-              <div className="relative z-10 w-full max-w-[400px]">
-                {/* Decorative Elements */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-pulse animation-delay-1000"></div>
-
-                {/* Main Image Container */}
-                <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-slate-900/5 bg-white">
-                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement Tilmid" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" loading="eager" />
+            <div className="w-full lg:w-1/2 relative order-1 lg:order-2 px-4 lg:px-0">
+              <div className="relative z-10 animate-float">
+                <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] border-white ring-1 ring-slate-900/5">
+                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" />
                 </div>
 
-                {/* Floating Stats Card - MOVED TO TOP LEFT */}
-                <div className="absolute top-8 -left-6 bg-white p-4 rounded-2xl shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-float z-20">
-                  <div className="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
+                {/* Floating Elements */}
+                <div className="absolute -bottom-6 -right-4 lg:-right-8 bg-white p-4 lg:p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-bounce-slow z-20">
+                  <div className="bg-green-100 p-3 rounded-xl text-green-600">
                     <TrendingUp size={24} />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">معدل النجاح</div>
-                    <div className="text-xl font-black text-slate-900">+98% سنوياً</div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">معدل النجاح</p>
+                    <p className="text-lg font-black text-slate-900">+98% سنوياً</p>
                   </div>
                 </div>
+
+                <div className="absolute -top-6 -left-4 lg:-left-8 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-white/50 animate-bounce-reverse z-20">
+                  <div className="flex -space-x-3 space-x-reverse">
+                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="" />
+                    </div>
+                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" alt="" />
+                    </div>
+                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="" />
+                    </div>
+                    <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-xs font-black text-blue-600">+3k</div>
+                  </div>
+                  <p className="text-center text-[10px] font-bold text-slate-400 mt-2">انضم إلينا اليوم</p>
+                </div>
               </div>
+
+              {/* Decorative Background for Image */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-blue-100/50 to-purple-100/50 rounded-full blur-3xl -z-10"></div>
             </div>
           </div>
         </div>
