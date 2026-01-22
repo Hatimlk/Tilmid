@@ -217,7 +217,7 @@ export const Home: React.FC = () => {
   return (
     <>
       {/* Hero Section - Redesigned */}
-      <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-52 overflow-hidden bg-[#f8fafc]">
+      <section className="relative pt-20 pb-32 lg:pt-20 lg:pb-52 overflow-hidden bg-[#f8fafc]">
         {/* Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-full opacity-[0.03]">
