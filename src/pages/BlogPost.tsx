@@ -126,7 +126,7 @@ export const BlogPost = () => {
                           <h2 id={`section-${idx + 1}`} className="text-2xl font-black text-slate-900 flex items-center gap-3">
                             <div className={`w-2 h-8 ${themeColors[idx % 3]} rounded-full`}></div> {section.title}
                           </h2>
-                          <p>{section.content}</p>
+                          <p className="whitespace-pre-line leading-relaxed">{section.content}</p>
 
                           {section.list && (
                             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">

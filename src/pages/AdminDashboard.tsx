@@ -244,26 +244,101 @@ const RefinementModal = ({ onClose, onComplete, initialContent }: { onClose: () 
   }, [step]);
 
   const finishRefinement = () => {
-    // Mock Refinement Logic
-    const lines = initialContent.split('\n').filter(line => line.trim() !== '');
-    const title = lines[0] || 'عنوان مقترح من الملف';
-    const content = lines.slice(1).join('\n\n');
+    // Advanced Processing: Smart Parsing logic
+    const rawLines = initialContent.split(/\r?\n/).map(l => l.trim()).filter(l => l);
 
-    // Simulate SEO and Style improvements
+    if (rawLines.length === 0) {
+      onComplete({ title: 'Untitled', content: '', sections: [] });
+      onClose();
+      return;
+    }
+
+    // 1. Title Extraction (Assume first line is title)
+    const title = rawLines[0];
+    const bodyLines = rawLines.slice(1);
+
+    // 2. Content Pattern Recognition
+    const sections: any[] = [];
+    let currentSection: { title: string, content: string[], list: any[] } = {
+      title: "نظرة عامة",
+      content: [],
+      list: []
+    };
+
+    // Helper to detect if a line is likely a list item
+    const isListItem = (line: string) => {
+      return /^[-*•\d\.]/.test(line) || (line.length < 60 && !line.endsWith('.'));
+    };
+
+    // Helper to detect if a line is likely a header
+    const isHeader = (line: string) => {
+      return line.length < 50 && !line.endsWith('.') && !isListItem(line);
+    };
+
+    for (let i = 0; i < bodyLines.length; i++) {
+      const line = bodyLines[i];
+
+      if (isHeader(line) && currentSection.content.length > 0) {
+        // Push previous section
+        sections.push({
+          title: currentSection.title,
+          content: currentSection.content.join('\n\n'),
+          list: currentSection.list.length > 0 ? currentSection.list : undefined
+        });
+        // Start new section
+        currentSection = { title: line, content: [], list: [] };
+      } else if (isListItem(line)) {
+        // It's a list item
+        currentSection.list.push({ t: line, d: '' }); // Simple list item
+      } else {
+        // Regular paragraph
+        currentSection.content.push(line);
+      }
+    }
+
+    // Push the final section
+    sections.push({
+      title: currentSection.title,
+      content: currentSection.content.join('\n\n'),
+      list: currentSection.list.length > 0 ? currentSection.list : undefined
+    });
+
+    // Fallback: If heuristic failed (only 1 section), force split for visual appeal
+    if (sections.length === 1 && sections[0].content.length > 500) {
+      const fullText = sections[0].content;
+      const splitIdx = Math.floor(fullText.length / 2);
+      const part1 = fullText.substring(0, splitIdx);
+      const part2 = fullText.substring(splitIdx);
+
+      sections[0].content = part1;
+      sections.push({
+        title: "تتمة الموضوع",
+        content: part2,
+        list: sections[0].list
+      });
+    }
+
+    // Enhance List Items (Card formatting)
+    sections.forEach(sec => {
+      if (sec.list && sec.list.length > 0) {
+        sec.list = sec.list.map((item: any) => {
+          const parts = item.t.replace(/^[-*•\d\.]+\s*/, '').split(/[:\-]/);
+          return {
+            t: parts[0].trim(),
+            d: parts[1] ? parts[1].trim() : "نقطة مهمة يجب التركيز عليها"
+          };
+        }).slice(0, 6);
+      }
+    });
+
     const refinedData = {
       title: title,
-      excerpt: content.substring(0, 150) + '...',
-      content: `
-## مقدمة
-${content.substring(0, 300)}...
-
-## النقاط الرئيسية
-* نقطة محسنة 1
-* نقطة محسنة 2
-
-## الخاتمة
-${content.substring(content.length - 200)}
-      `,
+      excerpt: (sections[0]?.content || "").substring(0, 150) + '...',
+      content: bodyLines.join('\n\n'),
+      sections: sections.length > 0 ? sections : [
+        { title: "مقدمة", content: bodyLines.slice(0, 3).join('\n\n') },
+        { title: "التفاصيل", content: bodyLines.slice(3).join('\n\n') }
+      ],
       category: 'نصائح',
       image: `https://source.unsplash.com/random/800x600/?education`
     };
@@ -274,53 +349,54 @@ ${content.substring(content.length - 200)}
     }, 1000);
   };
 
-  const getStepLabel = () => {
-    switch (step) {
-      case 'analyzing': return 'تحليل المحتوى...';
-      case 'optimizing': return 'تحسين السيو (SEO)...';
-      case 'styling': return 'تنسيق وإخراج المقال...';
-      case 'complete': return 'اكتمل التحسين!';
-      default: return '';
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-8 text-center relative overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-8 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
           <div className="relative z-10">
             <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30 shadow-lg">
               <Sparkles size={32} className="text-white animate-pulse" />
             </div>
             <h2 className="text-2xl font-black text-white mb-2">تحسين المحتوى</h2>
-            <p className="text-emerald-50 font-medium text-sm">جاري معالجة الملف وتحسينه بذكاء...</p>
+            <p className="text-cyan-100 font-medium text-sm">جاري معالجة وتنسيق الملف المرفق...</p>
           </div>
         </div>
-        <div className="p-10 text-center">
-          {step === 'complete' ? (
-            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in">
-              <Check size={40} strokeWidth={3} />
-            </div>
-          ) : (
-            <div className="mb-8 relative w-32 h-32 mx-auto">
-              <svg className="animate-spin w-full h-full text-emerald-100" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center font-black text-emerald-600 text-lg">
-                {Math.round(progress)}%
-              </div>
-            </div>
-          )}
 
-          <h3 className="text-xl font-bold text-slate-900 mb-2">{getStepLabel()}</h3>
-          {step !== 'complete' && <p className="text-slate-500 text-sm animate-pulse">يرجى الانتظار قليلاً</p>}
+        <div className="p-8">
+          <div className="text-center py-8">
+            {step === 'complete' ? (
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in">
+                <Check size={40} strokeWidth={3} />
+              </div>
+            ) : (
+              <div className="mb-6 relative w-24 h-24 mx-auto">
+                <svg className="animate-spin w-full h-full text-blue-100" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center font-black text-blue-600 text-lg">
+                  {Math.round(progress)}%
+                </div>
+              </div>
+            )}
+
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              {step === 'analyzing' && 'تحليل المحتوى...'}
+              {step === 'optimizing' && 'تحسين الصياغة...'}
+              {step === 'styling' && 'تنسيق العرض...'}
+              {step === 'complete' && 'تم الانتهاء!'}
+            </h3>
+            <p className="text-slate-500 text-sm animate-pulse">
+              {step !== 'complete' ? 'يرجى الانتظار قليلاً' : 'تم تجهيز المقال بنجاح'}
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
 
 // --- MAIN COMPONENT ---
 
@@ -368,6 +444,7 @@ export const AdminDashboard: React.FC = () => {
     date: '',
     excerpt: '',
     content: '',
+    sections: [],
     image: '',
     status: 'published'
   });
@@ -487,7 +564,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const resetPostForm = () => {
-    setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', html: '', image: '', status: 'published' });
+    setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', sections: [], html: '', image: '', status: 'published' });
     setIsEditingPost(false);
     setCreationMode('selection');
   };
@@ -665,6 +742,7 @@ export const AdminDashboard: React.FC = () => {
       title: data.title,
       excerpt: data.excerpt,
       content: data.content,
+      sections: data.sections,
       category: data.category
     }));
     setCreationMode('editor');
