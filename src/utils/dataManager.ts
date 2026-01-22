@@ -1,4 +1,4 @@
-import { BlogPost, Student, Appointment, SuccessStory, StudyResource } from '../types';
+import { BlogPost, Student, Appointment, SuccessStory, StudyResource, ContactMessage } from '../types';
 import { IMAGES } from '../constants/images';
 import { BLOG_POSTS } from '../constants';
 
@@ -7,7 +7,8 @@ const KEYS = {
   STUDENTS: 'tilmid_students',
   APPOINTMENTS: 'tilmid_appointments',
   STORIES: 'tilmid_stories',
-  RESOURCES: 'tilmid_resources'
+  RESOURCES: 'tilmid_resources',
+  MESSAGES: 'tilmid_messages'
 };
 
 const SEED_RESOURCES: StudyResource[] = [
@@ -90,6 +91,25 @@ export const dataManager = {
     localStorage.setItem(KEYS.APPOINTMENTS, JSON.stringify(apps));
   },
   getStories: (): SuccessStory[] => JSON.parse(localStorage.getItem(KEYS.STORIES) || '[]'),
+  saveStory: (story: SuccessStory) => {
+    const stories = dataManager.getStories();
+    stories.unshift(story);
+    localStorage.setItem(KEYS.STORIES, JSON.stringify(stories));
+  },
+  deleteStory: (id: number) => {
+    const stories = dataManager.getStories();
+    const updated = stories.filter(s => s.id !== id);
+    localStorage.setItem(KEYS.STORIES, JSON.stringify(updated));
+  },
+
+  // --- Messages ---
+  getMessages: (): ContactMessage[] => JSON.parse(localStorage.getItem(KEYS.MESSAGES) || '[]'),
+  saveMessage: (msg: ContactMessage) => {
+    const messages = dataManager.getMessages();
+    messages.unshift(msg);
+    localStorage.setItem(KEYS.MESSAGES, JSON.stringify(messages));
+  },
+
 
   // --- Post Management ---
   savePost: (post: BlogPost) => {

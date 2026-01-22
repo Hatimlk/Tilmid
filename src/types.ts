@@ -115,3 +115,13 @@ export interface Appointment {
   status: 'pending' | 'confirmed' | 'cancelled';
   type: string;
 }
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  phone: string;
+  type: string;
+  message: string;
+  date: string;
+  status: 'new' | 'read';
+}

@@ -4,12 +4,13 @@ import {
   Shield, LayoutDashboard, FilePlus, LogOut, Trash2, Eye,
   CheckCircle, Users, Calendar,
   Search, PenTool, Settings,
-  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText, Sparkles, Wand2, Loader2, Send, Image
+  Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText, Sparkles, Wand2, Loader2, Send, Image, MessageSquare, Star, Upload
 } from 'lucide-react';
 import { ADMIN_CREDENTIALS, CUSTOM_POSTS_KEY, BLOG_POSTS, GLOBAL_APPOINTMENTS_KEY, STUDENT_ACCOUNTS, GLOBAL_STUDENTS_KEY } from '../constants';
-import { BlogPost, Appointment, Student } from '../types';
+import { BlogPost, Appointment, Student, ContactMessage, SuccessStory } from '../types';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
+import mammoth from 'mammoth';
 
 // --- SUB COMPONENTS ---
 
@@ -214,6 +215,113 @@ const GenerativeBlogModal = ({ onClose, onGenerate }: { onClose: () => void, onG
   );
 };
 
+// --- REFINEMENT MODAL ---
+const RefinementModal = ({ onClose, onComplete, initialContent }: { onClose: () => void, onComplete: (data: any) => void, initialContent: string }) => {
+  const [step, setStep] = useState<'analyzing' | 'optimizing' | 'styling' | 'complete'>('analyzing');
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.random() * 5;
+      if (currentProgress >= 100) {
+        if (step === 'analyzing') {
+          setStep('optimizing');
+          currentProgress = 0;
+        } else if (step === 'optimizing') {
+          setStep('styling');
+          currentProgress = 0;
+        } else if (step === 'styling') {
+          setStep('complete');
+          clearInterval(interval);
+          finishRefinement();
+        }
+      }
+      setProgress(Math.min(currentProgress, 100));
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [step]);
+
+  const finishRefinement = () => {
+    // Mock Refinement Logic
+    const lines = initialContent.split('\n').filter(line => line.trim() !== '');
+    const title = lines[0] || 'عنوان مقترح من الملف';
+    const content = lines.slice(1).join('\n\n');
+
+    // Simulate SEO and Style improvements
+    const refinedData = {
+      title: title,
+      excerpt: content.substring(0, 150) + '...',
+      content: `
+## مقدمة
+${content.substring(0, 300)}...
+
+## النقاط الرئيسية
+* نقطة محسنة 1
+* نقطة محسنة 2
+
+## الخاتمة
+${content.substring(content.length - 200)}
+      `,
+      category: 'نصائح',
+      image: `https://source.unsplash.com/random/800x600/?education`
+    };
+
+    setTimeout(() => {
+      onComplete(refinedData);
+      onClose();
+    }, 1000);
+  };
+
+  const getStepLabel = () => {
+    switch (step) {
+      case 'analyzing': return 'تحليل المحتوى...';
+      case 'optimizing': return 'تحسين السيو (SEO)...';
+      case 'styling': return 'تنسيق وإخراج المقال...';
+      case 'complete': return 'اكتمل التحسين!';
+      default: return '';
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-8 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+          <div className="relative z-10">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30 shadow-lg">
+              <Sparkles size={32} className="text-white animate-pulse" />
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2">تحسين المحتوى</h2>
+            <p className="text-emerald-50 font-medium text-sm">جاري معالجة الملف وتحسينه بذكاء...</p>
+          </div>
+        </div>
+        <div className="p-10 text-center">
+          {step === 'complete' ? (
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in">
+              <Check size={40} strokeWidth={3} />
+            </div>
+          ) : (
+            <div className="mb-8 relative w-32 h-32 mx-auto">
+              <svg className="animate-spin w-full h-full text-emerald-100" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center font-black text-emerald-600 text-lg">
+                {Math.round(progress)}%
+              </div>
+            </div>
+          )}
+
+          <h3 className="text-xl font-bold text-slate-900 mb-2">{getStepLabel()}</h3>
+          {step !== 'complete' && <p className="text-slate-500 text-sm animate-pulse">يرجى الانتظار قليلاً</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- MAIN COMPONENT ---
 
 export const AdminDashboard: React.FC = () => {
@@ -221,13 +329,15 @@ export const AdminDashboard: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'create-post' | 'posts-list' | 'students' | 'appointments'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'create-post' | 'posts-list' | 'students' | 'appointments' | 'messages' | 'stories'>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Data States
   const [customPosts, setCustomPosts] = useState<BlogPost[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [stories, setStories] = useState<SuccessStory[]>([]);
 
   // Filter States
   const [studentSearch, setStudentSearch] = useState('');
@@ -244,6 +354,8 @@ export const AdminDashboard: React.FC = () => {
 
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [newBooking, setNewBooking] = useState<Partial<Appointment>>({ status: 'confirmed', type: 'live', date: '', time: '' });
+  const [showRefinementModal, setShowRefinementModal] = useState(false);
+  const [rawFileContent, setRawFileContent] = useState('');
 
   // Post Form State
   const [isEditingPost, setIsEditingPost] = useState(false);
@@ -273,6 +385,9 @@ export const AdminDashboard: React.FC = () => {
 
     const storedAppointments = localStorage.getItem(GLOBAL_APPOINTMENTS_KEY);
     if (storedAppointments) setAppointments(JSON.parse(storedAppointments));
+
+    setMessages(dataManager.getMessages());
+    setStories(dataManager.getStories());
 
     const storedStudents = localStorage.getItem(GLOBAL_STUDENTS_KEY);
     if (storedStudents) {
@@ -523,6 +638,38 @@ export const AdminDashboard: React.FC = () => {
     );
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      if (event.target?.result) {
+        try {
+          const arrayBuffer = event.target.result as ArrayBuffer;
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          setRawFileContent(result.value);
+          setShowRefinementModal(true);
+        } catch (error) {
+          console.error("Error parsing file:", error);
+          alert("حدث خطأ أثناء قراءة الملف. يرجى المحاولة مرة أخرى.");
+        }
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleRefinementComplete = (data: any) => {
+    setNewPost(prev => ({
+      ...prev,
+      title: data.title,
+      excerpt: data.excerpt,
+      content: data.content,
+      category: data.category
+    }));
+    setCreationMode('editor');
+  }
+
   const handleAiGeneration = (data: any) => {
     setNewPost(prev => ({
       ...prev,
@@ -538,6 +685,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3F6F9] flex flex-col lg:flex-row font-sans text-slate-800" dir="rtl">
       {showAiModal && <GenerativeBlogModal onClose={() => setShowAiModal(false)} onGenerate={handleAiGeneration} />}
+      {showRefinementModal && <RefinementModal onClose={() => setShowRefinementModal(false)} onComplete={handleRefinementComplete} initialContent={rawFileContent} />}
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -562,10 +710,12 @@ export const AdminDashboard: React.FC = () => {
           <div className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider mt-4">المحتوى</div>
           <SidebarItem id="create-post" label="إنشاء مقال" icon={PenTool} activeTab={activeTab} onClick={handleTabChange} />
           <SidebarItem id="posts-list" label="المقالات" icon={FileText} activeTab={activeTab} onClick={handleTabChange} />
+          <SidebarItem id="stories" label="قصص النجاح" icon={Star} activeTab={activeTab} onClick={handleTabChange} />
 
           <div className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider mt-4">الإدارة</div>
           <SidebarItem id="students" label="الطلاب" icon={Users} activeTab={activeTab} onClick={handleTabChange} />
           <SidebarItem id="appointments" label="المواعيد" icon={Calendar} activeTab={activeTab} onClick={handleTabChange} />
+          <SidebarItem id="messages" label="الرسائل" icon={MessageSquare} activeTab={activeTab} onClick={handleTabChange} />
         </nav>
 
         <div className="pt-8 border-t border-slate-800 mt-auto">
@@ -589,6 +739,8 @@ export const AdminDashboard: React.FC = () => {
               {activeTab === 'posts-list' && 'مكتبة المقالات'}
               {activeTab === 'students' && 'قاعدة بيانات الطلاب'}
               {activeTab === 'appointments' && 'المواعيد'}
+              {activeTab === 'messages' && 'صندوق الوارد'}
+              {activeTab === 'stories' && 'قصص النجاح'}
             </h2>
           </div>
 
@@ -711,6 +863,7 @@ export const AdminDashboard: React.FC = () => {
           {/* --- CREATE POST TAB --- */}
           {activeTab === 'create-post' && (
             <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 pb-20">
+
               <form onSubmit={handleSavePost} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
                 {/* Left Column: Main Editor */}
@@ -722,14 +875,6 @@ export const AdminDashboard: React.FC = () => {
                         <PenTool className="text-primary" size={24} />
                         {isEditingPost ? 'تعديل المقال' : 'كتابة مقال جديد'}
                       </h3>
-                      <button
-                        type="button"
-                        onClick={() => setShowAiModal(true)}
-                        className="text-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-2 animate-pulse"
-                      >
-                        <Sparkles size={14} />
-                        <span>مساعد الذكاء الاصطناعي</span>
-                      </button>
                     </div>
 
                     <div className="relative group">
@@ -745,56 +890,27 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Content Editor */}
-                  <div className="bg-white p-1 rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-                    <textarea
-                      required
-                      value={newPost.content || ''}
-                      onChange={e => setNewPost({ ...newPost, content: e.target.value })}
-                      className="w-full p-8 min-h-[500px] resize-none text-base font-medium bg-white focus:bg-slate-50/50 transition-all leading-relaxed outline-none rounded-[2.5rem] placeholder:text-slate-300"
-                      placeholder="ابدأ في كتابة قصتك الرائعة هنا..."
-                    ></textarea>
-                  </div>
-
-                  {/* Excerpt Section */}
-                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+                  {/* File Upload Section */}
+                  <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
                     <div className="flex items-center gap-2 mb-4">
-                      <FileText size={20} className="text-slate-400" />
-                      <label className="text-sm font-black text-slate-700 uppercase tracking-wider">مقتطف قصير (لتحسين SEO)</label>
+                      <Upload size={20} className="text-slate-400" />
+                      <label className="text-sm font-black text-slate-700 uppercase tracking-wider">رفع ملف المقال</label>
                     </div>
-                    <textarea
-                      required
-                      value={newPost.excerpt || ''}
-                      onChange={e => setNewPost({ ...newPost, excerpt: e.target.value })}
-                      className="w-full p-6 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none h-32 resize-none text-sm font-medium bg-slate-50 focus:bg-white transition-all leading-relaxed"
-                      placeholder="اكتب وصفاً مختصراً وجذاباً للمقال يظهر في محركات البحث..."
-                    ></textarea>
+                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors text-center cursor-pointer group relative">
+                      <input type="file" accept=".docx" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                      <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        <FileText size={28} />
+                      </div>
+                      <p className="text-slate-800 font-bold text-base mb-1">اضغط لرفع ملف (Word, PDF, TXT)</p>
+                      <p className="text-slate-400 text-xs font-bold">سيتم استيراد المحتوى تلقائياً</p>
+                    </div>
                   </div>
 
-                  {/* HTML Editor (Collapsible) */}
-                  <div className="bg-slate-900 rounded-[2.5rem] shadow-lg border border-slate-800 overflow-hidden group">
-                    <details className="w-full">
-                      <summary className="p-6 cursor-pointer flex items-center justify-between text-slate-400 hover:text-white transition-colors select-none list-none">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-slate-800 rounded-lg"><code className="text-xs">&lt;/&gt;</code></div>
-                          <span className="font-bold text-sm uppercase tracking-wider">محرر HTML المتقدم</span>
-                        </div>
-                        <ChevronLeft className="rotate-0 group-open:-rotate-90 transition-transform duration-300" />
-                      </summary>
-                      <div className="border-t border-slate-800 p-1 bg-[#0f172a]">
-                        <div className="relative">
-                          <div className="absolute top-0 right-0 p-2 opacity-50 pointer-events-none text-[10px] text-slate-500 font-mono">HTML MODE</div>
-                          <textarea
-                            value={newPost.html || ''}
-                            onChange={e => setNewPost({ ...newPost, html: e.target.value })}
-                            className="w-full p-6 text-sm font-mono bg-[#0f172a] text-emerald-400 placeholder:text-slate-700 outline-none h-80 resize-y leading-relaxed"
-                            dir="ltr"
-                            placeholder="<!-- Add custom HTML blocks here -->"
-                          ></textarea>
-                        </div>
-                      </div>
-                    </details>
-                  </div>
+
+
+
+
+
                 </div>
 
                 {/* Right Column: Sidebar Settings */}
@@ -880,6 +996,7 @@ export const AdminDashboard: React.FC = () => {
 
                 </div>
               </form>
+
             </div>
           )}
 
@@ -927,79 +1044,189 @@ export const AdminDashboard: React.FC = () => {
             </div>
           )}
 
+
           {/* --- STUDENTS TAB --- */}
-          {activeTab === 'students' && (
-            <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
-              <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-white">
-                <div className="relative w-full max-w-lg group">
-                  <Search size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-                  <input type="text" placeholder="بحث عن طالب..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="w-full pl-4 pr-14 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner" />
+          {
+            activeTab === 'students' && (
+              <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+                <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 bg-white">
+                  <div className="relative w-full max-w-lg group">
+                    <Search size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                    <input type="text" placeholder="بحث عن طالب..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="w-full pl-4 pr-14 py-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner" />
+                  </div>
+                  <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-primary shadow-lg transition-all w-full md:w-auto justify-center group"><UserPlus size={18} /> إضافة طالب</button>
                 </div>
-                <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-primary shadow-lg transition-all w-full md:w-auto justify-center group"><UserPlus size={18} /> إضافة طالب</button>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right min-w-[900px]">
+                    <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase border-b border-slate-100">
+                      <tr><th className="p-6">بيانات الطالب</th><th className="p-6">المعرف</th><th className="p-6">المستوى</th><th className="p-6">الحالة</th><th className="p-6 text-center">تحكم</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {filteredStudents.map(student => (
+                        <tr key={student.id} className="hover:bg-blue-50/40 transition-colors group">
+                          <td className="p-6">
+                            <div className="flex items-center gap-4 cursor-pointer" onClick={() => setViewStudent(student)}>
+                              <div className="w-12 h-12 rounded-full p-0.5 border-2 border-slate-100 overflow-hidden bg-white"><img src={student.avatar} className="w-full h-full object-cover" alt="" /></div>
+                              <div><span className="block font-bold text-slate-900">{student.name}</span><span className="text-xs text-slate-400">{student.joinDate}</span></div>
+                            </div>
+                          </td>
+                          <td className="p-6"><span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg" dir="ltr">{student.username}</span></td>
+                          <td className="p-6"><span className="text-sm font-bold text-slate-600">{student.grade}</span></td>
+                          <td className="p-6"><StatusBadge status={student.status} /></td>
+                          <td className="p-6"><div className="flex items-center justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity"><button onClick={() => setViewStudent(student)} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"><Eye size={18} /></button><button onClick={() => handleOpenStudentModal(student)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button><button onClick={() => toggleStudentStatus(student.id)} className={`p-2 rounded-lg transition-colors ${student.status === 'active' ? 'text-amber-500' : 'text-emerald-500'}`}>{student.status === 'active' ? <Ban size={18} /> : <Unlock size={18} />}</button><button onClick={() => deleteStudent(student.id)} className="p-2 text-red-400 hover:text-red-600"><Trash2 size={18} /></button></div></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-right min-w-[900px]">
-                  <thead className="bg-slate-50 text-slate-400 text-xs font-extrabold uppercase border-b border-slate-100">
-                    <tr><th className="p-6">بيانات الطالب</th><th className="p-6">المعرف</th><th className="p-6">المستوى</th><th className="p-6">الحالة</th><th className="p-6 text-center">تحكم</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {filteredStudents.map(student => (
-                      <tr key={student.id} className="hover:bg-blue-50/40 transition-colors group">
-                        <td className="p-6">
-                          <div className="flex items-center gap-4 cursor-pointer" onClick={() => setViewStudent(student)}>
-                            <div className="w-12 h-12 rounded-full p-0.5 border-2 border-slate-100 overflow-hidden bg-white"><img src={student.avatar} className="w-full h-full object-cover" alt="" /></div>
-                            <div><span className="block font-bold text-slate-900">{student.name}</span><span className="text-xs text-slate-400">{student.joinDate}</span></div>
-                          </div>
-                        </td>
-                        <td className="p-6"><span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg" dir="ltr">{student.username}</span></td>
-                        <td className="p-6"><span className="text-sm font-bold text-slate-600">{student.grade}</span></td>
-                        <td className="p-6"><StatusBadge status={student.status} /></td>
-                        <td className="p-6"><div className="flex items-center justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity"><button onClick={() => setViewStudent(student)} className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"><Eye size={18} /></button><button onClick={() => handleOpenStudentModal(student)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button><button onClick={() => toggleStudentStatus(student.id)} className={`p-2 rounded-lg transition-colors ${student.status === 'active' ? 'text-amber-500' : 'text-emerald-500'}`}>{student.status === 'active' ? <Ban size={18} /> : <Unlock size={18} />}</button><button onClick={() => deleteStudent(student.id)} className="p-2 text-red-400 hover:text-red-600"><Trash2 size={18} /></button></div></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+            )
+          }
 
           {/* --- APPOINTMENTS TAB --- */}
-          {activeTab === 'appointments' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-              <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                <div><h3 className="text-xl font-extrabold text-slate-900">إدارة المواعيد</h3><p className="text-slate-500 text-sm">تتبع وتنظيم جلسات التوجيه</p></div>
-                <button onClick={handleOpenAppointmentModal} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg transition-all"><CalendarPlus size={20} /> حجز موعد جديد</button>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="flex flex-col h-full"><h3 className="font-extrabold text-slate-900 mb-4 px-2">قيد الانتظار</h3>
-                  <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow">
-                    <div className="space-y-4 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
-                      {appointments.filter(a => a.status === 'pending').map(app => (
-                        <div key={app.id} className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-amber-200">
-                          <div className="flex justify-between items-start mb-4"><div><h4 className="font-bold text-slate-900 text-sm">{app.title}</h4><p className="text-xs text-slate-500">{app.studentName}</p></div><button onClick={() => deleteAppointment(app.id)} className="text-slate-300 hover:text-red-500"><X size={18} /></button></div>
-                          <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100"><span>{app.date}</span><span className="w-px h-3 bg-slate-300"></span><span>{app.time}</span></div>
-                          <div className="flex gap-3"><button onClick={() => updateAppointmentStatus(app.id, 'confirmed')} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2">قبول</button><button onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="flex-1 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-bold">رفض</button></div>
-                        </div>
-                      ))}
+          {
+            activeTab === 'appointments' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                  <div><h3 className="text-xl font-extrabold text-slate-900">إدارة المواعيد</h3><p className="text-slate-500 text-sm">تتبع وتنظيم جلسات التوجيه</p></div>
+                  <button onClick={handleOpenAppointmentModal} className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3.5 rounded-2xl font-bold shadow-lg transition-all"><CalendarPlus size={20} /> حجز موعد جديد</button>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="flex flex-col h-full"><h3 className="font-extrabold text-slate-900 mb-4 px-2">قيد الانتظار</h3>
+                    <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow">
+                      <div className="space-y-4 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
+                        {appointments.filter(a => a.status === 'pending').map(app => (
+                          <div key={app.id} className="bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-lg transition-all border border-transparent hover:border-amber-200">
+                            <div className="flex justify-between items-start mb-4"><div><h4 className="font-bold text-slate-900 text-sm">{app.title}</h4><p className="text-xs text-slate-500">{app.studentName}</p></div><button onClick={() => deleteAppointment(app.id)} className="text-slate-300 hover:text-red-500"><X size={18} /></button></div>
+                            <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100"><span>{app.date}</span><span className="w-px h-3 bg-slate-300"></span><span>{app.time}</span></div>
+                            <div className="flex gap-3"><button onClick={() => updateAppointmentStatus(app.id, 'confirmed')} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2">قبول</button><button onClick={() => updateAppointmentStatus(app.id, 'cancelled')} className="flex-1 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-bold">رفض</button></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col h-full"><h3 className="font-extrabold text-slate-900 mb-4 px-2">المواعيد القادمة</h3>
+                    <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow">
+                      <div className="space-y-3 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
+                        {appointments.filter(a => a.status === 'confirmed').map(app => (
+                          <div key={app.id} className="bg-white p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                            <div className="flex items-center gap-4"><div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-bold">{app.date.split('-')[2]}</div><div><h4 className="font-bold text-slate-900 text-sm mb-1">{app.title}</h4><p className="text-xs text-slate-500">{app.studentName} • {app.time}</p></div></div>
+                            <button onClick={() => deleteAppointment(app.id)} className="p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={18} /></button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col h-full"><h3 className="font-extrabold text-slate-900 mb-4 px-2">المواعيد القادمة</h3>
-                  <div className="bg-slate-100/50 p-4 rounded-[2.5rem] border border-slate-200/60 flex-grow">
-                    <div className="space-y-3 max-h-[calc(100vh-350px)] overflow-y-auto pr-2 custom-scrollbar">
-                      {appointments.filter(a => a.status === 'confirmed').map(app => (
-                        <div key={app.id} className="bg-white p-5 rounded-[2rem] shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
-                          <div className="flex items-center gap-4"><div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-bold">{app.date.split('-')[2]}</div><div><h4 className="font-bold text-slate-900 text-sm mb-1">{app.title}</h4><p className="text-xs text-slate-500">{app.studentName} • {app.time}</p></div></div>
-                          <button onClick={() => deleteAppointment(app.id)} className="p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={18} /></button>
-                        </div>
-                      ))}
-                    </div>
+              </div>
+            )
+          }
+
+          {/* --- MESSAGES TAB --- */}
+          {
+            activeTab === 'messages' && (
+              <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 space-y-6">
+                {messages.length === 0 ? (
+                  <div className="text-center py-20 bg-white rounded-[2.5rem] border border-gray-100">
+                    <MessageSquare size={48} className="mx-auto text-slate-200 mb-4" />
+                    <h3 className="text-xl font-bold text-slate-800">صندوق الوارد فارغ</h3>
+                    <p className="text-slate-400">لم تتلق أي رسائل جديدة بعد.</p>
                   </div>
+                ) : (
+                  messages.map((msg, i) => (
+                    <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-all">
+                      <div className="w-12 h-12 bg-blue-50 text-primary rounded-full flex items-center justify-center shrink-0">
+                        <MessageSquare size={20} />
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-bold text-lg text-slate-900">{msg.name}</h4>
+                            <span className="text-sm font-medium text-slate-500">{msg.phone}</span>
+                          </div>
+                          <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">{msg.date}</span>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-xl text-slate-700 font-medium leading-relaxed">
+                          <span className="block text-xs font-black text-primary uppercase mb-1">{msg.type}</span>
+                          {msg.message || 'لا توجد رسالة إضافية'}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )
+          }
+
+          {/* --- SUCCESS STORIES TAB --- */}
+          {
+            activeTab === 'stories' && (
+              <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 space-y-8">
+                {/* Add Story Form */}
+                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                    <Star className="text-yellow-400" fill="currentColor" /> إضافة قصة نجاح جديدة
+                  </h3>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    // Basic form handling within the render for simplicity or extract to handler
+                    const form = e.target as HTMLFormElement;
+                    const formData = new FormData(form);
+                    const newStory: SuccessStory = {
+                      id: Date.now(),
+                      name: formData.get('name') as string,
+                      role: formData.get('role') as string,
+                      content: formData.get('content') as string,
+                      image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.get('name')}`
+                    };
+                    dataManager.saveStory(newStory);
+                    setStories(prev => [newStory, ...prev]);
+                    form.reset();
+                    alert('تم إضافة القصة بنجاح!');
+                  }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">اسم الطالب</label>
+                      <input name="name" required className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-primary font-bold" placeholder="أحمد..." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">الصفة / المستوى</label>
+                      <input name="role" required className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-primary font-bold" placeholder="طالب هندسة..." />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-bold text-slate-700 mb-2">قصة النجاح</label>
+                      <textarea name="content" required className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-primary font-bold min-h-[100px]" placeholder="اكتب القصة هنا..."></textarea>
+                    </div>
+                    <div className="md:col-span-2">
+                      <button className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-primary transition-all">نشر القصة</button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Stories List */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {stories.map(story => (
+                    <div key={story.id} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 relative group hover:shadow-lg transition-all">
+                      <button onClick={() => {
+                        if (window.confirm('حذف هذه القصة؟')) {
+                          dataManager.deleteStory(story.id);
+                          setStories(prev => prev.filter(s => s.id !== story.id));
+                        }
+                      }} className="absolute top-6 left-6 text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={20} /></button>
+                      <div className="flex items-center gap-4 mb-4">
+                        <img src={story.image} alt={story.name} className="w-16 h-16 rounded-full bg-slate-100" />
+                        <div>
+                          <h4 className="font-bold text-lg text-slate-900">{story.name}</h4>
+                          <span className="text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded-full">{story.role}</span>
+                        </div>
+                      </div>
+                      <p className="text-slate-600 font-medium leading-relaxed">"{story.content}"</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )
+          }
+        </div >
       </main >
     </div >
   );

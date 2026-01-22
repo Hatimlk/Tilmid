@@ -1,4 +1,7 @@
 import React from 'react';
+import { dataManager } from '../utils/dataManager';
+import { ContactMessage } from '../types';
+
 
 export const Contact = () => {
   const [formState, setFormState] = React.useState({
@@ -14,8 +17,21 @@ export const Contact = () => {
     if (!formState.name || !formState.phone) return;
 
     setStatus('sending');
-    // Simulate API call
+
+    // Create Message Object
+    const newMessage: ContactMessage = {
+      id: Date.now().toString(),
+      name: formState.name,
+      phone: formState.phone,
+      type: formState.type,
+      message: formState.message,
+      date: new Date().toLocaleDateString('ar-MA'),
+      status: 'new'
+    };
+
+    // Simulate API call & Save
     setTimeout(() => {
+      dataManager.saveMessage(newMessage);
       setStatus('success');
       setFormState({ name: '', phone: '', type: 'توجيه مدرسي', message: '' });
       setTimeout(() => setStatus('idle'), 3000);
