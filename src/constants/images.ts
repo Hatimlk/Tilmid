@@ -1,6 +1,6 @@
 import YassineImage from '../assets/yassine-image.png';
 import TilmidHomeHero from '../assets/tilmid-home page.jpg';
-import TilmidVideo from '../assets/tilmidesite web.mov';
+import TilmidVideo from '../assets/tilmidesite-web.mov';
 import TilmidVideoThumbnail from '../assets/tilmid-video-thumbnail.png';
 
 export const IMAGES = {

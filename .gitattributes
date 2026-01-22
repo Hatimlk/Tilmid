@@ -1,1 +1,1 @@
-src/assets/tilmidesite[[:space:]]web.mov filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
