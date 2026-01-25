@@ -28,7 +28,7 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
       {/* Background Glow */}
       <div className="absolute -left-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-      <div className="relative w-18 h-18 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] group-hover:scale-110 transition-transform tabular-nums border border-blue-400/30">
+      <div className="relative w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] group-hover:scale-110 transition-transform tabular-nums border border-blue-400/30">
         {days}
       </div>
       <div className="text-right flex-1 select-none">
@@ -139,7 +139,7 @@ const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string 
     <div className={`absolute -top-10 -right-10 w-40 h-40 ${color} opacity-10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
 
     <div className="relative z-10">
-      <div className="w-18 h-18 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+      <div className="w-20 h-20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
         <Icon size={48} className={`${color.replace('bg-', 'text-')} drop-shadow-sm`} />
       </div>
 
@@ -152,6 +152,41 @@ const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string 
       </div>
     </div>
   </Link>
+);
+
+const HeroImage: React.FC = () => (
+  <div className="relative z-10 animate-float">
+    <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] border-white ring-1 ring-slate-900/5">
+      <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" />
+    </div>
+
+    {/* Floating Elements */}
+    <div className="absolute -bottom-6 -right-4 lg:-right-8 bg-white p-4 lg:p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-bounce-slow z-20">
+      <div className="bg-green-100 p-3 rounded-xl text-green-600">
+        <TrendingUp size={24} />
+      </div>
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">معدل النجاح</p>
+        <p className="text-lg font-black text-slate-900">+98% سنوياً</p>
+      </div>
+    </div>
+
+    <div className="absolute -top-6 -left-4 lg:-left-8 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-white/50 animate-bounce-reverse z-20">
+      <div className="flex -space-x-3 space-x-reverse">
+        <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="" />
+        </div>
+        <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" alt="" />
+        </div>
+        <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="" />
+        </div>
+        <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-xs font-black text-blue-600">+3k</div>
+      </div>
+      <p className="text-center text-[10px] font-bold text-slate-400 mt-2">انضم إلينا اليوم</p>
+    </div>
+  </div>
 );
 
 export const Home: React.FC = () => {
@@ -254,6 +289,11 @@ export const Home: React.FC = () => {
                 <span className="block text-3xl sm:text-5xl mt-2 text-slate-400 font-extrabold tracking-tight">الدراسي والمهني</span>
               </h1>
 
+              {/* Mobile Hero Image */}
+              <div className="block lg:hidden w-full max-w-md mx-auto my-8 px-4">
+                <HeroImage />
+              </div>
+
               <p className="text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0 animate-fade-in-up animate-delay-200">
                 اكتشف منهجيات التعلم الحديثة، احصل على توجيه مدرسي دقيق، وانضم لآلاف التلاميذ الذين حققوا أهدافهم الدراسية معنا.
               </p>
@@ -270,40 +310,9 @@ export const Home: React.FC = () => {
               </div>
             </div>
 
-            {/* Hero Image */}
-            <div className="w-full lg:w-1/2 relative order-1 lg:order-2 px-4 lg:px-0">
-              <div className="relative z-10 animate-float">
-                <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] border-white ring-1 ring-slate-900/5">
-                  <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" />
-                </div>
-
-                {/* Floating Elements */}
-                <div className="absolute -bottom-6 -right-4 lg:-right-8 bg-white p-4 lg:p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-bounce-slow z-20">
-                  <div className="bg-green-100 p-3 rounded-xl text-green-600">
-                    <TrendingUp size={24} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">معدل النجاح</p>
-                    <p className="text-lg font-black text-slate-900">+98% سنوياً</p>
-                  </div>
-                </div>
-
-                <div className="absolute -top-6 -left-4 lg:-left-8 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-white/50 animate-bounce-reverse z-20">
-                  <div className="flex -space-x-3 space-x-reverse">
-                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
-                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="" />
-                    </div>
-                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
-                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" alt="" />
-                    </div>
-                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
-                      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="" />
-                    </div>
-                    <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-xs font-black text-blue-600">+3k</div>
-                  </div>
-                  <p className="text-center text-[10px] font-bold text-slate-400 mt-2">انضم إلينا اليوم</p>
-                </div>
-              </div>
+            {/* Hero Image - Desktop Only */}
+            <div className="hidden lg:block w-full lg:w-1/2 relative order-1 lg:order-2 px-4 lg:px-0">
+              <HeroImage />
 
               {/* Decorative Background for Image */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-blue-100/50 to-purple-100/50 rounded-full blur-3xl -z-10"></div>
@@ -453,7 +462,7 @@ export const Home: React.FC = () => {
             dir="ltr"
           >
             {successStories.map((story, i) => (
-              <div key={i} className="w-[380px] md:w-[480px] bg-white p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group snap-center">
+              <div key={i} className="w-[85vw] md:w-[480px] bg-white p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group snap-center">
                 <div className="flex items-center gap-5 mb-8" dir="rtl">
                   <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>

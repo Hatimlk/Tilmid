@@ -32,6 +32,41 @@ import {
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from 'react-router-dom';
+import img0604 from '../assets/Testimonial/IMG_0604.jpg';
+import img0605 from '../assets/Testimonial/IMG_0605.jpg';
+import img0606 from '../assets/Testimonial/IMG_0606.jpg';
+import img0710 from '../assets/Testimonial/IMG_0710.PNG';
+import img0726 from '../assets/Testimonial/IMG_0726.PNG';
+import img0727 from '../assets/Testimonial/IMG_0727.PNG';
+import img2756 from '../assets/Testimonial/IMG_2756.jpg';
+import img2944 from '../assets/Testimonial/IMG_2944.jpg';
+import img2945 from '../assets/Testimonial/IMG_2945.jpg';
+import img2947 from '../assets/Testimonial/IMG_2947.jpg';
+
+const TESTIMONIALS = [
+  img0604, img0605, img0606, img0710, img0726, img0727, img2756, img2944, img2945, img2947
+];
+
+const Marquee: React.FC<{ children: React.ReactNode; direction?: 'left' | 'right'; speed?: number }> = ({ children, direction = 'left', speed = 40 }) => {
+  return (
+    <div className="relative flex overflow-hidden group">
+      <div
+        className={`flex gap-6 animate-scroll-rtl py-4 ${direction === 'right' ? 'direction-reverse' : ''} group-hover:[animation-play-state:paused]`}
+        style={{ animationDirection: direction === 'right' ? 'reverse' : 'normal', animationDuration: `${speed}s` }}
+      >
+        {children}
+        {children}
+      </div>
+      <div
+        className={`flex gap-6 animate-scroll-rtl py-4 absolute top-0 ${direction === 'right' ? 'direction-reverse' : ''} group-hover:[animation-play-state:paused]`}
+        style={{ animationDirection: direction === 'right' ? 'reverse' : 'normal', animationDuration: `${speed}s`, left: direction === 'left' ? '100%' : 'auto', right: direction === 'right' ? '100%' : 'auto' }}
+      >
+        {children}
+        {children}
+      </div>
+    </div>
+  );
+};
 
 export const CoachingOffer: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -280,6 +315,53 @@ export const CoachingOffer: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Testimonials "Wall of Love" Section */}
+        <section className="py-16 relative overflow-hidden">
+          {/* Background Elements */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 right-0 w-full h-[500px] bg-gradient-to-b from-blue-50/50 to-transparent"></div>
+          </div>
+
+          <div className="container mx-auto px-4 mb-12 text-center relative z-10">
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-emerald-100">
+              <Star size={16} fill="currentColor" />
+              <span>نتائج تتحدث عن نفسها</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">قصص نجاح حقيقية</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-xl font-bold">انضم إلى مئات التلاميذ الذين حققوا قفزة نوعية في مسارهم الدراسي.</p>
+          </div>
+
+          <div className="relative w-full space-y-8" dir="ltr">
+            {/* Top Gradient Fade */}
+            <div className="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-gray-50 to-transparent z-20"></div>
+            <div className="absolute top-0 right-0 w-20 h-full bg-gradient-to-l from-gray-50 to-transparent z-20"></div>
+
+            {/* Row 1: Scrolling Left */}
+            <div className="flex overflow-hidden relative w-full group">
+              <div className="flex gap-6 animate-scroll-rtl w-max group-hover:[animation-play-state:paused]">
+                {[...TESTIMONIALS, ...TESTIMONIALS].map((img, i) => (
+                  <div key={i} className="w-[280px] md:w-[350px] aspect-[3/4] rounded-3xl overflow-hidden border border-slate-100 shadow-sm relative group/card flex-shrink-0 bg-white">
+                    <img
+                      src={img}
+                      alt="Student Testimonial"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                      <span className="px-4 py-2 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-bold border border-white/30">تحقق من النتيجة</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 2: Scrolling Right (Simulated by reversing animation direction if supported, or just different content) */}
+            {/* Note: For simplicity in this single-file edit without complex CSS modules, using same direction but offset images or different speed/set would be easier. 
+                 Let's stick to one main row for now to ensure it looks clean, or add a second row if user insists on volume. 
+                 Let's do one high-quality row for mobile responsiveness safety first. */}
+          </div>
+        </section>
 
         {/* FAQ Section */}
         <div className="max-w-4xl mx-auto mt-24 px-4 pb-24">
