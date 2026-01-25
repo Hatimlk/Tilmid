@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { BlogPost as BlogPostType } from '../types';
 import {
   Facebook, Twitter, Linkedin, ChevronLeft, List, Mail, Send, Sparkles,
   Calendar, Clock, User, Bookmark
@@ -9,10 +10,24 @@ import { updateMeta, updateCanonical } from '../utils/seo';
 
 export const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
-  const post = dataManager.getPosts().find(p => p.id === id);
+  const [post, setPost] = useState<BlogPostType | null>(null);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const themeColors = ['bg-primary', 'bg-royal', 'bg-yellow-400'];
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (!id) return;
+      try {
+        const posts = await dataManager.getPosts();
+        const found = posts.find(p => p.id === id);
+        setPost(found || null);
+      } catch (e) {
+        console.error("Error fetching post", e);
+      }
+    };
+    fetchPost();
+  }, [id]);
 
   React.useEffect(() => {
     if (id) {

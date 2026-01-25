@@ -25,8 +25,15 @@ export const Blog: React.FC = () => {
     document.title = title;
 
     // Fetch posts
-    const posts = dataManager.getPosts().filter(p => p.status === 'published');
-    setAllPosts(posts);
+    const fetchPosts = async () => {
+      try {
+        const posts = await dataManager.getPosts();
+        setAllPosts(posts.filter(p => p.status === 'published'));
+      } catch (e) {
+        console.error("Error loading posts", e);
+      }
+    };
+    fetchPosts();
   }, []);
 
   const categories = ['الكل', 'الحفظ والمراجعة', 'نصائح', 'تقنيات', 'توجيه'];
