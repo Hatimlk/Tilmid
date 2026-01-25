@@ -10,6 +10,10 @@ import { ADMIN_CREDENTIALS, CUSTOM_POSTS_KEY, BLOG_POSTS, GLOBAL_APPOINTMENTS_KE
 import { BlogPost, Appointment, Student, ContactMessage, SuccessStory } from '../types';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { auth } from '../lib/firebase';
+import { signOut } from 'firebase/auth';
 import mammoth from 'mammoth';
 
 // --- SUB COMPONENTS ---
@@ -401,10 +405,9 @@ const RefinementModal = ({ onClose, onComplete, initialContent }: { onClose: () 
 // --- MAIN COMPONENT ---
 
 export const AdminDashboard: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { isAdmin, loading } = useAuth();
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState<'overview' | 'create-post' | 'posts-list' | 'students' | 'appointments' | 'messages' | 'stories'>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -453,36 +456,34 @@ export const AdminDashboard: React.FC = () => {
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Initial Data Loading
+  // Initial Data Loading
   useEffect(() => {
-    const auth = localStorage.getItem('tilmid_admin_auth');
-    if (auth === 'true') setIsAuthenticated(true);
+    const fetchData = async () => {
+      if (!loading && !isAdmin) {
+        navigate('/login');
+        return;
+      }
 
-    const storedPosts = localStorage.getItem(CUSTOM_POSTS_KEY);
-    if (storedPosts) setCustomPosts(JSON.parse(storedPosts));
+      try {
+        const [posts, apps, msgs, strys, stds] = await Promise.all([
+          dataManager.getPosts(),
+          dataManager.getAppointments(),
+          dataManager.getMessages(),
+          dataManager.getStories(),
+          dataManager.getStudents()
+        ]);
 
-    const storedAppointments = localStorage.getItem(GLOBAL_APPOINTMENTS_KEY);
-    if (storedAppointments) setAppointments(JSON.parse(storedAppointments));
+        setCustomPosts(posts);
+        setAppointments(apps);
+        setMessages(msgs);
+        setStories(strys);
+        setStudents(stds);
+      } catch (err) {
+        console.error("Failed to fetch data", err);
+      }
+    };
 
-    setMessages(dataManager.getMessages());
-    setStories(dataManager.getStories());
-
-    const storedStudents = localStorage.getItem(GLOBAL_STUDENTS_KEY);
-    if (storedStudents) {
-      setStudents(JSON.parse(storedStudents));
-    } else {
-      const initialStudents: Student[] = STUDENT_ACCOUNTS.map((acc, i) => ({
-        id: `std-${i}-${Date.now()}`,
-        name: acc.name,
-        username: acc.username,
-        grade: acc.grade,
-        joinDate: new Date().toISOString().split('T')[0],
-        status: 'active',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.username}`,
-        stats: { studyHours: Math.floor(Math.random() * 50), commitmentRate: Math.floor(Math.random() * 100), weeklyProgress: [40, 60, 50, 80, 70, 90, 60] }
-      }));
-      setStudents(initialStudents);
-      localStorage.setItem(GLOBAL_STUDENTS_KEY, JSON.stringify(initialStudents));
-    }
+    fetchData();
 
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -494,21 +495,18 @@ export const AdminDashboard: React.FC = () => {
 
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-      setIsAuthenticated(true);
-      localStorage.setItem('tilmid_admin_auth', 'true');
-      setError('');
-    } else {
-      setError('بيانات الدخول غير صحيحة');
-    }
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/login');
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('tilmid_admin_auth');
-  };
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>;
+  }
+
+  if (!isAdmin) return null;
+
+
 
   const handleTabChange = (tab: any) => {
     setActiveTab(tab);
@@ -518,40 +516,55 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleSavePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    const postToSave: BlogPost = {
-      ...newPost,
-      id: newPost.id || `custom-${Date.now()}`,
-      date: newPost.date || new Date().toLocaleDateString('ar-MA', { year: 'numeric', month: 'long', day: 'numeric' }),
-      author: { name: 'الإدارة', avatar: IMAGES.AVATARS.DEFAULT_USER },
-      image: newPost.image || 'https://picsum.photos/800/600'
-    };
 
-    let updatedPosts;
-    if (isEditingPost) {
-      updatedPosts = customPosts.map(p => p.id === postToSave.id ? postToSave : p);
-    } else {
-      updatedPosts = [postToSave, ...customPosts];
+
+  const handleSavePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPost.title || !newPost.content) {
+      alert('المرجو ملء عنوان ومحتوى المقال.');
+      return;
     }
 
-    dataManager.savePost(postToSave);
+    try {
+      const finalContent = newPost.content || ''; // Ensure content is not null/undefined
+      if (isEditingPost) {
+        await dataManager.savePost({ ...newPost, content: finalContent, status: 'published' });
+      } else {
+        const postToSave: BlogPost = {
+          ...newPost,
+          id: `post-${Date.now()}`,
+          date: new Date().toISOString().split('T')[0],
+          content: finalContent,
+          status: 'published'
+        };
+        await dataManager.savePost(postToSave);
+      }
 
-    // Update local state to reflect changes instantly (optional, as we pull from localStorage usually)
-    const storedPosts = dataManager.getPosts();
-    const customOnly = storedPosts.filter(p => !BLOG_POSTS.find(bp => bp.id === p.id)); // Simple filter for demo
+      // Refresh posts
+      const updatedPosts = await dataManager.getPosts();
+      setCustomPosts(updatedPosts);
 
-    // Refresh the custom posts list from the manager source
-    setCustomPosts(dataManager.getPosts().filter(p => !BLOG_POSTS.find(bp => bp.id === p.id) || p.id.startsWith('custom-')));
-
-    resetPostForm();
-    alert(isEditingPost ? 'تم تعديل المقال بنجاح' : 'تم نشر المقال بنجاح');
+      setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', sections: [], image: '', status: 'published' });
+      setIsEditingPost(false);
+      setCreationMode('selection');
+      setActiveTab('posts-list');
+      setShowNotifications(true);
+      setTimeout(() => setShowNotifications(false), 3000);
+    } catch (e) {
+      console.error("Error saving post", e);
+      alert("حدث خطأ أثناء حفظ المقال.");
+    }
   };
 
-  const handleDeletePost = (id: string) => {
+  const handleDeletePost = async (id: string) => {
     if (window.confirm('هل أنت متأكد من حذف هذا المقال؟')) {
-      dataManager.deletePost(id);
-      setCustomPosts(current => current.filter(p => p.id !== id));
+      try {
+        await dataManager.deletePost(id);
+        setCustomPosts(current => current.filter(p => p.id !== id));
+      } catch (e) {
+        console.error("Error deleting post", e);
+        alert("حدث خطأ أثناء حذف المقال.");
+      }
     }
   };
 
@@ -578,48 +591,65 @@ export const AdminDashboard: React.FC = () => {
     setShowStudentModal(true);
   };
 
-  const handleSaveStudent = (e: React.FormEvent) => {
+  const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentStudent.name || !currentStudent.username) {
       alert('المرجو ملء جميع الحقول المطلوبة.');
       return;
     }
 
-    let updatedStudents;
-    if (currentStudent.id) {
-      updatedStudents = students.map(s => s.id === currentStudent.id ? { ...s, ...currentStudent } as Student : s);
-    } else {
-      const newStudentData: Student = {
-        id: `std-${Date.now()}`,
-        name: currentStudent.name!,
-        username: currentStudent.username!,
-        grade: currentStudent.grade || '2 باكالوريا',
-        joinDate: new Date().toISOString().split('T')[0],
-        status: 'active',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentStudent.username}`,
-        stats: { studyHours: 0, commitmentRate: 0, weeklyProgress: [0, 0, 0, 0, 0, 0, 0] }
-      };
-      updatedStudents = [...students, newStudentData];
+    try {
+      if (currentStudent.id) {
+        await dataManager.saveStudent(currentStudent as Student);
+      } else {
+        const newStudentData: Student = {
+          id: `std-${Date.now()}`,
+          name: currentStudent.name!,
+          username: currentStudent.username!,
+          grade: currentStudent.grade || '2 باكالوريا',
+          joinDate: new Date().toISOString().split('T')[0],
+          status: 'active',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentStudent.username}`,
+          stats: { studyHours: 0, commitmentRate: 0, weeklyProgress: [0, 0, 0, 0, 0, 0, 0] }
+        };
+        await dataManager.saveStudent(newStudentData);
+      }
+      const updatedStudents = await dataManager.getStudents();
+      setStudents(updatedStudents);
+      setShowStudentModal(false);
+    } catch (e) {
+      console.error("Error saving student", e);
+      alert("حدث خطأ أثناء حفظ بيانات الطالب.");
     }
-
-    setStudents(updatedStudents);
-    localStorage.setItem(GLOBAL_STUDENTS_KEY, JSON.stringify(updatedStudents));
-    setShowStudentModal(false);
   };
 
-  const toggleStudentStatus = (id: string) => {
+  const toggleStudentStatus = async (id: string) => {
     if (window.confirm('هل أنت متأكد من تغيير حالة هذا الطالب؟')) {
-      const updatedStudents = students.map(s => s.id === id ? { ...s, status: s.status === 'active' ? 'suspended' : 'active' } as Student : s);
-      setStudents(updatedStudents);
-      localStorage.setItem(GLOBAL_STUDENTS_KEY, JSON.stringify(updatedStudents));
+      try {
+        const studentToUpdate = students.find(s => s.id === id);
+        if (studentToUpdate) {
+          const updatedStudent = { ...studentToUpdate, status: studentToUpdate.status === 'active' ? 'suspended' : 'active' } as Student;
+          await dataManager.saveStudent(updatedStudent);
+          const updatedStudents = await dataManager.getStudents();
+          setStudents(updatedStudents);
+        }
+      } catch (e) {
+        console.error("Error toggling student status", e);
+        alert("حدث خطأ أثناء تغيير حالة الطالب.");
+      }
     }
   };
 
-  const deleteStudent = (id: string) => {
+  const deleteStudent = async (id: string) => {
     if (window.confirm('حذف الطالب سيمنعه من الدخول نهائياً. هل أنت متأكد؟')) {
-      const updatedStudents = students.filter(s => s.id !== id);
-      setStudents(updatedStudents);
-      localStorage.setItem(GLOBAL_STUDENTS_KEY, JSON.stringify(updatedStudents));
+      try {
+        await dataManager.deleteStudent(id);
+        const updatedStudents = await dataManager.getStudents();
+        setStudents(updatedStudents);
+      } catch (e) {
+        console.error("Error deleting student", e);
+        alert("حدث خطأ أثناء حذف الطالب.");
+      }
     }
   };
 
@@ -635,40 +665,43 @@ export const AdminDashboard: React.FC = () => {
     setShowAppointmentModal(true);
   };
 
-  const handleSaveAppointment = (e: React.FormEvent) => {
+  const handleSaveAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBooking.studentName || !newBooking.title) {
       alert('المرجو اختيار الطالب وإدخال عنوان الموعد.');
       return;
     }
 
-    const appointment: Appointment = {
-      id: Date.now(),
-      studentName: newBooking.studentName!,
-      title: newBooking.title!,
-      date: newBooking.date!,
-      time: newBooking.time!,
-      type: newBooking.type as string,
-      status: 'confirmed'
-    };
+    try {
+      const appointment: Appointment = {
+        id: Date.now(),
+        studentName: newBooking.studentName!,
+        title: newBooking.title!,
+        date: newBooking.date!,
+        time: newBooking.time!,
+        status: 'confirmed',
+        type: newBooking.type!
+      };
 
-    const updatedAppointments = [...appointments, appointment];
-    setAppointments(updatedAppointments);
-    localStorage.setItem(GLOBAL_APPOINTMENTS_KEY, JSON.stringify(updatedAppointments));
-    setShowAppointmentModal(false);
-  };
-
-  const updateAppointmentStatus = (id: number, status: 'confirmed' | 'cancelled') => {
-    const updated = appointments.map(app => app.id === id ? { ...app, status } : app);
-    setAppointments(updated);
-    localStorage.setItem(GLOBAL_APPOINTMENTS_KEY, JSON.stringify(updated));
-  };
-
-  const deleteAppointment = (id: number) => {
-    if (window.confirm('هل تريد حذف هذا الموعد من السجل؟')) {
-      const updated = appointments.filter(app => app.id !== id);
+      await dataManager.saveAppointment(appointment);
+      const updated = await dataManager.getAppointments();
       setAppointments(updated);
-      localStorage.setItem(GLOBAL_APPOINTMENTS_KEY, JSON.stringify(updated));
+      setShowAppointmentModal(false);
+    } catch (e) {
+      console.error("Error saving appointment", e);
+      alert("حدث خطأ أثناء حفظ الموعد.");
+    }
+  };
+
+  const deleteAppointment = async (id: number) => {
+    if (window.confirm('هل تريد حذف هذا الموعد من السجل؟')) {
+      try {
+        await dataManager.deleteAppointment(id);
+        const updated = await dataManager.getAppointments();
+        setAppointments(updated);
+      } catch (e) {
+        console.error("Error deleting appointment", e);
+      }
     }
   };
 
@@ -682,38 +715,6 @@ export const AdminDashboard: React.FC = () => {
     s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
     s.username.toLowerCase().includes(studentSearch.toLowerCase())
   );
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center p-4 font-sans">
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-white/50 backdrop-blur-xl animate-in zoom-in-95">
-          <div className="text-center mb-10">
-            <div className="w-48 h-auto mx-auto mb-10 transition-transform hover:scale-105 duration-500">
-              <img src={IMAGES.LOGOS.OFFICIAL} alt="Tilmid Logo" className="w-full h-auto" />
-            </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">بوابة الإدارة</h1>
-            <p className="text-slate-500 mt-2 font-medium">الوصول الآمن للمسؤولين فقط</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-extrabold text-slate-600 mb-2 mr-1">المعرف الإداري</label>
-              <div className="relative">
-                <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-slate-100 focus:border-primary focus:bg-white outline-none text-lg font-bold transition-all text-left" dir="ltr" placeholder="admin" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-extrabold text-slate-600 mb-2 mr-1">رمز الدخول</label>
-              <div className="relative">
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-5 py-4 bg-slate-50 rounded-2xl border-2 border-slate-100 focus:border-primary outline-none text-lg font-bold transition-all text-left" dir="ltr" placeholder="•••••••" />
-              </div>
-            </div>
-            {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2"><XCircle size={18} /> {error}</div>}
-            <button className="w-full py-4 bg-primary text-white font-extrabold rounded-2xl hover:bg-royal transition-all shadow-lg shadow-blue-500/30 text-lg hover:-translate-y-1 active:scale-[0.98]">تسجيل الدخول</button>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -760,6 +761,10 @@ export const AdminDashboard: React.FC = () => {
     setCreationMode('editor');
   };
 
+  function updateAppointmentStatus(id: number, arg1: string): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="min-h-screen bg-[#F3F6F9] flex flex-col lg:flex-row font-sans text-slate-800" dir="rtl">
       {showAiModal && <GenerativeBlogModal onClose={() => setShowAiModal(false)} onGenerate={handleAiGeneration} />}
@@ -797,7 +802,7 @@ export const AdminDashboard: React.FC = () => {
         </nav>
 
         <div className="pt-8 border-t border-slate-800 mt-auto">
-          <button onClick={handleLogout} className="w-full p-4 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-2xl flex items-center gap-3 font-bold transition-all group">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3.5 text-red-500 hover:bg-red-50/10 rounded-xl font-bold transition-all group mt-6">
             <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" /> خروج
           </button>
         </div>
@@ -1245,7 +1250,7 @@ export const AdminDashboard: React.FC = () => {
                   <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
                     <Star className="text-yellow-400" fill="currentColor" /> إضافة قصة نجاح جديدة
                   </h3>
-                  <form onSubmit={(e) => {
+                  <form onSubmit={async (e) => {
                     e.preventDefault();
                     // Basic form handling within the render for simplicity or extract to handler
                     const form = e.target as HTMLFormElement;
@@ -1257,10 +1262,16 @@ export const AdminDashboard: React.FC = () => {
                       content: formData.get('content') as string,
                       image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.get('name')}`
                     };
-                    dataManager.saveStory(newStory);
-                    setStories(prev => [newStory, ...prev]);
-                    form.reset();
-                    alert('تم إضافة القصة بنجاح!');
+                    try {
+                      await dataManager.saveStory(newStory);
+                      const updated = await dataManager.getStories();
+                      setStories(updated);
+                      form.reset();
+                      alert('تم إضافة القصة بنجاح!');
+                    } catch (err) {
+                      console.error("Error saving story", err);
+                      alert("حدث خطأ أثناء حفظ القصة.");
+                    }
                   }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">اسم الطالب</label>
@@ -1284,10 +1295,16 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {stories.map(story => (
                     <div key={story.id} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 relative group hover:shadow-lg transition-all">
-                      <button onClick={() => {
+                      <button onClick={async () => {
                         if (window.confirm('حذف هذه القصة؟')) {
-                          dataManager.deleteStory(story.id);
-                          setStories(prev => prev.filter(s => s.id !== story.id));
+                          try {
+                            await dataManager.deleteStory(story.id);
+                            const updated = await dataManager.getStories();
+                            setStories(updated);
+                          } catch (err) {
+                            console.error("Error deleting story", err);
+                            alert("حدث خطأ أثناء حذف القصة.");
+                          }
                         }
                       }} className="absolute top-6 left-6 text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={20} /></button>
                       <div className="flex items-center gap-4 mb-4">

@@ -13,6 +13,7 @@ import { BacSimulator } from './pages/BacSimulator';
 import { About } from './pages/About';
 import { Contact } from './pages/Contact';
 import { NotFound } from './pages/NotFound';
+import { Login } from './pages/Login';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/coaching-offer" element={<CoachingOffer />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/bac-simulator" element={<BacSimulator />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -206,8 +206,11 @@ export const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    setSuccessStories(dataManager.getStories());
-    setSuccessStories(dataManager.getStories());
+    const fetchStories = async () => {
+      const stories = await dataManager.getStories();
+      setSuccessStories(stories);
+    };
+    fetchStories();
   }, []);
 
   const [showScroll, setShowScroll] = useState(false);

@@ -29,13 +29,19 @@ export const Contact = () => {
       status: 'new'
     };
 
-    // Simulate API call & Save
-    setTimeout(() => {
-      dataManager.saveMessage(newMessage);
-      setStatus('success');
-      setFormState({ name: '', phone: '', type: 'توجيه مدرسي', message: '' });
-      setTimeout(() => setStatus('idle'), 3000);
-    }, 1500);
+    // Save Message
+    const saveMsg = async () => {
+      try {
+        await dataManager.saveMessage(newMessage);
+        setStatus('success');
+        setFormState({ name: '', phone: '', type: 'توجيه مدرسي', message: '' });
+        setTimeout(() => setStatus('idle'), 3000);
+      } catch (e) {
+        setStatus('idle'); // or error state
+        alert("فشل الإرسال. حاول مرة أخرى.");
+      }
+    };
+    saveMsg();
   };
 
   return (

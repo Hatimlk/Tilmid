@@ -1,133 +1,137 @@
+import { db } from '../lib/firebase';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  setDoc,
+  getDoc
+} from 'firebase/firestore';
 import { BlogPost, Student, Appointment, SuccessStory, StudyResource, ContactMessage } from '../types';
-import { IMAGES } from '../constants/images';
 import { BLOG_POSTS } from '../constants';
 
-const KEYS = {
-  POSTS: 'tilmid_posts',
-  STUDENTS: 'tilmid_students',
-  APPOINTMENTS: 'tilmid_appointments',
-  STORIES: 'tilmid_stories',
-  RESOURCES: 'tilmid_resources',
-  MESSAGES: 'tilmid_messages'
+const COLLECTIONS = {
+  POSTS: 'posts',
+  STUDENTS: 'students',
+  APPOINTMENTS: 'appointments',
+  STORIES: 'stories',
+  RESOURCES: 'resources',
+  MESSAGES: 'messages'
 };
 
-const SEED_RESOURCES: StudyResource[] = [
-  { id: 'res-1', title: 'ملخص شامل لدروس الميكانيك', subject: 'الفيزياء', type: 'summary', fileSize: '2.4 MB', downloadCount: 1250, iconName: 'BookText' },
-  { id: 'res-2', title: 'نموذج الامتحان الوطني 2023 مع التصحيح', subject: 'الرياضيات', type: 'exam', fileSize: '4.1 MB', downloadCount: 3800, iconName: 'FileSpreadsheet' },
-  { id: 'res-3', title: 'جدول القواعد الإنجليزية (Grammar Cheat Sheet)', subject: 'الإنجليزية', type: 'formula', fileSize: '850 KB', downloadCount: 940, iconName: 'FileCode' },
-  { id: 'res-4', title: 'منهجية تحليل النص الفلسفي', subject: 'الفلسفة', type: 'summary', fileSize: '1.2 MB', downloadCount: 2100, iconName: 'BookText' }
-];
-
-const SEED_STORIES: SuccessStory[] = [
-  { id: 1, name: 'أمين البركاني', role: 'طالب هندسة', content: 'بفضل منصة تلميذ، استطعت تنظيم وقتي والحصول على ميزة حسن جداً في البكالوريا.', image: IMAGES.AVATARS.MOHAMED },
-  { id: 2, name: 'سارة العلمي', role: 'طالبة طب', content: 'تقنيات الحفظ السريع التي تعلمتها هنا غيرت مساري الدراسي تماماً.', image: IMAGES.AVATARS.SARA },
-  { id: 3, name: 'كريم الناصري', role: 'تلميذ 2 باك', content: 'المواكبة النفسية كانت العامل الحاسم في تجاوزي لضغط الامتحانات.', image: IMAGES.AVATARS.KARIM }
-];
-
 export const dataManager = {
-  init: () => {
-    // Data Versioning to force updates when constants change
-    const DATA_VERSION = '1.2';
-    const storedVersion = localStorage.getItem('tilmid_data_version');
+  // --- Initialization (Migration Helper) ---
+  init: async () => {
+    // In a real app, we might check if DB is empty and seed it.
+    // For now, we can leave this empty or implement a one-time seed function invoked manually.
+    console.log("DataManager Initialized with Firestore");
+  },
 
-    if (storedVersion !== DATA_VERSION) {
-      localStorage.removeItem(KEYS.POSTS);
-      // We can optionally clear other keys if needed, but posts are the main focus now
-      localStorage.setItem('tilmid_data_version', DATA_VERSION);
-    }
+  // --- Posts ---
+  getPosts: async (): Promise<BlogPost[]> => {
+    const q = query(collection(db, COLLECTIONS.POSTS), orderBy('date', 'desc'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as BlogPost));
+  },
 
-    // Seed Blog Posts - Sync with constants if new posts added or content structure outdated
-    const storedPosts = localStorage.getItem(KEYS.POSTS);
-    const parsedPosts: BlogPost[] = storedPosts ? JSON.parse(storedPosts) : [];
-
-    // Check if lengths differ OR if ID '1' (old post) or '10' (new post) is missing sections
-    if (!storedPosts || parsedPosts.length < BLOG_POSTS.length || !parsedPosts.find(p => p.id === '1')!.sections || !parsedPosts.find(p => p.id === '10')?.sections) {
-      localStorage.setItem(KEYS.POSTS, JSON.stringify(BLOG_POSTS));
-    }
-
-    // Seed Resources
-    if (!localStorage.getItem(KEYS.RESOURCES)) {
-      localStorage.setItem(KEYS.RESOURCES, JSON.stringify(SEED_RESOURCES));
-    }
-
-    // Seed Success Stories
-    if (!localStorage.getItem(KEYS.STORIES)) {
-      localStorage.setItem(KEYS.STORIES, JSON.stringify(SEED_STORIES));
-    }
-
-    // Seed Students
-    if (!localStorage.getItem(KEYS.STUDENTS)) {
-      const initialStudents = [
-        {
-          id: 'std-1',
-          name: 'أمين التلميذ',
-          username: 'amin',
-          password: '123',
-          grade: '2 باكالوريا',
-          status: 'active',
-          joinDate: '2023-09-01',
-          avatar: IMAGES.AVATARS.DEFAULT_USER,
-          stats: { studyHours: 12, commitmentRate: 85, weeklyProgress: [40, 60, 55, 80, 70, 85, 50] }
-        }
-      ];
-      localStorage.setItem(KEYS.STUDENTS, JSON.stringify(initialStudents));
+  savePost: async (post: BlogPost): Promise<void> => {
+    if (post.id) {
+      // Update existing
+      const docRef = doc(db, COLLECTIONS.POSTS, post.id);
+      // Remove id from data to avoid redundancy if stored inside
+      const { id, ...data } = post;
+      await setDoc(docRef, data, { merge: true });
+    } else {
+      // Add new
+      const { id, ...data } = post; // Ignore empty ID
+      await addDoc(collection(db, COLLECTIONS.POSTS), {
+        ...data,
+        createdAt: new Date().toISOString()
+      });
     }
   },
 
-  getPosts: (): BlogPost[] => JSON.parse(localStorage.getItem(KEYS.POSTS) || '[]'),
-  getStudents: (): Student[] => JSON.parse(localStorage.getItem(KEYS.STUDENTS) || '[]'),
-  saveStudent: (student: Student) => {
-    const students = dataManager.getStudents();
-    const index = students.findIndex(s => s.id === student.id);
-    if (index >= 0) students[index] = student;
-    else students.push(student);
-    localStorage.setItem(KEYS.STUDENTS, JSON.stringify(students));
+  deletePost: async (id: string): Promise<void> => {
+    await deleteDoc(doc(db, COLLECTIONS.POSTS, id));
   },
-  getResources: (): StudyResource[] => JSON.parse(localStorage.getItem(KEYS.RESOURCES) || '[]'),
-  getAppointments: (): Appointment[] => JSON.parse(localStorage.getItem(KEYS.APPOINTMENTS) || '[]'),
-  saveAppointment: (app: Appointment) => {
-    const apps = dataManager.getAppointments();
-    apps.push(app);
-    localStorage.setItem(KEYS.APPOINTMENTS, JSON.stringify(apps));
+
+  // --- Students ---
+  getStudents: async (): Promise<Student[]> => {
+    const snapshot = await getDocs(collection(db, COLLECTIONS.STUDENTS));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Student));
   },
-  getStories: (): SuccessStory[] => JSON.parse(localStorage.getItem(KEYS.STORIES) || '[]'),
-  saveStory: (story: SuccessStory) => {
-    const stories = dataManager.getStories();
-    stories.unshift(story);
-    localStorage.setItem(KEYS.STORIES, JSON.stringify(stories));
+
+  saveStudent: async (student: Student): Promise<void> => {
+    if (student.id) {
+      const docRef = doc(db, COLLECTIONS.STUDENTS, student.id);
+      const { id, ...data } = student;
+      await setDoc(docRef, data, { merge: true });
+    } else {
+      await addDoc(collection(db, COLLECTIONS.STUDENTS), student);
+    }
   },
-  deleteStory: (id: number) => {
-    const stories = dataManager.getStories();
-    const updated = stories.filter(s => s.id !== id);
-    localStorage.setItem(KEYS.STORIES, JSON.stringify(updated));
+
+  deleteStudent: async (id: string): Promise<void> => {
+    await deleteDoc(doc(db, COLLECTIONS.STUDENTS, id));
+  },
+
+  // --- Appointments ---
+  getAppointments: async (): Promise<Appointment[]> => {
+    const snapshot = await getDocs(collection(db, COLLECTIONS.APPOINTMENTS));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Appointment)); // Type assertion might need adjustment if IDs are numbers vs strings
+  },
+
+  saveAppointment: async (app: Appointment): Promise<void> => {
+    // Ensure ID is string for Firestore or let Firestore gen it
+    // For this migration, we'll let Firestore generate valid IDs or use existing ones
+    await addDoc(collection(db, COLLECTIONS.APPOINTMENTS), app);
+  },
+
+  deleteAppointment: async (id: string | number): Promise<void> => {
+    // Ideally use doc ID
+    // For migration, we might need to query by numeric ID if that's what we have
+    // But let's assume valid doc ID is passed for deletion
+    await deleteDoc(doc(db, COLLECTIONS.APPOINTMENTS, String(id)));
+  },
+
+  // --- Stories ---
+  getStories: async (): Promise<SuccessStory[]> => {
+    const snapshot = await getDocs(collection(db, COLLECTIONS.STORIES));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as unknown as SuccessStory));
+  },
+
+  saveStory: async (story: SuccessStory): Promise<void> => {
+    await addDoc(collection(db, COLLECTIONS.STORIES), story);
+  },
+
+  deleteStory: async (id: number | string): Promise<void> => {
+    // This is tricky if ID is number. We need to find the doc first.
+    // Ideally we migrate to string IDs.
+    // For now, let's assume we pass the Firestore Doc ID.
+    // If not, we'd need a query. Let's start by assuming we fix the UI to pass strings.
+    await deleteDoc(doc(db, COLLECTIONS.STORIES, String(id)));
   },
 
   // --- Messages ---
-  getMessages: (): ContactMessage[] => JSON.parse(localStorage.getItem(KEYS.MESSAGES) || '[]'),
-  saveMessage: (msg: ContactMessage) => {
-    const messages = dataManager.getMessages();
-    messages.unshift(msg);
-    localStorage.setItem(KEYS.MESSAGES, JSON.stringify(messages));
+  getMessages: async (): Promise<ContactMessage[]> => {
+    const snapshot = await getDocs(collection(db, COLLECTIONS.MESSAGES));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as ContactMessage));
   },
 
-
-  // --- Post Management ---
-  savePost: (post: BlogPost) => {
-    const posts = dataManager.getPosts();
-    const index = posts.findIndex(p => p.id === post.id);
-    if (index >= 0) {
-      posts[index] = post;
-    } else {
-      posts.unshift(post); // Add new posts to the top
-    }
-    localStorage.setItem(KEYS.POSTS, JSON.stringify(posts));
+  saveMessage: async (msg: ContactMessage): Promise<void> => {
+    await addDoc(collection(db, COLLECTIONS.MESSAGES), msg);
   },
 
-  deletePost: (id: string) => {
-    const posts = dataManager.getPosts();
-    const updatedPosts = posts.filter(p => p.id !== id);
-    localStorage.setItem(KEYS.POSTS, JSON.stringify(updatedPosts));
+  // --- Resources ---
+  getResources: async (): Promise<StudyResource[]> => {
+    // For V1 we might just keep using the constant SEED if we don't want to migrate them yet
+    // Or fetch them. Let's fetch.
+    const snapshot = await getDocs(collection(db, COLLECTIONS.RESOURCES));
+    if (snapshot.empty) return []; // Or return seed if empty?
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as StudyResource));
   }
 };
-
-dataManager.init();

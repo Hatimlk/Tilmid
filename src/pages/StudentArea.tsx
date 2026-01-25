@@ -48,32 +48,46 @@ export const StudentArea: React.FC = () => {
   const [resources, setResources] = useState<StudyResource[]>([]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('tilmid_user');
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      const freshUser = dataManager.getStudents().find(u => u.username === userData.username);
-      if (freshUser && freshUser.status === 'active') {
-        setUser(freshUser);
-        setResources(dataManager.getResources());
-        const storedTable = localStorage.getItem(`timetable_${freshUser.username}`);
-        if (storedTable) setTimetable(JSON.parse(storedTable));
+    const initStudent = async () => {
+      const storedUser = localStorage.getItem('tilmid_user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        try {
+          const students = await dataManager.getStudents();
+          const freshUser = students.find(u => u.username === userData.username);
+          if (freshUser && freshUser.status === 'active') {
+            setUser(freshUser);
+            const res = await dataManager.getResources();
+            setResources(res);
+            const storedTable = localStorage.getItem(`timetable_${freshUser.username}`);
+            if (storedTable) setTimetable(JSON.parse(storedTable));
+          }
+        } catch (e) {
+          console.error("Error loading student data", e);
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    initStudent();
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const students = dataManager.getStudents();
-    const account = students.find(acc => acc.username === username && acc.password === password);
-    if (account) {
-      setUser(account);
-      localStorage.setItem('tilmid_user', JSON.stringify(account));
-      setResources(dataManager.getResources());
-      const storedTable = localStorage.getItem(`timetable_${account.username}`);
-      if (storedTable) setTimetable(JSON.parse(storedTable));
-    } else {
-      setError('بيانات الدخول غير صحيحة');
+    try {
+      const students = await dataManager.getStudents();
+      const account = students.find(acc => acc.username === username && acc.password === password);
+      if (account) {
+        setUser(account);
+        localStorage.setItem('tilmid_user', JSON.stringify(account));
+        const res = await dataManager.getResources();
+        setResources(res);
+        const storedTable = localStorage.getItem(`timetable_${account.username}`);
+        if (storedTable) setTimetable(JSON.parse(storedTable));
+      } else {
+        setError('بيانات الدخول غير صحيحة');
+      }
+    } catch (e) {
+      setError('حدث خطأ في الاتصال');
     }
   };
 
@@ -374,7 +388,7 @@ export const StudentArea: React.FC = () => {
       </main >
 
       {/* Floating Add Button for Mobile */}
-      < button onClick={() => setShowTaskModal(true)} className="lg:hidden fixed bottom-8 left-8 w-16 h-16 bg-primary text-white rounded-full shadow-2xl shadow-blue-500/40 flex items-center justify-center z-50 animate-bounce-slow" > <Plus size={32} /></button >
+      <button onClick={() => setShowTaskModal(true)} className="lg:hidden fixed bottom-8 left-8 w-16 h-16 bg-primary text-white rounded-full shadow-2xl shadow-blue-500/40 flex items-center justify-center z-50 animate-bounce-slow"><Plus size={32} /></button>
 
       {/* Task Modal */}
       {
@@ -418,6 +432,6 @@ export const StudentArea: React.FC = () => {
           </div>
         )
       }
-    </div >
+    </div>
   );
 };

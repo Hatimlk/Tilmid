@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { BlogPost } from '../types';
@@ -9,20 +9,20 @@ import { BlogCard } from './BlogCard';
 
 export const LatestArticles: React.FC = () => {
   // Fetch and sort posts
-  const latestPosts = useMemo(() => {
-    const allPosts = dataManager.getPosts().filter(p => p.status === 'published');
-    // Sort by date can be complex depending on date format strings.
-    // Assuming localized date strings, simple reverse might not work perfectly without parsing
-    // But since new posts are appended, reversing array is a decent proxy for "newest first" 
-    // if the source maintains insertion order.
-    // Better approach: Since dataManager.getPosts() returns [custom..., ...static], 
-    // custom ones (newest) are at the END if appended? No, usually newer items are added.
-    // Let's rely on the fact that custom posts are usually created later.
+  const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
 
-    // Actually, let's look at `dataManager.ts` if we can. 
-    // For now, let's reverse the array to show newest first (assuming chronological insertion).
-    // Data is stored with newest first (unshift in dataManager), so we just take the first 3.
-    return allPosts.slice(0, 3);
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const posts = await dataManager.getPosts();
+        // Filter published and slice first 3
+        const published = posts.filter(p => p.status === 'published');
+        setLatestPosts(published.slice(0, 3));
+      } catch (err) {
+        console.error("Failed to fetch posts", err);
+      }
+    };
+    fetchPosts();
   }, []);
 
   if (latestPosts.length === 0) return null;
