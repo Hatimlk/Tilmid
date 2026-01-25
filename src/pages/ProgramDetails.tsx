@@ -425,11 +425,11 @@ export const ProgramDetails: React.FC = () => {
           {/* Main Content Column with Grid Features */}
           <div className="lg:col-span-8 space-y-12">
             <div className="relative px-2">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">مميزات البرنامج</h2>
+              <div className="flex items-center gap-4 mb-8">
                 <div className={`w-10 h-10 rounded-xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
                   <Sparkles size={20} />
                 </div>
+                <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">مميزات البرنامج</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
