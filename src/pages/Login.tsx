@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -10,6 +10,7 @@ export const Login: React.FC = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -17,15 +18,16 @@ export const Login: React.FC = () => {
         setError('');
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const data = await api.post('/auth/login', { email, password });
+            login(data.user, data.token);
             // Success! Redirect to Admin Dashboard
             navigate('/admin');
         } catch (err: any) {
             console.error(err);
-            if (err.code === 'auth/invalid-credential') {
+            // Assuming the context/api throws an error with a message property or similar
+            // Customize error handling based on API response structure if known
+            if (err.message === 'Invalid credentials' || err.response?.status === 401) {
                 setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-            } else if (err.code === 'auth/too-many-requests') {
-                setError('محاولات كثيرة خاطئة، يرجى المحاولة لاحقاً');
             } else {
                 setError('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى');
             }

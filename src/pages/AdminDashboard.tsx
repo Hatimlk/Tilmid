@@ -12,10 +12,8 @@ import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { auth } from '../lib/firebase';
-import { seeder } from '../utils/seeder';
-import { signOut } from 'firebase/auth';
 import mammoth from 'mammoth';
+import { seeder } from '../utils/seeder';
 
 // --- SUB COMPONENTS ---
 
@@ -426,9 +424,10 @@ const RefinementModal = ({ onClose, onComplete, initialContent }: { onClose: () 
 // --- MAIN COMPONENT ---
 
 export const AdminDashboard: React.FC = () => {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, loading, logout } = useAuth();
   const navigate = useNavigate();
 
+  const notifRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'create-post' | 'posts-list' | 'students' | 'appointments' | 'messages' | 'stories'>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -446,6 +445,7 @@ export const AdminDashboard: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [adminName, setAdminName] = useState('Admin User');
+  const [dbStatus, setDbStatus] = useState({ isEmpty: false, loading: false });
 
   // Modal States
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -473,25 +473,32 @@ export const AdminDashboard: React.FC = () => {
     status: 'published'
   });
 
-  // Refs for clicking outside
-  const notifRef = useRef<HTMLDivElement>(null);
-
-  // Database Seeder State
-  const [dbStatus, setDbStatus] = useState<{ isEmpty: boolean, loading: boolean }>({ isEmpty: false, loading: true });
-
   const checkDbStatus = async () => {
-    const status = await seeder.checkIsEmpty();
-    setDbStatus({ isEmpty: status.isEmpty, loading: false });
+    try {
+      const status = await seeder.checkIsEmpty();
+      setDbStatus({ isEmpty: status.isEmpty, loading: false });
+    } catch (e) {
+      console.error("Failed to check DB status", e);
+    }
   };
 
   const handleSeedDatabase = async () => {
-    if (confirm('هل أنت متأكد من تهيئة قاعدة البيانات؟ سيتم إضافة بيانات تجريبية.')) {
-      setDbStatus(prev => ({ ...prev, loading: true }));
+    setDbStatus(prev => ({ ...prev, loading: true }));
+    try {
       await seeder.seedData();
       await checkDbStatus();
       window.location.reload();
+    } catch (e) {
+      console.error("Seed failed", e);
+      alert("فشل تهيئة قاعدة البيانات");
+      setDbStatus(prev => ({ ...prev, loading: false }));
     }
   };
+  //   await seeder.seedData();
+  //   await checkDbStatus();
+  //   window.location.reload();
+  // }
+  // }
 
   useEffect(() => {
     checkDbStatus();
@@ -536,7 +543,7 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    logout();
     navigate('/login');
   };
 
