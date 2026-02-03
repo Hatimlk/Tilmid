@@ -2,7 +2,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Calculator, Award, AlertTriangle, CheckCircle2, RotateCcw, Zap, Target, TrendingUp, Star, ChevronLeft, ArrowLeftIcon, Info, Sparkles } from 'lucide-react';
 // Fix: Import Link from react-router-dom to handle internal navigation
+// Fix: Import Link from react-router-dom to handle internal navigation
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 // --- Sub-components for better modularity and UX ---
 
@@ -145,6 +147,10 @@ export const BacSimulator: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pt-32 pb-24 font-sans selection:bg-primary/20 selection:text-primary">
+      <SEO
+        title="محاكي النقط - تلميذ"
+        description="احسب النقطة المطلوبة في الامتحان الوطني لتحقيق معدلك المستهدف. أداة ذكية لتخطيط نجاحك في البكالوريا."
+      />
       <div className="container mx-auto px-4 lg:px-8">
 
         {/* Header Section */}

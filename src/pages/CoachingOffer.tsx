@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   CheckCircle,
@@ -42,6 +41,7 @@ import img2756 from '../assets/Testimonial/IMG_2756.jpg';
 import img2944 from '../assets/Testimonial/IMG_2944.jpg';
 import img2945 from '../assets/Testimonial/IMG_2945.jpg';
 import img2947 from '../assets/Testimonial/IMG_2947.jpg';
+import SEO from '../components/SEO';
 
 const TESTIMONIALS = [
   img0604, img0605, img0606, img0710, img0726, img0727, img2756, img2944, img2945, img2947
@@ -143,6 +143,10 @@ export const CoachingOffer: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 overflow-x-hidden font-sans w-full max-w-full">
+      <SEO
+        title="عرض المواكبة الشامل"
+        description="اضمن تفوقك مع برنامج المواكبة الذكية من تلميذ. تتبع شخصي، تقنيات تعلم سريع، ودعم نفسي شامل لتلاميذ البكالوريا."
+      />
 
       {/* Hero Section */}
       <section className="relative pt-16 pb-16 lg:pt-24 lg:pb-24 bg-gradient-to-br from-royal via-blue-900 to-slate-900 text-white overflow-hidden rounded-b-[2rem] lg:rounded-b-[2.5rem] shadow-xl">
@@ -185,6 +189,40 @@ export const CoachingOffer: React.FC = () => {
       </section>
 
       <div className="container mx-auto px-4 lg:px-8 mt-12 lg:mt-24 relative z-20 space-y-24">
+
+
+        {/* Testimonials "Wall of Love" Section - Moved Here */}
+        <section className="py-8 relative overflow-hidden bg-white rounded-[2.5rem] shadow-sm border border-slate-100">
+          <div className="text-center mb-10 pt-8">
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-black uppercase tracking-widest mb-4 border border-emerald-100">
+              <Star size={16} fill="currentColor" />
+              <span>نتائج تتحدث عن نفسها</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">قصص نجاح حقيقية</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg font-bold mt-2">انضم إلى مئات التلاميذ الذين حققوا قفزة نوعية.</p>
+          </div>
+
+          <div className="relative w-full mb-8" dir="ltr">
+            {/* Gradient Masks */}
+            <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-white to-transparent z-20 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-white to-transparent z-20 pointer-events-none"></div>
+
+            <div className="flex overflow-hidden relative w-full group">
+              <div className="flex gap-4 animate-scroll-rtl w-max group-hover:[animation-play-state:paused] py-4 px-4">
+                {[...TESTIMONIALS, ...TESTIMONIALS].map((img, i) => (
+                  <div key={i} className="w-[220px] md:w-[280px] aspect-[3/4] rounded-2xl overflow-hidden border border-slate-100 shadow-sm relative group/card flex-shrink-0 bg-white">
+                    <img
+                      src={img}
+                      alt="Student Testimonial"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Form Card with Psychological Triggers */}
         <div id="registration-card" className="grid grid-cols-1 lg:grid-cols-5 gap-8 animate-fade-in-up animate-delay-300">
@@ -316,52 +354,7 @@ export const CoachingOffer: React.FC = () => {
           </div>
         </div>
 
-        {/* Testimonials "Wall of Love" Section */}
-        <section className="py-16 relative overflow-hidden">
-          {/* Background Elements */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 right-0 w-full h-[500px] bg-gradient-to-b from-blue-50/50 to-transparent"></div>
-          </div>
 
-          <div className="container mx-auto px-4 mb-12 text-center relative z-10">
-            <div className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-emerald-100">
-              <Star size={16} fill="currentColor" />
-              <span>نتائج تتحدث عن نفسها</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">قصص نجاح حقيقية</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-xl font-bold">انضم إلى مئات التلاميذ الذين حققوا قفزة نوعية في مسارهم الدراسي.</p>
-          </div>
-
-          <div className="relative w-full space-y-8" dir="ltr">
-            {/* Top Gradient Fade */}
-            <div className="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-gray-50 to-transparent z-20"></div>
-            <div className="absolute top-0 right-0 w-20 h-full bg-gradient-to-l from-gray-50 to-transparent z-20"></div>
-
-            {/* Row 1: Scrolling Left */}
-            <div className="flex overflow-hidden relative w-full group">
-              <div className="flex gap-6 animate-scroll-rtl w-max group-hover:[animation-play-state:paused]">
-                {[...TESTIMONIALS, ...TESTIMONIALS].map((img, i) => (
-                  <div key={i} className="w-[280px] md:w-[350px] aspect-[3/4] rounded-3xl overflow-hidden border border-slate-100 shadow-sm relative group/card flex-shrink-0 bg-white">
-                    <img
-                      src={img}
-                      alt="Student Testimonial"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                      <span className="px-4 py-2 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-bold border border-white/30">تحقق من النتيجة</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Row 2: Scrolling Right (Simulated by reversing animation direction if supported, or just different content) */}
-            {/* Note: For simplicity in this single-file edit without complex CSS modules, using same direction but offset images or different speed/set would be easier. 
-                 Let's stick to one main row for now to ensure it looks clean, or add a second row if user insists on volume. 
-                 Let's do one high-quality row for mobile responsiveness safety first. */}
-          </div>
-        </section>
 
         {/* FAQ Section */}
         <div className="max-w-4xl mx-auto mt-24 px-4 pb-24">

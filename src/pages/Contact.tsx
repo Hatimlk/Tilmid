@@ -1,6 +1,7 @@
 import React from 'react';
 import { dataManager } from '../utils/dataManager';
 import { ContactMessage } from '../types';
+import SEO from '../components/SEO';
 
 
 export const Contact = () => {
@@ -46,6 +47,10 @@ export const Contact = () => {
 
   return (
     <div className="container mx-auto py-20 px-4">
+      <SEO
+        title="تواصل معنا - تلميذ"
+        description="تواصل مع فريق تلميذ للاستفسار عن برامج التوجيه والمواكبة المدرسية. نحن هنا لمساعدتك."
+      />
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <div className="bg-royal p-8 text-center">
           <h1 className="text-3xl font-bold text-white">احجز استشارتك الآن</h1>

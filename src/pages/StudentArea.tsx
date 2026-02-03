@@ -9,6 +9,7 @@ import {
 import { dataManager } from '../utils/dataManager';
 import { StudyResource, TimetableTask } from '../types';
 import { IMAGES } from '../constants/images';
+import SEO from '../components/SEO';
 
 const DAYS = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
 
@@ -145,6 +146,7 @@ export const StudentArea: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 lg:pb-10 font-sans text-slate-800">
+      <SEO title="مساحة التميز - تلميذ" description="مساحتك الخاصة لمتابعة الدراسة وتنظيم الوقت." />
       {/* Modern Glass Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-4">

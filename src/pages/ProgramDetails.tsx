@@ -32,6 +32,8 @@ import {
   Brain
 } from 'lucide-react';
 import { BlogCard } from '../components/BlogCard';
+import SEO from '../components/SEO';
+import { RelatedArticles } from '../components/RelatedArticles';
 
 const FeatureStep: React.FC<{
   feature: { title: string; description: string };
@@ -330,7 +332,6 @@ export const ProgramDetails: React.FC = () => {
 
   useEffect(() => {
     if (data) {
-      document.title = `${data.title} - تلميذ | Tilmid`;
       window.scrollTo(0, 0);
     }
   }, [data]);
@@ -345,6 +346,10 @@ export const ProgramDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30">
+      <SEO
+        title={`${data.title} - تلميذ`}
+        description={data.subtitle}
+      />
 
       {/* Hero Section */}
       <div className={`relative pt-16 pb-32 lg:pt-24 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
@@ -506,25 +511,7 @@ export const ProgramDetails: React.FC = () => {
 
             {/* 3. Related Blog Posts Grid */}
             {data.relatedBlogIds && (
-              <section id="related-blogs" className="space-y-8">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-2xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
-                    <BookOpen size={24} />
-                  </div>
-                  <h3 className="text-3xl font-black text-slate-900 tracking-tight">مقالات قد تهمك</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {data.relatedBlogIds.map((id, idx) => {
-                    const post = BLOG_POSTS.find(p => p.id === id);
-                    if (!post) return null;
-
-                    return (
-                      <BlogCard key={post.id} post={post} index={idx} />
-                    );
-                  })}
-                </div>
-              </section>
+              <RelatedArticles relatedIds={data.relatedBlogIds} />
             )}
           </div>
 

@@ -582,7 +582,11 @@ export const AdminDashboard: React.FC = () => {
           id: `post-${Date.now()}`,
           date: new Date().toISOString().split('T')[0],
           content: finalContent,
-          status: 'published'
+          status: 'published',
+          author: {
+            name: 'الأستاذ ياسين',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Yassine'
+          }
         };
         await dataManager.savePost(postToSave);
       }
@@ -754,7 +758,7 @@ export const AdminDashboard: React.FC = () => {
 
   const getActivityFeed = () => {
     const apps = appointments.map(a => ({ type: 'appointment', date: a.date, title: a.title, user: a.studentName, id: a.id }));
-    const posts = customPosts.map(p => ({ type: 'post', date: p.date, title: p.title, user: 'الإدارة', id: p.id }));
+    const posts = customPosts.map(p => ({ type: 'post', date: p.date, title: p.title, user: p.author?.name || 'الأستاذ ياسين', id: p.id }));
     return [...apps, ...posts].reverse().slice(0, 6);
   };
 

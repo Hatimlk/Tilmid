@@ -3,10 +3,15 @@ import React from 'react';
 import { Play, Target, Eye, Heart, Shield, Zap, Users, Award, CheckCircle2, Brain, Quote, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../constants/images';
+import SEO from '../components/SEO';
 
 export const About: React.FC = () => {
   return (
     <div className="min-h-screen bg-white overflow-hidden font-sans">
+      <SEO
+        title="من نحن - تلميذ"
+        description="تعرف على منصة تلميذ، مهمتنا ورؤيتنا في مساعدة تلاميذ المغرب على التفوق الدراسي عبر التوجيه والمواكبة."
+      />
 
       {/* Hero Section */}
       <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-32 bg-slate-900 text-white overflow-hidden">

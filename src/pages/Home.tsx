@@ -7,6 +7,7 @@ import { BlogPost, SuccessStory, VideoReel } from '../types';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LatestArticles } from '../components/LatestArticles';
+import SEO from '../components/SEO';
 
 const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   const [days, setDays] = useState<number>(0);
@@ -254,6 +255,10 @@ export const Home: React.FC = () => {
 
   return (
     <>
+      <SEO
+        title="تلميذ - Tilmid"
+        description="منصة تلميذ - رفيقك نحو التفوق الدراسي. نقدم توجيهاً مدرسياً متميزاً، تقنيات حفظ ذكية، ومواكبة نفسية شاملة لتلاميذ البكالوريا والطلاب في المغرب."
+      />
       {/* Hero Section - Redesigned */}
       <section className="relative pt-20 pb-32 lg:pt-20 lg:pb-52 overflow-hidden bg-[#f8fafc]">
         {/* Background Elements */}
@@ -527,29 +532,7 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      {/* Scroll To Top Button with Progress Ring */}
-      <div className={`fixed bottom-8 right-8 z-50 transition-all duration-500 ${showScroll ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
-        <button
-          onClick={scrollToTop}
-          className="relative w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"
-        >
-          {/* Progress Ring */}
-          <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="48" fill="none" className="stroke-slate-100" strokeWidth="4" />
-            <circle
-              cx="50" cy="50" r="48"
-              fill="none"
-              className="stroke-primary transition-all duration-200"
-              strokeWidth="4"
-              strokeDasharray="301.59"
-              strokeDashoffset={301.59 - (301.59 * scrollProgress)}
-              strokeLinecap="round"
-            />
-          </svg>
 
-          <ArrowUp size={24} className="text-slate-700 group-hover:text-primary transition-colors" strokeWidth={2.5} />
-        </button>
-      </div>
     </>
   );
 };

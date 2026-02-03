@@ -6,6 +6,7 @@ import { dataManager } from '../utils/dataManager';
 import { BlogPost } from '../types';
 import { IMAGES } from '../constants/images';
 import { BlogCard } from '../components/BlogCard';
+import SEO from '../components/SEO';
 
 export const Blog: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,14 +17,6 @@ export const Blog: React.FC = () => {
   const POSTS_PER_PAGE = 7; // Increased to accommodate featured layout
 
   useEffect(() => {
-    // --- SEO CONFIGURATION ---
-    const title = "المدونة التعليمية - تلميذ | نصائح، توجيه، وطرق مراجعة";
-    const description = "اكتشف أحدث المقالات التعليمية، نصائح التوجيه المدرسي، تقنيات الحفظ والمراجعة، واستراتيجيات التفوق الدراسي على منصة تلميذ.";
-    const image = IMAGES.BLOG.DEFAULT_SEO;
-    const url = window.location.href;
-
-    document.title = title;
-
     // Fetch posts
     const fetchPosts = async () => {
       try {
@@ -56,6 +49,11 @@ export const Blog: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans selection:bg-primary/20 selection:text-primary">
+      <SEO
+        title="المدونة التعليمية - تلميذ | نصائح، توجيه، وطرق مراجعة"
+        description="اكتشف أحدث المقالات التعليمية، نصائح التوجيه المدرسي، تقنيات الحفظ والمراجعة، واستراتيجيات التفوق الدراسي على منصة تلميذ."
+        image={IMAGES.BLOG.DEFAULT_SEO}
+      />
 
       {/* 4. Hero Section Background with Texture Pattern */}
       {/* 4. Hero Section Background with Texture Pattern */}

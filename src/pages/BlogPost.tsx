@@ -6,7 +6,8 @@ import {
   Calendar, Clock, User, Bookmark
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
-import { updateMeta, updateCanonical } from '../utils/seo';
+import SEO from '../components/SEO';
+// import { updateMeta, updateCanonical } from '../utils/seo'; // No longer needed
 
 export const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,21 +37,9 @@ export const BlogPost = () => {
     }
   }, [id]);
 
-  // SEO & Metadata Logic
-  React.useEffect(() => {
-    if (post) {
-      const currentUrl = window.location.href;
-      document.title = `${post.title} - مدونة تلميذ`;
-      updateCanonical(currentUrl);
-      updateMeta('description', post.excerpt);
-      updateMeta('keywords', `${post.category}, تعليم, دراسة, توجيه مدرسي, ${post.title.split(' ').slice(0, 3).join(', ')}`);
-      updateMeta('', post.title, 'og:title');
-      updateMeta('', post.excerpt, 'og:description');
-      updateMeta('', post.image, 'og:image');
-      updateMeta('', currentUrl, 'og:url');
-      updateMeta('', 'article', 'og:type');
-    }
-  }, [post]);
+  // SEO & Metadata Logic handled by SEO component
+  // React.useEffect removed
+
 
   // Scroll Progress Logic
   React.useEffect(() => {
@@ -88,6 +77,15 @@ export const BlogPost = () => {
 
   return (
     <>
+      {post && (
+        <SEO
+          title={`${post.title} - مدونة تلميذ`}
+          description={post.excerpt}
+          keywords={`${post.category}, تعليم, دراسة, توجيه مدرسي`}
+          image={post.image}
+          type="article"
+        />
+      )}
       <div className="fixed top-0 left-0 h-1.5 bg-gray-100 w-full z-[60]">
         <div className="h-full bg-gradient-to-r from-primary to-royal transition-all duration-100" style={{ width: `${scrollProgress}%` }}></div>
       </div>

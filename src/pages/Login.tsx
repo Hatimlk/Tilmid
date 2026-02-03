@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -38,6 +39,7 @@ export const Login: React.FC = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans" dir="rtl">
+            <SEO title="تسجيل الدخول - تلميذ" description="تسجيل الدخول إلى لوحة تحكم تلميذ." />
             <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden">
                 {/* Decorative Background */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10"></div>

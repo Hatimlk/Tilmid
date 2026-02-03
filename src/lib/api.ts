@@ -1,6 +1,5 @@
 // Automatically use production URL when built, otherwise localhost
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://tilmide.ma/api' : 'http://localhost:5000/api');
-
 export const api = {
     get: async (endpoint: string) => {
         const token = localStorage.getItem('token');
