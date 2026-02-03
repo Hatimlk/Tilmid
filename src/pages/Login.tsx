@@ -18,17 +18,52 @@ export const Login: React.FC = () => {
         setLoading(true);
         setError('');
 
+        // Simulate network delay for better UX
+        await new Promise(r => setTimeout(r, 1000));
+
         try {
+            const { ADMIN_CREDENTIALS, STUDENT_ACCOUNTS } = await import('../constants');
+
+            // Check Admin
+            if ((email === ADMIN_CREDENTIALS.username || email === 'admin@tilmid.ma') && password === ADMIN_CREDENTIALS.password) {
+                login({
+                    id: 1,
+                    username: ADMIN_CREDENTIALS.username,
+                    email: 'admin@tilmid.ma',
+                    role: 'admin'
+                }, 'mock-admin-token');
+                navigate('/admin');
+                return;
+            }
+
+            // Check Students
+            const student = STUDENT_ACCOUNTS.find(s => s.username === email && s.password === password);
+            if (student) {
+                login({
+                    id: Math.random(),
+                    username: student.username,
+                    email: `${student.username}@tilmid.ma`,
+                    role: 'user'
+                }, 'mock-student-token');
+                navigate('/student-area');
+                return;
+            }
+
+            // API Fallback (only if local check fails and we want to try server)
+            // For now, if local fails, we assume invalid credentials in this dev mode
+            throw new Error('Invalid credentials');
+
+            /* 
+            // Original API call - kept for reference if backend is connected later
             const data = await api.post('/auth/login', { email, password });
             login(data.user, data.token);
-            // Success! Redirect to Admin Dashboard
-            navigate('/admin');
+            navigate('/admin'); 
+            */
+
         } catch (err: any) {
             console.error(err);
-            // Assuming the context/api throws an error with a message property or similar
-            // Customize error handling based on API response structure if known
             if (err.message === 'Invalid credentials' || err.response?.status === 401) {
-                setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                setError('اسم المستخدم أو كلمة المرور غير صحيحة');
             } else {
                 setError('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى');
             }
@@ -56,18 +91,18 @@ export const Login: React.FC = () => {
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">البريد الإلكتروني</label>
+                            <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-2">اسم المستخدم أو البريد الإلكتروني</label>
                             <div className="relative group">
                                 <input
                                     id="email"
                                     name="email"
-                                    type="email"
+                                    type="text"
                                     autoComplete="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="appearance-none block w-full px-4 py-4 pr-12 border-2 border-gray-200 rounded-2xl placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-primary/20 sm:text-sm font-medium transition-all"
-                                    placeholder="admin@tilmid.ma"
+                                    placeholder="admin أو user@example.com"
                                 />
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                             </div>

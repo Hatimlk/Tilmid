@@ -1251,7 +1251,7 @@ export const AdminDashboard: React.FC = () => {
                     <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors text-center cursor-pointer group relative">
                       <input
                         type="file"
-                        accept=".docx,.txt"
+                        accept=".docx,.txt,.pdf"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
@@ -1280,7 +1280,7 @@ export const AdminDashboard: React.FC = () => {
                       <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                         <FileText size={28} />
                       </div>
-                      <p className="text-slate-800 font-bold text-base mb-1">اضغط لرفع ملف (Word, TXT)</p>
+                      <p className="text-slate-800 font-bold text-base mb-1">اضغط لرفع ملف (Word, PDF, TXT)</p>
                       <p className="text-slate-400 text-xs font-bold">سيتم استخراج العنوان، الملخص، والنقاط المهمة</p>
                     </div>
                   </div>

@@ -10,24 +10,45 @@ export const dataManager = {
   // --- Posts ---
   getPosts: async (): Promise<BlogPost[]> => {
     try {
-      return await api.get('/posts');
+      // Try fetching from API first
+      // return await api.get('/posts');
+      throw new Error("Backend not available");
     } catch (e) {
-      console.error("Error fetching posts:", e);
-      return [];
+      console.warn("Backend unavailable, using localStorage");
+      const localPosts = localStorage.getItem('tilmid_posts');
+      // Return combined initial mock data + local storage data
+      const { BLOG_POSTS } = await import('../constants');
+      return localPosts ? [...JSON.parse(localPosts), ...BLOG_POSTS] : BLOG_POSTS;
     }
   },
 
   savePost: async (post: BlogPost): Promise<void> => {
-    // Determine if update or create based on ID existence or logic
-    // For now, let's assume all saves are "create" or we need a PUT endpoint
-    // If ID starts with 'post-', it might be a temp ID, so create new.
-    // If it's a numeric ID, it might be update.
-    // Simplifying to always create for this migration step or use specific logic
-    if (post.id && !String(post.id).startsWith('post-')) {
-      // Update logic (Implement PUT /api/posts/:id later)
-      console.log("Update not fully implemented");
-    } else {
-      await api.post('/posts', post);
+    try {
+      // Mock ID generation for new posts
+      const newPost = { ...post, id: post.id || `post-${Date.now()}` };
+
+      // Save to LocalStorage
+      const localPostsStr = localStorage.getItem('tilmid_posts');
+      const localPosts = localPostsStr ? JSON.parse(localPostsStr) : [];
+
+      // simplistic update or add
+      const existingIndex = localPosts.findIndex((p: BlogPost) => p.id === newPost.id);
+      if (existingIndex >= 0) {
+        localPosts[existingIndex] = newPost;
+      } else {
+        localPosts.unshift(newPost);
+      }
+
+      localStorage.setItem('tilmid_posts', JSON.stringify(localPosts));
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // try network save if needed, or just return success
+      // await api.post('/posts', post);
+    } catch (e) {
+      console.error("Error saving post:", e);
+      throw e;
     }
   },
 
