@@ -120,55 +120,75 @@ const GenerativeBlogModal = ({ onClose, onGenerate }: { onClose: () => void, onG
   const [topic, setTopic] = useState('');
   const [progress, setProgress] = useState(0);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!topic) return;
     setStep('generating');
+    setProgress(10); // Start progress
 
-    // Simulation of AI Generation Process
-    let p = 0;
-    const interval = setInterval(() => {
-      p += Math.random() * 15;
-      if (p > 100) {
-        clearInterval(interval);
-        finishGeneration();
-      } else {
-        setProgress(Math.min(Math.round(p), 100));
+    try {
+      // @ts-ignore
+      if (typeof puter === 'undefined') {
+        throw new Error("Puter.js library not loaded");
       }
-    }, 500);
+
+      const prompt = `
+        Act as an expert educational content writer for Moroccan students (Baccalaureate level).
+        Write a comprehensive, engaging blog post about: "${topic}".
+
+        Requirements:
+        1. Language: Arabic (Professional yet accessible).
+        2. Tone: Encouraging, motivating, and practical.
+        3. Structure:
+           - Catchy Title
+           - Engaging Introduction
+           - Clear Sections with H2 headers
+           - Bullet points for key takeaways
+           - Motivating Conclusion
+        4. Category: Suggest one specific category (e.g., نصائح, توجيه, مهارات, قصص نجاح).
+
+        Return ONLY a JSON object with this exact structure:
+        {
+          "title": "The Title",
+          "excerpt": "A short, catchy summary (2 lines max)",
+          "content": "The full article content in Markdown format",
+          "category": "The Category"
+        }
+      `;
+
+      setProgress(40); // Prompt ready
+
+      // @ts-ignore
+      const response = await puter.ai.chat(prompt);
+      setProgress(80); // Response received
+
+      const message = response?.message?.content || response;
+      const cleanJson = message.replace(/```json/g, '').replace(/```/g, '').trim();
+      const data = JSON.parse(cleanJson);
+
+      const generatedData = {
+        title: data.title,
+        excerpt: data.excerpt,
+        content: data.content,
+        category: data.category,
+        image: `https://source.unsplash.com/random/800x600/?education,${encodeURIComponent(topic)}` // Keep image as placeholder for now
+      };
+
+      setProgress(100);
+      setStep('complete');
+
+      setTimeout(() => {
+        onGenerate(generatedData);
+        onClose();
+      }, 1000);
+
+    } catch (error) {
+      console.error("AI Generation failed", error);
+      alert("فشل توليد المقال. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
+      setStep('input');
+    }
   };
 
-  const finishGeneration = () => {
-    // Mock AI Data based on topic
-    const mockData = {
-      title: `دليل شامل حول: ${topic}`,
-      excerpt: `اكتشف أفضل الاستراتيجيات والتقنيات الحديثة في ${topic} وكيف يمكنك تطبيقها لتحقيق نتائج مذهلة في مسارك الدراسي.`,
-      content: `
-## مقدمة عن ${topic}
-تعتبر ${topic} من أهم المهارات التي يجب على كل طالب امتلاكها. في هذا المقال، سنستعرض خطوات عملية لإتقانها.
-
-## لماذا ${topic} مهمة؟
-1. تساعد على تحسين التركيز.
-2. توفر الوقت والجهد.
-3. تضمن نتائج دراسية أفضل.
-
-## خطوات عملية
-* ابدأ بالتخطيط المسبق.
-* استخدم أدوات تنظيم الوقت.
-* قيم أداءك بانتظام.
-
-## خاتمة
-تذكر أن ${topic} تحتاج إلى ممارسة مستمرة. ابدأ اليوم ولا تؤجل!
-            `,
-      category: 'نصائح',
-      image: `https://source.unsplash.com/random/800x600/?education,${encodeURIComponent(topic)}`
-    };
-
-    setStep('complete');
-    setTimeout(() => {
-      onGenerate(mockData);
-      onClose();
-    }, 1000);
-  };
+  // Removed finishGeneration as it is now integrated into handleGenerate
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
@@ -1049,10 +1069,10 @@ export const AdminDashboard: React.FC = () => {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard label="إجمالي الطلاب" val={students.length} icon={Users} color="bg-blue-600" trend="+12%" />
-                <StatCard label="المقالات الكلية" val={customPosts.length} icon={FilePlus} color="bg-purple-600" trend="+5%" />
+                <StatCard label="إجمالي الطلاب" val={students.length} icon={Users} color="bg-blue-600" />
+                <StatCard label="المقالات الكلية" val={customPosts.length} icon={FilePlus} color="bg-purple-600" />
                 <StatCard label="مواعيد معلقة" val={appointments.filter(a => a.status === 'pending').length} icon={Clock} color="bg-amber-500" />
-                <StatCard label="المواعيد المؤكدة" val={appointments.filter(a => a.status === 'confirmed').length} icon={CheckCircle} color="bg-emerald-500" trend="+8%" />
+                <StatCard label="المواعيد المؤكدة" val={appointments.filter(a => a.status === 'confirmed').length} icon={CheckCircle} color="bg-emerald-500" />
               </div>
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <div className="xl:col-span-2 bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-sm border border-white hover:shadow-lg transition-all duration-300">

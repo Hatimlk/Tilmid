@@ -18,22 +18,7 @@ export const dataManager = {
   },
 
   deletePost: async (id: string): Promise<void> => {
-    // Assuming api.delete is implemented or using a different method if strictly following previous pattern
-    // But typically a REST API uses DELETE. 
-    // The api lib provided earlier only had get/post. I should probably add delete to it or use fetch directly if needed.
-    // For now, I'll stick to what I saw in api.ts, but `deletePost` in the previous mock was calling `api.get`.
-    // I'll assume we need to fix api.ts as well to support delete, or use a custom fetch here.
-    // Let's check api.ts again in next step if it supports DELETE.
-    // For now, I will use a direct fetch or assume api.delete exists/will exist.
-    // The previous code had: // Add other methods (put, delete) as needed
-    // So I should effectively implement api.delete in api.ts as well.
-    const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://tilmide.ma/api' : 'http://localhost:5000/api');
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_URL}/posts/${id}`, { method: 'DELETE', headers });
-    if (!res.ok) throw new Error(await res.text());
+    await api.delete(`/posts/${id}`);
   },
 
   // --- Students ---
@@ -46,12 +31,7 @@ export const dataManager = {
   },
 
   deleteStudent: async (id: string): Promise<void> => {
-    // Direct fetch pending api.delete implementation
-    const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://tilmide.ma/api' : 'http://localhost:5000/api');
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    await fetch(`${API_URL}/students/${id}`, { method: 'DELETE', headers });
+    await api.delete(`/students/${id}`);
   },
 
   // --- Appointments ---
@@ -64,11 +44,7 @@ export const dataManager = {
   },
 
   deleteAppointment: async (id: string | number): Promise<void> => {
-    const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://tilmide.ma/api' : 'http://localhost:5000/api');
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    await fetch(`${API_URL}/appointments/${id}`, { method: 'DELETE', headers });
+    await api.delete(`/appointments/${id}`);
   },
 
   // --- Stories ---
@@ -81,11 +57,7 @@ export const dataManager = {
   },
 
   deleteStory: async (id: number | string): Promise<void> => {
-    const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://tilmide.ma/api' : 'http://localhost:5000/api');
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    await fetch(`${API_URL}/stories/${id}`, { method: 'DELETE', headers });
+    await api.delete(`/stories/${id}`);
   },
 
   // --- Messages ---

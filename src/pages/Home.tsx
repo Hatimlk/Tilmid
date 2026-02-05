@@ -116,17 +116,7 @@ const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
         </div>
       </div>
 
-      <a
-        href={reel.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-6 group/link flex items-center gap-3 px-6 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-primary/30 hover:shadow-md hover:bg-slate-50 transition-all duration-300"
-      >
-        <span className="text-slate-600 font-bold text-sm group-hover/link:text-primary transition-colors">مشاهدة على إنستغرام</span>
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-orange-500 flex items-center justify-center text-white scale-90 group-hover/link:scale-110 transition-transform">
-          <ArrowLeftIcon size={14} />
-        </div>
-      </a>
+
     </div>
   );
 };

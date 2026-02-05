@@ -32,5 +32,18 @@ export const api = {
         return res.json();
     },
 
-    // Add other methods (put, delete) as needed
+    delete: async (endpoint: string) => {
+        const token = localStorage.getItem('token');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            method: 'DELETE',
+            headers,
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
 };

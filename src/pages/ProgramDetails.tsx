@@ -234,7 +234,7 @@ const TawjihAIAdvisor: React.FC = () => {
               <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-2xl mx-auto font-bold opacity-80 leading-relaxed">{getResult().d}</p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/coaching-offer" className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center">تحدث مع موجه</Link>
+                <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center">تحدث مع موجه</a>
                 <button onClick={() => {
                   setStep('intro');
                   setCurrentQuestion(0);
@@ -466,7 +466,7 @@ export const ProgramDetails: React.FC = () => {
 
                     <div className="relative z-10">
                       <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 rounded-full text-xs font-black uppercase tracking-widest mb-8 shadow-lg shadow-yellow-500/20 animate-bounce-slow">
-                        <Gift size={16} /> هدية حصرية بقيمة 999 درهم
+                        <Gift size={16} /> هدية حصرية
                       </div>
 
                       <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
@@ -532,7 +532,7 @@ export const ProgramDetails: React.FC = () => {
                   <p className="text-slate-500 mb-8 text-base font-bold leading-relaxed px-2">فريقنا المختص جاهز للإجابة على جميع تساؤلاتك وتوجيهك نحو التفوق.</p>
 
                   <div className="space-y-4">
-                    <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noreferrer" className="w-full py-4 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 text-lg group/btn active:scale-95 transition-all relative overflow-hidden">
+                    <a href={id === 'tawjih' ? "https://wa.me/212703749901" : "https://wa.me/message/GN4XKUOMHNHGO1"} target="_blank" rel="noreferrer" className="w-full py-4 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 text-lg group/btn active:scale-95 transition-all relative overflow-hidden">
                       <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                       <MessageCircle size={24} fill="white" className="group-hover/btn:rotate-12 transition-transform relative z-10" />
                       <span className="relative z-10">تحدث معنا عبر واتساب</span>
