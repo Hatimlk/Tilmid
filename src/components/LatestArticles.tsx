@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { BlogPost } from '../types';
-import { BLOG_POSTS } from '../constants';
+
+
 import { dataManager } from '../utils/dataManager';
 import { BlogCard } from './BlogCard';
 

@@ -91,27 +91,37 @@ export const CoachingOffer: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) {
       alert('المرجو ملء جميع المعلومات المطلوبة.');
       return;
     }
-    setShowConfirm(true);
-  };
 
-  const confirmSubmission = () => {
+    // Auto-confirm/submit
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      const { dataManager } = await import('../utils/dataManager');
+      await dataManager.saveCoachingRequest({
+        name: formData.name,
+        phone: formData.phone,
+        grade: formData.grade
+      });
+
       setIsSubmitting(false);
-      setShowConfirm(false);
       setIsSuccess(true);
       setFormData({ name: '', phone: '', grade: '2 باكالوريا' });
       const formElement = document.getElementById('registration-card');
       if (formElement) {
         formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-    }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      setIsSubmitting(false);
+      alert('حدث خطأ أثناء الإرسال. المرجو المحاولة لاحقاً.');
+    }
   };
 
   const features = [

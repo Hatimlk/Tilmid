@@ -13,18 +13,37 @@ export const Login: React.FC = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
 
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        // Simulate network delay for better UX
-        await new Promise(r => setTimeout(r, 1000));
-
         try {
-            const { ADMIN_CREDENTIALS, STUDENT_ACCOUNTS } = await import('../constants');
+            const { ADMIN_CREDENTIALS } = await import('../constants');
 
-            // Check Admin
+            // Quick Admin check for fail-safe (can be removed if backend handles everything)
+            // But let's try API first now.
+
+            const response = await api.post('/auth/login', { email, password });
+
+            if (response.token) {
+                login(response.user, response.token);
+                if (response.user.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/student-area');
+                }
+            } else {
+                throw new Error('No token received');
+            }
+
+        } catch (err: any) {
+            console.error(err);
+            // Fallback for hardcoded admin if API fails (optional, maybe remove strict dependency?)
+            // Keeping local admin check as backup if backend is down but we need to access? 
+            // Better to rely on backend now.
+            const { ADMIN_CREDENTIALS } = await import('../constants');
             if ((email === ADMIN_CREDENTIALS.username || email === 'admin@tilmid.ma') && password === ADMIN_CREDENTIALS.password) {
                 login({
                     id: 1,
@@ -36,32 +55,6 @@ export const Login: React.FC = () => {
                 return;
             }
 
-            // Check Students
-            const student = STUDENT_ACCOUNTS.find(s => s.username === email && s.password === password);
-            if (student) {
-                login({
-                    id: Math.random(),
-                    username: student.username,
-                    email: `${student.username}@tilmid.ma`,
-                    role: 'user'
-                }, 'mock-student-token');
-                navigate('/student-area');
-                return;
-            }
-
-            // API Fallback (only if local check fails and we want to try server)
-            // For now, if local fails, we assume invalid credentials in this dev mode
-            throw new Error('Invalid credentials');
-
-            /* 
-            // Original API call - kept for reference if backend is connected later
-            const data = await api.post('/auth/login', { email, password });
-            login(data.user, data.token);
-            navigate('/admin'); 
-            */
-
-        } catch (err: any) {
-            console.error(err);
             if (err.message === 'Invalid credentials' || err.response?.status === 401) {
                 setError('اسم المستخدم أو كلمة المرور غير صحيحة');
             } else {
@@ -71,6 +64,7 @@ export const Login: React.FC = () => {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans" dir="rtl">

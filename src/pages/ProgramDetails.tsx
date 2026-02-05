@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA, BLOG_POSTS } from '../constants';
+import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
 import { ProgramData } from '../types';
 import {
   CheckCircle,

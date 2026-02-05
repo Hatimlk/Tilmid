@@ -4,7 +4,6 @@ import { Sparkles, ArrowLeft, BookOpen } from 'lucide-react';
 import { BlogPost } from '../types';
 import { BlogCard } from './BlogCard';
 import { dataManager } from '../utils/dataManager';
-import { BLOG_POSTS } from '../constants';
 
 interface RelatedArticlesProps {
     relatedIds?: string[];
@@ -26,10 +25,8 @@ export const RelatedArticles: React.FC<RelatedArticlesProps> = ({
                 setLoading(true);
                 // If IDs are provided, fetch/filter them
                 if (relatedIds && relatedIds.length > 0) {
-                    // In a real API, we might have a specific endpoint. 
-                    // Here we can use the local BLOG_POSTS constant or fetch all and filter.
-                    // Using logic similar to existing usage for consistency.
-                    const filtered = BLOG_POSTS.filter(p => relatedIds.includes(p.id));
+                    const allPosts = await dataManager.getPosts();
+                    const filtered = allPosts.filter(p => relatedIds.includes(p.id));
                     setPosts(filtered);
                 } else {
                     // Fallback: Fetch latest posts

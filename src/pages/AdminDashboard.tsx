@@ -6,7 +6,7 @@ import {
   Search, PenTool, Settings,
   Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText, Sparkles, Wand2, Loader2, Send, Image, MessageSquare, Star, Upload, Database
 } from 'lucide-react';
-import { ADMIN_CREDENTIALS, CUSTOM_POSTS_KEY, BLOG_POSTS, GLOBAL_APPOINTMENTS_KEY, STUDENT_ACCOUNTS, GLOBAL_STUDENTS_KEY } from '../constants';
+import { ADMIN_CREDENTIALS } from '../constants';
 import { BlogPost, Appointment, Student, ContactMessage, SuccessStory } from '../types';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import mammoth from 'mammoth';
 import { seeder } from '../utils/seeder';
+
+
 
 // --- SUB COMPONENTS ---
 
@@ -239,186 +241,7 @@ const GenerativeBlogModal = ({ onClose, onGenerate }: { onClose: () => void, onG
 };
 
 // --- REFINEMENT MODAL ---
-const RefinementModal = ({ onClose, onComplete, initialContent }: { onClose: () => void, onComplete: (data: any) => void, initialContent: string }) => {
-  const [step, setStep] = useState<'analyzing' | 'optimizing' | 'styling' | 'complete'>('analyzing');
-  const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += Math.random() * 5;
-      if (currentProgress >= 100) {
-        if (step === 'analyzing') {
-          setStep('optimizing');
-          currentProgress = 0;
-        } else if (step === 'optimizing') {
-          setStep('styling');
-          currentProgress = 0;
-        } else if (step === 'styling') {
-          setStep('complete');
-          clearInterval(interval);
-          finishRefinement();
-        }
-      }
-      setProgress(Math.min(currentProgress, 100));
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, [step]);
-
-  const finishRefinement = () => {
-    // Advanced Processing: Smart Parsing logic
-    const rawLines = initialContent.split(/\r?\n/).map(l => l.trim()).filter(l => l);
-
-    if (rawLines.length === 0) {
-      onComplete({ title: 'Untitled', content: '', sections: [] });
-      onClose();
-      return;
-    }
-
-    // 1. Title Extraction (Assume first line is title)
-    const title = rawLines[0];
-    const bodyLines = rawLines.slice(1);
-
-    // 2. Content Pattern Recognition
-    const sections: any[] = [];
-    let currentSection: { title: string, content: string[], list: any[] } = {
-      title: "نظرة عامة",
-      content: [],
-      list: []
-    };
-
-    // Helper to detect if a line is likely a list item
-    const isListItem = (line: string) => {
-      return /^[-*•\d\.]/.test(line) || (line.length < 60 && !line.endsWith('.'));
-    };
-
-    // Helper to detect if a line is likely a header
-    const isHeader = (line: string) => {
-      return line.length < 50 && !line.endsWith('.') && !isListItem(line);
-    };
-
-    for (let i = 0; i < bodyLines.length; i++) {
-      const line = bodyLines[i];
-
-      if (isHeader(line) && currentSection.content.length > 0) {
-        // Push previous section
-        sections.push({
-          title: currentSection.title,
-          content: currentSection.content.join('\n\n'),
-          list: currentSection.list.length > 0 ? currentSection.list : undefined
-        });
-        // Start new section
-        currentSection = { title: line, content: [], list: [] };
-      } else if (isListItem(line)) {
-        // It's a list item
-        currentSection.list.push({ t: line, d: '' }); // Simple list item
-      } else {
-        // Regular paragraph
-        currentSection.content.push(line);
-      }
-    }
-
-    // Push the final section
-    sections.push({
-      title: currentSection.title,
-      content: currentSection.content.join('\n\n'),
-      list: currentSection.list.length > 0 ? currentSection.list : undefined
-    });
-
-    // Fallback: If heuristic failed (only 1 section), force split for visual appeal
-    if (sections.length === 1 && sections[0].content.length > 500) {
-      const fullText = sections[0].content;
-      const splitIdx = Math.floor(fullText.length / 2);
-      const part1 = fullText.substring(0, splitIdx);
-      const part2 = fullText.substring(splitIdx);
-
-      sections[0].content = part1;
-      sections.push({
-        title: "تتمة الموضوع",
-        content: part2,
-        list: sections[0].list
-      });
-    }
-
-    // Enhance List Items (Card formatting)
-    sections.forEach(sec => {
-      if (sec.list && sec.list.length > 0) {
-        sec.list = sec.list.map((item: any) => {
-          const parts = item.t.replace(/^[-*•\d\.]+\s*/, '').split(/[:\-]/);
-          return {
-            t: parts[0].trim(),
-            d: parts[1] ? parts[1].trim() : "نقطة مهمة يجب التركيز عليها"
-          };
-        }).slice(0, 6);
-      }
-    });
-
-    const refinedData = {
-      title: title,
-      excerpt: (sections[0]?.content || "").substring(0, 150) + '...',
-      content: bodyLines.join('\n\n'),
-      sections: sections.length > 0 ? sections : [
-        { title: "مقدمة", content: bodyLines.slice(0, 3).join('\n\n') },
-        { title: "التفاصيل", content: bodyLines.slice(3).join('\n\n') }
-      ],
-      category: 'نصائح',
-      image: `https://source.unsplash.com/random/800x600/?education`
-    };
-
-    setTimeout(() => {
-      onComplete(refinedData);
-      onClose();
-    }, 1000);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-8 text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-          <div className="relative z-10">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30 shadow-lg">
-              <Sparkles size={32} className="text-white animate-pulse" />
-            </div>
-            <h2 className="text-2xl font-black text-white mb-2">تحسين المحتوى</h2>
-            <p className="text-cyan-100 font-medium text-sm">جاري معالجة وتنسيق الملف المرفق...</p>
-          </div>
-        </div>
-
-        <div className="p-8">
-          <div className="text-center py-8">
-            {step === 'complete' ? (
-              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in">
-                <Check size={40} strokeWidth={3} />
-              </div>
-            ) : (
-              <div className="mb-6 relative w-24 h-24 mx-auto">
-                <svg className="animate-spin w-full h-full text-blue-100" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-black text-blue-600 text-lg">
-                  {Math.round(progress)}%
-                </div>
-              </div>
-            )}
-
-            <h3 className="text-xl font-bold text-slate-900 mb-2">
-              {step === 'analyzing' && 'تحليل المحتوى...'}
-              {step === 'optimizing' && 'تحسين الصياغة...'}
-              {step === 'styling' && 'تنسيق العرض...'}
-              {step === 'complete' && 'تم الانتهاء!'}
-            </h3>
-            <p className="text-slate-500 text-sm animate-pulse">
-              {step !== 'complete' ? 'يرجى الانتظار قليلاً' : 'تم تجهيز المقال بنجاح'}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 
 // --- MAIN COMPONENT ---
@@ -454,13 +277,16 @@ export const AdminDashboard: React.FC = () => {
 
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [newBooking, setNewBooking] = useState<Partial<Appointment>>({ status: 'confirmed', type: 'live', date: '', time: '' });
-  const [showRefinementModal, setShowRefinementModal] = useState(false);
+
   const [rawFileContent, setRawFileContent] = useState('');
 
   // Post Form State
+  const [wizardStep, setWizardStep] = useState(1);
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const [isEditingPost, setIsEditingPost] = useState(false);
-  const [creationMode, setCreationMode] = useState<'selection' | 'editor'>('selection');
+  const [creationMode, setCreationMode] = useState<'selection' | 'editor' | 'upload'>('selection');
   const [showAiModal, setShowAiModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newPost, setNewPost] = useState<BlogPost>({
     id: '',
     title: '',
@@ -470,7 +296,9 @@ export const AdminDashboard: React.FC = () => {
     content: '',
     sections: [],
     image: '',
-    status: 'published'
+    status: 'published',
+    contentType: 'text',
+    file_url: ''
   });
 
   const checkDbStatus = async () => {
@@ -567,22 +395,49 @@ export const AdminDashboard: React.FC = () => {
 
   const handleSavePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPost.title || (!newPost.content && (!newPost.sections || newPost.sections.length === 0))) {
-      alert('المرجو ملء عنوان ومحتوى المقال (أو إضافة أقسام)');
+
+    if (!newPost.title) {
+      alert('المرجو ملء عنوان المقال');
+      return;
+    }
+
+    if (creationMode === 'upload' && !selectedFile && !newPost.file_url) {
+      alert('المرجو اختيار ملف للرفع');
+      return;
+    }
+
+    if (creationMode !== 'upload' && !newPost.content && (!newPost.sections || newPost.sections.length === 0)) {
+      alert('المرجو ملء محتوى المقال');
       return;
     }
 
     try {
-      const finalContent = newPost.content || ''; // Ensure content is not null/undefined
+      let finalPost = { ...newPost };
+
+      // Handle File Upload
+      if (creationMode === 'upload' && selectedFile) {
+        try {
+          const url = await dataManager.uploadFile(selectedFile);
+          finalPost.file_url = url;
+          finalPost.contentType = 'file';
+          if (!finalPost.content) finalPost.content = 'ملف مرفق';
+        } catch (err) {
+          console.error("Upload failed", err);
+          alert("فشل رفع الملف");
+          return;
+        }
+      }
+
+      const finalContent = finalPost.content || '';
+
       if (isEditingPost) {
-        await dataManager.savePost({ ...newPost, content: finalContent, status: 'published' });
+        await dataManager.savePost({ ...finalPost, content: finalContent });
       } else {
         const postToSave: BlogPost = {
-          ...newPost,
+          ...finalPost,
           id: `post-${Date.now()}`,
           date: new Date().toISOString().split('T')[0],
           content: finalContent,
-          status: 'published',
           author: {
             name: 'الأستاذ ياسين',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Yassine'
@@ -595,9 +450,10 @@ export const AdminDashboard: React.FC = () => {
       const updatedPosts = await dataManager.getPosts();
       setCustomPosts(updatedPosts);
 
-      setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', sections: [], image: '', status: 'published' });
+      setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', sections: [], image: '', status: 'published', contentType: 'html', file_url: '' });
       setIsEditingPost(false);
       setCreationMode('selection');
+      setSelectedFile(null);
       setActiveTab('posts-list');
       setShowNotifications(true);
       setTimeout(() => setShowNotifications(false), 3000);
@@ -622,15 +478,18 @@ export const AdminDashboard: React.FC = () => {
   const handleEditPost = (post: BlogPost) => {
     setNewPost(post);
     setIsEditingPost(true);
+    setWizardStep(1);
+    setCreationMode(post.contentType === 'file' ? 'upload' : 'editor');
     setActiveTab('create-post');
-    setCreationMode('editor');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
 
   const resetPostForm = () => {
     setNewPost({ id: '', title: '', category: 'نصائح', date: '', excerpt: '', content: '', sections: [], html: '', image: '', status: 'published' });
+
     setIsEditingPost(false);
     setCreationMode('selection');
+    setWizardStep(1);
   };
 
   const handleOpenStudentModal = (student?: Student) => {
@@ -777,8 +636,8 @@ export const AdminDashboard: React.FC = () => {
         try {
           const arrayBuffer = event.target.result as ArrayBuffer;
           const result = await mammoth.extractRawText({ arrayBuffer });
-          setRawFileContent(result.value);
-          setShowRefinementModal(true);
+          // setRawFileContent(result.value);
+          setNewPost(prev => ({ ...prev, content: result.value }));
         } catch (error) {
           console.error("Error parsing file:", error);
           alert("حدث خطأ أثناء قراءة الملف. يرجى المحاولة مرة أخرى.");
@@ -788,17 +647,64 @@ export const AdminDashboard: React.FC = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const handleRefinementComplete = (data: any) => {
-    setNewPost(prev => ({
-      ...prev,
-      title: data.title,
-      excerpt: data.excerpt,
-      content: data.content,
-      sections: data.sections,
-      category: data.category
-    }));
-    setCreationMode('editor');
-  }
+
+  const handleAiOptimize = async () => {
+    setIsOptimizing(true);
+    try {
+      // @ts-ignore
+      if (typeof puter === 'undefined') {
+        alert("Puter.js library not loaded. Please ensure you have internet connection.");
+        setIsOptimizing(false);
+        return;
+      }
+
+      const prompt = `
+        Act as an expert Arabic content editor. Refactor and enhance the following article content.
+        
+        Requirements:
+        1. Clean up grammar and spelling.
+        2. Format using Markdown (H2, H3, Bullet points).
+        3. Make it more engaging and professional.
+        4. Split into clear sections: Introduction, Main Points, Conclusion.
+        5. Add relevant emojis to headers.
+        6. Extract a catchy title and suggest a short SEO excerpt.
+        
+        Return ONLY a JSON object with this structure:
+        {
+          "title": "New Title",
+          "excerpt": "Short description",
+          "content": "Full enhanced markdown content"
+        }
+
+        Original Content:
+        ${newPost.content}
+      `;
+
+      // @ts-ignore
+      const response = await puter.ai.chat(prompt);
+      const message = response?.message?.content || response;
+
+      // Cleanup JSON string (remove markdown code blocks if any)
+      const cleanJson = message.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      const data = JSON.parse(cleanJson);
+
+      setNewPost(prev => ({
+        ...prev,
+        title: data.title || prev.title,
+        excerpt: data.excerpt || prev.excerpt,
+        content: data.content || prev.content
+      }));
+
+    } catch (error) {
+      console.error("AI Optimization failed", error);
+      alert("فشل التحسين الذكي. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+
 
   const handleAiGeneration = (data: any) => {
     setNewPost(prev => ({
@@ -819,7 +725,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3F6F9] flex flex-col lg:flex-row font-sans text-slate-800" dir="rtl">
       {showAiModal && <GenerativeBlogModal onClose={() => setShowAiModal(false)} onGenerate={handleAiGeneration} />}
-      {showRefinementModal && <RefinementModal onClose={() => setShowRefinementModal(false)} onComplete={handleRefinementComplete} initialContent={rawFileContent} />}
+
 
       {/* --- STUDENT MODAL (ADD/EDIT) --- */}
       {showStudentModal && (
@@ -1214,223 +1120,354 @@ export const AdminDashboard: React.FC = () => {
 
           {/* --- CREATE POST TAB --- */}
           {activeTab === 'create-post' && (
-            <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 pb-20">
+            <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 space-y-8">
+              {/* Stepper Header */}
+              <div className="flex items-center justify-between mb-8 px-4 relative">
+                {/* Progress Bar Background */}
+                <div className="absolute left-8 right-8 top-1/2 h-1 bg-slate-200 -z-10 rounded-full"></div>
+                {/* Progress Bar Active */}
+                <div
+                  className="absolute right-8 top-1/2 h-1 bg-indigo-600 -z-10 rounded-full transition-all duration-500"
+                  style={{ width: `${((wizardStep - 1) / 3) * 100}%`, right: '2rem', left: 'auto' }}
+                ></div>
 
-              <form onSubmit={handleSavePost} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
-                {/* Left Column: Main Editor */}
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Title & Quick Actions */}
-                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col gap-6">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-extrabold text-xl text-slate-900 flex items-center gap-2">
-                        <PenTool className="text-primary" size={24} />
-                        {isEditingPost ? 'تعديل المقال' : 'كتابة مقال جديد'}
-                      </h3>
+                {[1, 2, 3, 4].map((s) => (
+                  <div key={s} className="flex flex-col items-center relative group">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg transition-all duration-300 z-10 border-4 
+                      ${wizardStep >= s ? 'bg-indigo-600 border-white text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 border-white text-slate-400'}`}
+                    >
+                      {wizardStep > s ? <Check size={20} /> : s}
                     </div>
-
-                    <div className="relative group">
-                      <input
-                        type="text"
-                        required
-                        value={newPost.title || ''}
-                        onChange={e => setNewPost({ ...newPost, title: e.target.value })}
-                        className="w-full text-3xl lg:text-4xl font-black text-slate-800 placeholder:text-slate-300 border-none outline-none bg-transparent px-0 py-2 focus:ring-0 leading-tight"
-                        placeholder="أدخل عنوان المقال هنا..."
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-100 group-hover:bg-slate-200 transition-colors"></div>
-                    </div>
-                  </div>
-
-                  {/* File Upload Section */}
-                  <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Upload size={20} className="text-slate-400" />
-                      <label className="text-sm font-black text-slate-700 uppercase tracking-wider">رفع ملف (Word/Text)</label>
-                    </div>
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:bg-slate-50 transition-colors text-center cursor-pointer group relative">
-                      <input
-                        type="file"
-                        accept=".docx,.txt,.pdf"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          // Show loading state if we had one, for now just use alert or toast
-                          try {
-                            const { smartParser } = await import('../utils/smartParser');
-                            const parsed = await smartParser.parseFile(file);
-
-                            setNewPost(prev => ({
-                              ...prev,
-                              title: parsed.title || prev.title,
-                              excerpt: parsed.excerpt || prev.excerpt,
-                              content: parsed.content || prev.content, // Fallback to full text
-                              sections: parsed.sections
-                            }));
-
-                            alert('تم استيراد المحتوى بنجاح! تم توليد العناوين والنقاط المهمة تلقائياً.');
-                          } catch (err) {
-                            console.error("Error parsing file", err);
-                            alert("حدث خطأ أثناء قراءة الملف. تأكد أن الملف صالح.");
-                          }
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                        <FileText size={28} />
-                      </div>
-                      <p className="text-slate-800 font-bold text-base mb-1">اضغط لرفع ملف (Word, PDF, TXT)</p>
-                      <p className="text-slate-400 text-xs font-bold">سيتم استخراج العنوان، الملخص، والنقاط المهمة</p>
-                    </div>
-                  </div>
-
-
-
-
-
-
-                </div>
-
-                {/* Right Column: Sidebar Settings */}
-                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-32">
-
-                  {/* Publish Actions */}
-                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                    <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Send size={18} className="text-blue-500" /> النشر</h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                        <span className="text-sm font-bold text-slate-500">الحالة:</span>
-                        <select
-                          value={newPost.status || 'published'}
-                          onChange={e => setNewPost({ ...newPost, status: e.target.value as 'published' | 'draft' })}
-                          className="bg-transparent font-bold text-slate-800 outline-none text-sm cursor-pointer"
-                        >
-                          <option value="published">منشور</option>
-                          <option value="draft">مسودة</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl mb-2">
-                        <span className="text-sm font-bold text-slate-500">التاريخ:</span>
-                        <input
-                          type="text"
-                          value={newPost.date || new Date().toLocaleDateString('ar-MA')}
-                          disabled
-                          className="bg-transparent font-bold text-slate-800 outline-none text-sm text-left w-24 opacity-60 cursor-not-allowed"
-                        />
-                      </div>
-
-                      <button type="submit" className="w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-royal shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
-                        {isEditingPost ? <Save size={18} /> : <Send size={18} />}
-                        <span>{isEditingPost ? 'حفظ التغييرات' : 'نشر الآن'}</span>
-                      </button>
-
-                      {isEditingPost && (
-                        <button
-                          type="button"
-                          onClick={resetPostForm}
-                          className="w-full py-3 bg-white border-2 border-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition-all"
-                        >
-                          إلغاء التعديل
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Category */}
-                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                    <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Filter size={18} className="text-purple-500" /> التصنيف</h4>
-                    <div className="relative">
-                      <select value={newPost.category || 'نصائح'} onChange={e => setNewPost({ ...newPost, category: e.target.value })} className="w-full p-4 rounded-xl border-2 border-slate-100 focus:border-purple-500 outline-none bg-slate-50 focus:bg-white font-bold text-slate-800 appearance-none cursor-pointer transition-all">
-                        <option>نصائح</option><option>تقنيات</option><option>توجيه</option><option>الحفظ والمراجعة</option><option>الصحة والدراسة</option>
-                      </select>
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><ChevronLeft size={18} className="-rotate-90" /></div>
-                    </div>
-                  </div>
-
-                  {/* Featured Image */}
-                  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                    <h4 className="font-black text-slate-800 mb-4 flex items-center gap-2"><Image size={18} className="text-emerald-500" /> صورة الغلاف</h4>
-                    <div className="space-y-4">
-                      <div className="relative group overflow-hidden rounded-2xl bg-slate-100 aspect-video border-2 border-dashed border-slate-300 flex items-center justify-center">
-                        {newPost.image ? (
-                          <img src={newPost.image} alt="Cover Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Invalid+Image')} />
-                        ) : (
-                          <div className="text-center text-slate-400 p-4">
-                            <Image size={32} className="mx-auto mb-2 opacity-50" />
-                            <p className="text-xs font-bold">معاينة الصورة</p>
-                          </div>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        value={newPost.image || ''}
-                        onChange={e => setNewPost({ ...newPost, image: e.target.value })}
-                        className="w-full p-3 text-xs font-medium rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white transition-all"
-                        placeholder="أدخل رابط الصورة (URL)..."
-                        dir="ltr"
-                      />
-                    </div>
-                  </div>
-
-                </div>
-              </form>
-
-            </div>
-          )}
-
-          {/* --- POSTS LIST TAB --- */}
-          {activeTab === 'posts-list' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6">
-              <div className="bg-white/80 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-sm border border-white flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="font-black text-xl text-slate-800 flex items-center gap-2">
-                    <FileText size={24} className="text-indigo-600" />
-                    مكتبة المقالات
-                  </h3>
-                  <p className="text-slate-400 text-sm font-bold mt-1">إدارة وتحرير المحتوى التعليمي</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-2xl text-sm font-black ring-1 ring-inset ring-indigo-100">{customPosts.length} مقال</span>
-                  <button onClick={() => setActiveTab('create-post')} className="bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/20">
-                    <PenTool size={16} className="inline ml-2" />
-                    مقال جديد
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {customPosts.map(post => (
-                  <div key={post.id} className="bg-white/60 backdrop-blur-md p-4 rounded-[2rem] border border-white hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group relative overflow-hidden">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                      <div className="w-full md:w-48 h-32 rounded-3xl overflow-hidden shrink-0 shadow-md relative group-hover:rotate-1 transition-transform">
-                        <div className="absolute inset-0 bg-slate-200 animate-pulse" />
-                        <img src={post.image} className="w-full h-full object-cover absolute inset-0 group-hover:scale-110 transition-transform duration-700" alt="" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-
-                      <div className="flex-grow text-center md:text-right w-full">
-                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                          <span className="text-[10px] font-black bg-indigo-50 text-indigo-500 px-3 py-1 rounded-full border border-indigo-100/50">{post.category}</span>
-                          <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1"><Clock size={10} /> {post.date}</span>
-                        </div>
-                        <h4 className="font-black text-lg text-slate-800 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">{post.title}</h4>
-                        <p className="text-slate-500 text-sm line-clamp-2 md:w-3/4 leading-relaxed">{post.excerpt || 'لا يوجد ملخص لهذا المقال...'}</p>
-                      </div>
-
-                      <div className="flex flex-row md:flex-col gap-3 shrink-0 items-center justify-center w-full md:w-auto mt-4 md:mt-0 border-t md:border-t-0 md:border-r border-slate-100 pt-4 md:pt-0 md:pr-6">
-                        <StatusBadge status={post.status || 'published'} />
-                        <div className="flex gap-2 mt-1">
-                          <button onClick={() => handleEditPost(post)} className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm hover:shadow-blue-500/30" title="تعديل"><PenTool size={16} /></button>
-                          <button onClick={() => handleDeletePost(post.id)} className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-rose-500/30" title="حذف"><Trash2 size={16} /></button>
-                        </div>
-                      </div>
-                    </div>
+                    <span className={`absolute -bottom-8 text-xs font-bold transition-colors duration-300 w-max
+                      ${wizardStep >= s ? 'text-indigo-600' : 'text-slate-400'}`}>
+                      {s === 1 && "المسودة"}
+                      {s === 2 && "التحسين"}
+                      {s === 3 && "التفاصيل"}
+                      {s === 4 && "النشر"}
+                    </span>
                   </div>
                 ))}
               </div>
+
+              {/* Steps Content */}
+              <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 min-h-[600px] flex flex-col relative overflow-hidden">
+
+                {/* STEP 1: DRAFT */}
+                {wizardStep === 1 && (
+                  <div className="animate-in fade-in slide-in-from-right-4">
+                    <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                      <span className="bg-indigo-50 text-indigo-600 p-2 rounded-xl"><FileText size={24} /></span>
+                      كتابة المسودة
+                    </h3>
+
+                    {/* Content Source Selection */}
+                    <div className="flex gap-4 mb-6">
+                      <button
+                        onClick={() => setCreationMode('editor')}
+                        className={`flex-1 p-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${creationMode === 'editor' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                      >
+                        <PenTool size={18} /> كتابة نص
+                      </button>
+                      <button
+                        onClick={() => setCreationMode('upload')}
+                        className={`flex-1 p-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${creationMode === 'upload' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                      >
+                        <Upload size={18} /> رفع ملف
+                      </button>
+                    </div>
+
+                    {creationMode === 'editor' ? (
+                      <textarea
+                        value={newPost.content}
+                        onChange={e => setNewPost({ ...newPost, content: e.target.value })}
+                        className="w-full h-[400px] p-4 bg-slate-50 border border-slate-100 rounded-2xl resize-none outline-none focus:border-indigo-500 transition-colors font-medium text-lg leading-relaxed shadow-inner"
+                        placeholder="اكتب أفكارك الأولية هنا... لا تقلق بشأن التنسيق، سنهتم بذلك في الخطوة التالية!"
+                      ></textarea>
+                    ) : (
+                      <div className="border-2 border-dashed border-slate-200 rounded-2xl h-[400px] flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 hover:bg-indigo-50/10 hover:border-indigo-300 transition-all cursor-pointer relative"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const file = e.dataTransfer.files[0];
+                          if (file) handleFileUpload({ target: { files: [file] } } as any);
+                        }}
+                      >
+                        <input
+                          type="file"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={handleFileUpload}
+                          accept=".txt,.md,.pdf,.docx"
+                        />
+                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100">
+                          <Upload size={32} className="text-indigo-500" />
+                        </div>
+                        <p className="font-bold text-lg text-slate-600">اضغط لرفع ملف أو اسحبه هنا</p>
+                        <p className="text-sm mt-2">PDF, DOCX, TXT</p>
+                        {selectedFile && (
+                          <div className="mt-4 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-bold flex items-center gap-2">
+                            <CheckCircle size={16} /> {selectedFile.name}
+                          </div>
+                        )}
+                        {newPost.content && newPost.contentType === 'file' && (
+                          <div className="mt-4 max-w-md p-4 bg-white rounded-xl border border-slate-200 text-xs text-left overflow-hidden h-24 relative">
+                            <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
+                            {newPost.content}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* STEP 2: OPTIMIZE */}
+                {wizardStep === 2 && (
+                  <div className="animate-in fade-in slide-in-from-right-4 h-full flex flex-col">
+                    <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                      <span className="bg-cyan-50 text-cyan-600 p-2 rounded-xl"><Sparkles size={24} /></span>
+                      التحسين والذكاء الاصطناعي
+                    </h3>
+
+                    <div className="flex-1 overflow-hidden relative rounded-2xl border border-slate-100 bg-slate-50">
+                      {isOptimizing ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-10">
+                          <div className="w-20 h-20 relative mb-4">
+                            <div className="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+                            <Sparkles className="absolute inset-0 m-auto text-indigo-600 animate-pulse" />
+                          </div>
+                          <h4 className="text-xl font-bold text-slate-800 mb-2">جاري تحليل وتحسين المحتوى...</h4>
+                          <p className="text-slate-500 font-medium">يقوم الذكاء الاصطناعي بتنسيق الفقرات واقتراح العناوين</p>
+                        </div>
+                      ) : null}
+
+                      <textarea
+                        value={newPost.content}
+                        onChange={e => setNewPost({ ...newPost, content: e.target.value })}
+                        className="w-full h-full p-6 bg-transparent resize-none outline-none font-medium text-lg leading-loose text-slate-700"
+                      ></textarea>
+                    </div>
+
+                    <div className="mt-4 flex justify-between items-center bg-cyan-50 p-4 rounded-xl border border-cyan-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-cyan-600">
+                          <Wand2 size={20} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">تحسين تلقائي</p>
+                          <p className="text-xs text-slate-500">استخدم Puter.js لإعادة صياغة وتنسيق النص</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleAiOptimize}
+                        disabled={isOptimizing}
+                        className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-lg shadow-lg shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all text-sm flex items-center gap-2"
+                      >
+                        {isOptimizing ? 'جاري التحسين...' : 'تشغيل المُحسن الذكي'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3: DETAILS */}
+                {wizardStep === 3 && (
+                  <div className="animate-in fade-in slide-in-from-right-4">
+                    <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                      <span className="bg-indigo-50 text-indigo-600 p-2 rounded-xl"><Settings size={24} /></span>
+                      تفاصيل المقال
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">عنوان المقال</label>
+                          <input
+                            value={newPost.title}
+                            onChange={e => setNewPost({ ...newPost, title: e.target.value })}
+                            className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-indigo-500 font-bold text-lg"
+                            placeholder="عنوان جذاب للمقال..."
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">التصنيف</label>
+                          <select
+                            value={newPost.category}
+                            onChange={e => setNewPost({ ...newPost, category: e.target.value })}
+                            className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-indigo-500 font-bold"
+                          >
+                            <option value="نصائح">نصائح</option>
+                            <option value="توجيه">توجيه</option>
+                            <option value="تحفيز">تحفيز</option>
+                            <option value="قصص نجاح">قصص نجاح</option>
+                            <option value="طرق مراجعة">طرق مراجعة</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">مقتطف قصير (SEO)</label>
+                          <textarea
+                            value={newPost.excerpt}
+                            onChange={e => setNewPost({ ...newPost, excerpt: e.target.value })}
+                            className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-indigo-500 font-bold min-h-[120px] resize-none"
+                            placeholder="وصف مختصر يظهر في محركات البحث..."
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="block text-sm font-bold text-slate-700">صورة الغلاف</label>
+                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl h-[300px] flex flex-col items-center justify-center relative overflow-hidden group hover:border-indigo-300 transition-all">
+                          {newPost.image ? (
+                            <>
+                              <img src={newPost.image} className="absolute inset-0 w-full h-full object-cover" alt="Cover" />
+                              <button
+                                onClick={() => setNewPost({ ...newPost, image: '' })}
+                                className="absolute top-4 right-4 bg-white/90 p-2 rounded-full text-rose-500 shadow-sm opacity-0 group-hover:opacity-100 transition-all"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </>
+                          ) : (
+                            <div className="text-center p-6">
+                              <Image size={40} className="mx-auto text-slate-300 mb-2" />
+                              <p className="text-slate-400 font-bold text-sm mb-4">معاينة الصورة</p>
+                              <input
+                                type="text"
+                                placeholder="رابط الصورة (URL)..."
+                                className="w-full p-3 bg-white rounded-lg border border-slate-200 text-sm outline-none focus:border-indigo-500 mb-2"
+                                onChange={(e) => setNewPost({ ...newPost, image: e.target.value })}
+                              />
+                              <button type="button" className="text-xs font-bold text-indigo-600 hover:underline">
+                                بحث عن صورة تلقائياً
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 4: PREVIEW */}
+                {wizardStep === 4 && (
+                  <div className="animate-in fade-in slide-in-from-right-4 h-full">
+                    <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                      <span className="bg-emerald-50 text-emerald-600 p-2 rounded-xl"><Eye size={24} /></span>
+                      معاينة ونشر
+                    </h3>
+
+                    <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-200 h-[500px] overflow-y-auto mb-6 custom-scrollbar">
+                      <article className="prose prose-lg max-w-none prose-slate">
+                        <h1 className="font-black text-3xl text-slate-900 mb-4">{newPost.title}</h1>
+                        {newPost.image && (
+                          <img src={newPost.image} alt={newPost.title} className="w-full h-64 object-cover rounded-2xl shadow-sm mb-8" />
+                        )}
+                        <div className="flex gap-4 mb-8 text-sm font-bold text-slate-400">
+                          <span className="flex items-center gap-1"><Calendar size={14} /> {newPost.date || new Date().toISOString().split('T')[0]}</span>
+                          <span className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{newPost.category}</span>
+                        </div>
+
+                        <div className="whitespace-pre-wrap leading-loose">
+                          {newPost.content}
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                )}
+
+
+                {/* Navigation Buttons */}
+                <div className="mt-auto pt-8 flex items-center justify-between border-t border-slate-100">
+                  <button
+                    disabled={wizardStep === 1}
+                    onClick={() => setWizardStep(prev => prev - 1)}
+                    className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                  >
+                    السابق
+                  </button>
+
+                  {wizardStep < 4 ? (
+                    <button
+                      onClick={() => {
+                        if (wizardStep === 1 && !newPost.content && !selectedFile) {
+                          alert("المرجو كتابة محتوى أو رفع ملف للمتابعة");
+                          return;
+                        }
+                        setWizardStep(prev => prev + 1);
+                      }}
+                      className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-indigo-600 shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center gap-2"
+                    >
+                      التالي <ChevronLeft size={18} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSavePost}
+                      className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                    >
+                      <Send size={18} /> نشر المقال الآن
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
+
+
+          {/* --- POSTS LIST TAB --- */}
+          {
+            activeTab === 'posts-list' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6">
+                <div className="bg-white/80 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-sm border border-white flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="font-black text-xl text-slate-800 flex items-center gap-2">
+                      <FileText size={24} className="text-indigo-600" />
+                      مكتبة المقالات
+                    </h3>
+                    <p className="text-slate-400 text-sm font-bold mt-1">إدارة وتحرير المحتوى التعليمي</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-2xl text-sm font-black ring-1 ring-inset ring-indigo-100">{customPosts.length} مقال</span>
+                    <button onClick={() => setActiveTab('create-post')} className="bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-500/20">
+                      <PenTool size={16} className="inline ml-2" />
+                      مقال جديد
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {customPosts.map(post => (
+                    <div key={post.id} className="bg-white/60 backdrop-blur-md p-4 rounded-[2rem] border border-white hover:border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group relative overflow-hidden">
+                      <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="w-full md:w-48 h-32 rounded-3xl overflow-hidden shrink-0 shadow-md relative group-hover:rotate-1 transition-transform">
+                          <div className="absolute inset-0 bg-slate-200 animate-pulse" />
+                          <img src={post.image} className="w-full h-full object-cover absolute inset-0 group-hover:scale-110 transition-transform duration-700" alt="" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+
+                        <div className="flex-grow text-center md:text-right w-full">
+                          <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                            <span className="text-[10px] font-black bg-indigo-50 text-indigo-500 px-3 py-1 rounded-full border border-indigo-100/50">{post.category}</span>
+                            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1"><Clock size={10} /> {post.date}</span>
+                          </div>
+                          <h4 className="font-black text-lg text-slate-800 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">{post.title}</h4>
+                          <p className="text-slate-500 text-sm line-clamp-2 md:w-3/4 leading-relaxed">{post.excerpt || 'لا يوجد ملخص لهذا المقال...'}</p>
+                        </div>
+
+                        <div className="flex flex-row md:flex-col gap-3 shrink-0 items-center justify-center w-full md:w-auto mt-4 md:mt-0 border-t md:border-t-0 md:border-r border-slate-100 pt-4 md:pt-0 md:pr-6">
+                          <StatusBadge status={post.status || 'published'} />
+                          <div className="flex gap-2 mt-1">
+                            <button onClick={() => handleEditPost(post)} className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm hover:shadow-blue-500/30" title="تعديل"><PenTool size={16} /></button>
+                            <button onClick={() => handleDeletePost(post.id)} className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-rose-500/30" title="حذف"><Trash2 size={16} /></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          }
 
 
           {/* --- STUDENTS TAB --- */}
@@ -1588,7 +1625,7 @@ export const AdminDashboard: React.FC = () => {
                               <div className="flex items-center gap-3 text-xs font-bold text-slate-400">
                                 <span className="bg-slate-100 px-2 py-1 rounded-lg text-slate-500">{msg.phone}</span>
                                 <span>•</span>
-                                <span>{msg.date}</span>
+                                <span>{msg.dates}</span>
                               </div>
                             </div>
                             <span className="text-[10px] font-black tracking-wider text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 uppercase mt-2 md:mt-0">{msg.type}</span>

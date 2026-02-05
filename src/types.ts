@@ -36,6 +36,8 @@ export interface BlogPost {
     content: string;
     list?: { t: string; d: string; }[];
   }[];
+  file_url?: string;
+  contentType?: 'html' | 'file' | 'text';
 }
 
 export interface StudyResource {
@@ -122,6 +124,15 @@ export interface ContactMessage {
   phone: string;
   type: string;
   message: string;
-  date: string;
+  dates: string;
   status: 'new' | 'read';
+}
+
+export interface CoachingRequest {
+  id: string;
+  name: string;
+  phone: string;
+  grade: string;
+  status: 'new' | 'contacted' | 'enrolled' | 'archived';
+  date: string;
 }

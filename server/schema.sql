@@ -23,3 +23,70 @@ CREATE TABLE IF NOT EXISTS posts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- Students Table
+CREATE TABLE IF NOT EXISTS students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255),
+    grade VARCHAR(255),
+    join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('active', 'suspended') DEFAULT 'active',
+    avatar_url VARCHAR(255)
+);
+
+-- Appointments Table
+CREATE TABLE IF NOT EXISTS appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_name VARCHAR(255),
+    title VARCHAR(255),
+    date DATE,
+    time VARCHAR(50),
+    status ENUM('confirmed', 'pending', 'cancelled') DEFAULT 'confirmed',
+    type ENUM('live', 'online') DEFAULT 'live',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Success Stories Table
+CREATE TABLE IF NOT EXISTS success_stories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_name VARCHAR(255),
+    grade VARCHAR(255),
+    story_text TEXT,
+    avatar_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Contact Messages Table
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    type VARCHAR(100),
+    message TEXT,
+    status ENUM('new', 'read', 'archived') DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Resources Table
+CREATE TABLE IF NOT EXISTS resources (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    type VARCHAR(50),
+    url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Coaching Requests Table
+CREATE TABLE IF NOT EXISTS coaching_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    grade VARCHAR(100),
+    status ENUM('new', 'contacted', 'enrolled', 'archived') DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
