@@ -132,25 +132,37 @@ const GenerativeBlogModal = ({ onClose, onGenerate }: { onClose: () => void, onG
       }
 
       const prompt = `
-        Act as an expert educational content writer for Moroccan students (Baccalaureate level).
-        Write a comprehensive, engaging blog post about: "${topic}".
+        Act as a world-class educational coach and psychologist for high-achieving Moroccan students (Baccalaureate level).
+        Write a generic, high-performance, and deeply actionable blog post about: "${topic}".
 
         Requirements:
-        1. Language: Arabic (Professional yet accessible).
-        2. Tone: Encouraging, motivating, and practical.
-        3. Structure:
-           - Catchy Title
-           - Engaging Introduction
-           - Clear Sections with H2 headers
-           - Bullet points for key takeaways
-           - Motivating Conclusion
-        4. Category: Suggest one specific category (e.g., نصائح, توجيه, مهارات, قصص نجاح).
+        1. **Content Quality**: Avoid generic advice. Provide specific, psychological, and actionable strategies. Use the "Pomodoro" or "Feynman" technique style of depth.
+        2. **Language**: Arabic (Modern, inspiring, powerful, and easy to read).
+        3. **Tone**: Empowering, authoritative yet friendly, and highly motivating.
+        4. **Formatting (CRITICAL)**:
+           - Use **Markdown** strictly.
+           - Use \`##\` for Main Section Headers (e.g., ## لماذا هذا مهم؟).
+           - Use \`###\` for Sub-concepts (these will become "Target" icons).
+           - Use \`1. \` (Numbered Lists) for step-by-step guides.
+           - Use \`✓\` (Checkmark) for positive traits, strict rules, or "Must Do" lists.
+           - Use \`-\` (Bullet) for general points.
+           - Use \`**bold**\` for key phrases to make it skimmable.
+
+        Structure:
+           - 🏆 **Catchy Title**: (Exciting and high value).
+           - 🚀 **Hook/Intro**: Grab attention immediately.
+           - 🧠 **Deep Dive**: 3-4 distinct sections using \`##\`.
+           - 📋 **Action Plan**: Use a numbered list \`1.\`.
+           - ✅ **Checklist**: Use checkmarks \`✓\` for summary.
+           - ✨ **Conclusion**: A powerful final motivating thought.
+        
+        Category: Suggest one specific category (e.g., تقنيات, منهجية, تنظيم, تحفيز, تفوق).
 
         Return ONLY a JSON object with this exact structure:
         {
           "title": "The Title",
           "excerpt": "A short, catchy summary (2 lines max)",
-          "content": "The full article content in Markdown format",
+          "content": "The full article content in Markdown format (ensure all formatting symbols like ##, ###, ✓, 1. are correctly placed)",
           "category": "The Category"
         }
       `;
@@ -1316,6 +1328,7 @@ export const AdminDashboard: React.FC = () => {
                             onChange={e => setNewPost({ ...newPost, category: e.target.value })}
                             className="w-full p-4 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:border-indigo-500 font-bold"
                           >
+                            <option value="تقنيات">تقنيات</option>
                             <option value="نصائح">نصائح</option>
                             <option value="توجيه">توجيه</option>
                             <option value="تحفيز">تحفيز</option>
@@ -1645,7 +1658,7 @@ export const AdminDashboard: React.FC = () => {
                               <div className="flex items-center gap-3 text-xs font-bold text-slate-400">
                                 <span className="bg-slate-100 px-2 py-1 rounded-lg text-slate-500">{msg.phone}</span>
                                 <span>•</span>
-                                <span>{msg.dates}</span>
+                                <span>{msg.date}</span>
                               </div>
                             </div>
                             <span className="text-[10px] font-black tracking-wider text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 uppercase mt-2 md:mt-0">{msg.type}</span>

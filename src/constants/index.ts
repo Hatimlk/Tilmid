@@ -71,11 +71,9 @@ export const INSTAGRAM_REELS: VideoReel[] = [
   }
 ];
 
-// --- ADMIN CREDENTIALS ---
-export const ADMIN_CREDENTIALS = {
-  username: import.meta.env.VITE_ADMIN_USERNAME || 'admin',
-  password: import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
-};
+// --- ADMIN CREDENTIALS REMOVED FOR SECURITY ---
+// Authentication should only be handled via API
+
 
 // Data from PDF 1 (Tawjih)
 export const TAWJIH_DATA: ProgramData = {

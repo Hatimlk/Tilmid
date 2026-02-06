@@ -5,4 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   assetsInclude: ['**/*.PNG'],
+  build: {
+    sourcemap: false, // Security: Disable source maps in production to prevent code inspection
+  }
 })

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { BlogPost as BlogPostType } from '../types';
 import {
   Facebook, Twitter, Linkedin, ChevronLeft, List, Mail, Send, Sparkles,
-  Calendar, Clock, User, Bookmark
+  Calendar, Clock, User, Bookmark, Check, CheckCircle2, Target
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
 import SEO from '../components/SEO';
@@ -14,17 +14,21 @@ export const BlogPost = () => {
   const [post, setPost] = useState<BlogPostType | null>(null);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
   const themeColors = ['bg-primary', 'bg-royal', 'bg-yellow-400'];
 
   useEffect(() => {
     const fetchPost = async () => {
       if (!id) return;
       try {
-        const posts = await dataManager.getPosts();
-        const found = posts.find(p => p.id === id);
-        setPost(found || null);
+        setLoading(true);
+        const fetchedPost = await dataManager.getPost(id);
+        setPost(fetchedPost);
       } catch (e) {
         console.error("Error fetching post", e);
+        setPost(null);
+      } finally {
+        setLoading(false);
       }
     };
     fetchPost();
@@ -52,6 +56,14 @@ export const BlogPost = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -133,18 +145,18 @@ export const BlogPost = () => {
                     </p>
 
                     {post.sections && post.sections.length > 0 ? (
-                      /* Dynamic Content Rendering */
+                      /* Dynamic Content Rendering from Sections */
                       post.sections.map((section, idx) => (
-                        <div key={idx} className="space-y-6">
+                        <div key={idx} className="space-y-4" dir="rtl">
                           <h2 id={`section-${idx + 1}`} className="text-2xl font-black text-slate-900 flex items-center gap-3">
                             <div className={`w-2 h-8 ${themeColors[idx % 3]} rounded-full`}></div> {section.title}
                           </h2>
                           <p className="whitespace-pre-line leading-relaxed">{section.content}</p>
 
                           {section.list && (
-                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0 pr-4">
                               {section.list.map((item, i) => (
-                                <li key={i} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 m-0">
+                                <li key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-100 m-0">
                                   <span className="block font-black text-primary mb-1">{item.t}</span>
                                   <span className="text-sm opacity-70">{item.d}</span>
                                 </li>
@@ -153,6 +165,84 @@ export const BlogPost = () => {
                           )}
                         </div>
                       ))
+                    ) : (post.content || post.html) ? (
+                      /* Render Main Content (Markdown Parser) */
+                      // @ts-ignore
+                      <div className="space-y-4" dir="rtl">
+                        {(post.content || post.html || '').split('\n').filter(line => line.trim()).map((line, idx) => {
+                          const lineColor = idx % 3 === 0 ? 'text-primary' : (idx % 3 === 1 ? 'text-royal' : 'text-yellow-500');
+                          const barColor = idx % 3 === 0 ? 'bg-primary' : (idx % 3 === 1 ? 'bg-royal' : 'bg-yellow-400');
+
+                          // H2
+                          if (line.trim().startsWith('## ')) {
+                            return (
+                              <h2 key={idx} className={`text-2xl font-black ${lineColor} flex items-center gap-3 mt-8 mb-4`}>
+                                <div className={`w-2 h-8 ${barColor} rounded-full`}></div>
+                                {line.replace('## ', '').trim()}
+                              </h2>
+                            );
+                          }
+                          // H3
+                          if (line.trim().startsWith('### ')) {
+                            return (
+                              <h3 key={idx} className="text-lg font-bold text-slate-800 mt-5 mb-3 flex items-center gap-2">
+                                <Target size={20} className={`${lineColor}`} /> {line.replace('### ', '').trim()}
+                              </h3>
+                            );
+                          }
+                          // Numbered Lists (1. Item)
+                          if (/^\d+\./.test(line.trim())) {
+                            const number = line.trim().split('.')[0];
+                            return (
+                              <div key={idx} className="flex items-start gap-3 mr-2 mb-2">
+                                <span className={`${lineColor} bg-gray-50 border border-gray-100 font-black text-xs h-6 w-6 flex items-center justify-center rounded-full shrink-0 shadow-sm mt-0.5`}>{number}</span>
+                                <p className="text-slate-700 leading-relaxed font-medium">
+                                  {line.replace(/^\d+\./, '').trim().split('**').map((part, i) =>
+                                    i % 2 === 1 ? <strong key={i} className="text-slate-900">{part}</strong> : part
+                                  )}
+                                </p>
+                              </div>
+                            );
+                          }
+                          // Checkmark Lists (✓ Item)
+                          if (line.trim().startsWith('✓') || line.trim().startsWith('✔')) {
+                            return (
+                              <div key={idx} className="flex items-start gap-2 mr-2 mb-2">
+                                <CheckCircle2 size={18} className="text-emerald-500 mt-1 shrink-0" />
+                                <p className="text-slate-700 leading-relaxed font-medium">
+                                  {line.replace(/^[✓✔]/, '').trim().split('**').map((part, i) =>
+                                    i % 2 === 1 ? <strong key={i} className="text-slate-900">{part}</strong> : part
+                                  )}
+                                </p>
+                              </div>
+                            );
+                          }
+                          // Bullet Points (Standard)
+                          if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+                            return (
+                              <div key={idx} className="flex items-start gap-2 mr-2 mb-2">
+                                <Check size={18} className={`${lineColor} mt-1 shrink-0`} strokeWidth={3} />
+                                <p className="text-slate-700 leading-relaxed font-medium">
+                                  {line.replace(/^[-*] /, '').trim().split('**').map((part, i) =>
+                                    i % 2 === 1 ? <strong key={i} className="text-slate-900">{part}</strong> : part
+                                  )}
+                                </p>
+                              </div>
+                            );
+                          }
+                          // Paragraphs
+                          if (line.trim().length > 0) {
+                            return (
+                              <p key={idx} className="text-base text-slate-700 leading-7 mb-3">
+                                {line.split('**').map((part, i) =>
+                                  i % 2 === 1 ? <strong key={i} className="text-slate-900">{part}</strong> : part
+                                )}
+                              </p>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
                     ) : (
                       /* Fallback for old posts */
                       <>

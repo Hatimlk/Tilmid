@@ -45,6 +45,36 @@ const SEO = ({
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />
             <meta name="twitter:image" content={fullImage} />
+
+            {/* GEO Tags (Local SEO for Morocco) */}
+            <meta name="geo.region" content="MA" />
+            <meta name="geo.placename" content="Morocco" />
+            <meta name="geo.position" content="31.7917;-7.0926" />
+            <meta name="ICBM" content="31.7917, -7.0926" />
+
+            {/* JSON-LD Structured Data (Organization & Website) */}
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "Tilmid",
+                    "url": "https://tilmide.ma",
+                    "logo": "https://tilmide.ma/logo.png",
+                    "sameAs": [
+                        "https://www.instagram.com/tilmid.official/",
+                        "https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc",
+                        "https://web.facebook.com/profile.php?id=61568646044886",
+                        "https://www.youtube.com/@tilmid.official"
+                    ],
+                    "contactPoint": {
+                        "@type": "ContactPoint",
+                        "telephone": "+212-778-104-220",
+                        "contactType": "customer service",
+                        "areaServed": "MA",
+                        "availableLanguage": ["Arabic", "French"]
+                    }
+                })}
+            </script>
         </Helmet>
     );
 };

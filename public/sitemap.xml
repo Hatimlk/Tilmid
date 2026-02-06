@@ -6,36 +6,6 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://tilmide.ma/coaching-offer</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://tilmide.ma/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tilmide.ma/contact</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tilmide.ma/blog</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tilmide.ma/bac-simulator</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tilmide.ma/program/tawjih</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://tilmide.ma/program/tilmid</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -46,13 +16,33 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tilmide.ma/student-area</loc>
+    <loc>https://tilmide.ma/program/tawjih</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tilmide.ma/coaching-offer</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tilmide.ma/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tilmide.ma/student-area</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tilmide.ma/privacy-policy</loc>
+    <loc>https://tilmide.ma/about</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://tilmide.ma/contact</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

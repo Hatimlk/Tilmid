@@ -124,7 +124,7 @@ export interface ContactMessage {
   phone: string;
   type: string;
   message: string;
-  dates: string;
+  date: string;
   status: 'new' | 'read';
 }
 

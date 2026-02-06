@@ -103,6 +103,24 @@ export const CoachingOffer: React.FC = () => {
 
     try {
       const { dataManager } = await import('../utils/dataManager');
+
+      // 1. Send to Google Sheets
+      const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxcMK7VW8zNf7tMRnR1O4jFGwos5udpCsey9PFEUR0ECSuVywsIb85YzB9mBL_I_vUR/exec';
+
+      await fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          grade: formData.grade
+        })
+      });
+
+      // 2. Save to Internal Database
       await dataManager.saveCoachingRequest({
         name: formData.name,
         phone: formData.phone,

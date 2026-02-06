@@ -20,10 +20,7 @@ export const Login: React.FC = () => {
         setError('');
 
         try {
-            const { ADMIN_CREDENTIALS } = await import('../constants');
-
-            // Quick Admin check for fail-safe (can be removed if backend handles everything)
-            // But let's try API first now.
+            // API Login request
 
             const response = await api.post('/auth/login', { email, password });
 
@@ -43,18 +40,6 @@ export const Login: React.FC = () => {
             // Fallback for hardcoded admin if API fails (optional, maybe remove strict dependency?)
             // Keeping local admin check as backup if backend is down but we need to access? 
             // Better to rely on backend now.
-            const { ADMIN_CREDENTIALS } = await import('../constants');
-            if ((email === ADMIN_CREDENTIALS.username || email === 'admin@tilmid.ma') && password === ADMIN_CREDENTIALS.password) {
-                login({
-                    id: 1,
-                    username: ADMIN_CREDENTIALS.username,
-                    email: 'admin@tilmid.ma',
-                    role: 'admin'
-                }, 'mock-admin-token');
-                navigate('/admin');
-                return;
-            }
-
             if (err.message === 'Invalid credentials' || err.response?.status === 401) {
                 setError('اسم المستخدم أو كلمة المرور غير صحيحة');
             } else {

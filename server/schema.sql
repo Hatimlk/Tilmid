@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS posts (
     excerpt TEXT,
     content TEXT,
     author_id INT,
+    author_name VARCHAR(255) DEFAULT 'الأستاذ ياسين',
+    author_avatar VARCHAR(255) DEFAULT '/assets/yassine-image-DgfyHuCr.png',
     image_url VARCHAR(255),
     category VARCHAR(100),
     status ENUM('published', 'draft') DEFAULT 'published',
@@ -39,6 +41,7 @@ CREATE TABLE IF NOT EXISTS posts (
     reading_time VARCHAR(50),
     file_url VARCHAR(255),
     content_type ENUM('html', 'file', 'text') DEFAULT 'html',
+    sections JSON DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
 );

@@ -13,6 +13,10 @@ export const dataManager = {
     return await api.get('/posts');
   },
 
+  getPost: async (id: string | number): Promise<BlogPost> => {
+    return await api.get(`/posts/${id}`);
+  },
+
   savePost: async (post: BlogPost): Promise<void> => {
     await api.post('/posts', post);
   },

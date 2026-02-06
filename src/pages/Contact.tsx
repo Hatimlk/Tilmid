@@ -33,12 +33,32 @@ export const Contact = () => {
     // Save Message
     const saveMsg = async () => {
       try {
+        // 1. Send to Google Sheets (Fire and forget style with no-cors)
+        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzkBJODYcRauPWXhwYPvEYjjZrKcYWijulXpSDXtpKaxW8Xf3aky8FJ82_yK0sBFP1s/exec';
+
+        await fetch(GOOGLE_SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Important for Google Apps Script to avoid CORS errors
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formState.name,
+            phone: formState.phone,
+            goal: formState.type,
+            message: formState.message
+          })
+        });
+
+        // 2. Save to Internal Database (if applicable)
         await dataManager.saveMessage(newMessage);
+
         setStatus('success');
         setFormState({ name: '', phone: '', type: 'توجيه مدرسي', message: '' });
         setTimeout(() => setStatus('idle'), 3000);
       } catch (e) {
-        setStatus('idle'); // or error state
+        console.error("Submission Error:", e);
+        setStatus('idle');
         alert("فشل الإرسال. حاول مرة أخرى.");
       }
     };
