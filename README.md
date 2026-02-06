@@ -95,6 +95,6 @@ Contributions are what make the open source community such an amazing place to l
 
 ## 📧 Contact
 
-**Hatim** - [Contact via Website](https://tilmide.ma/contact)
+**Hatim** - [Contact via Mail: hatimlakrouni@gmail.com]
 
 Project Link: [https://github.com/Hatimlk/Tilmid](https://github.com/Hatimlk/Tilmid)
