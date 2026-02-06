@@ -2,6 +2,14 @@
   RewriteEngine On
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
+
+  # Block access to specific WordPress paths with a 404
+  RewriteRule ^wp-admin - [R=404,L]
+  RewriteRule ^wp-content - [R=404,L]
+  RewriteRule ^wp-includes - [R=404,L]
+  # Block date-based archives (e.g., /2025/08/)
+  RewriteRule ^[0-9]{4}/[0-9]{2}/ - [R=404,L]
+
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_FILENAME} !-l

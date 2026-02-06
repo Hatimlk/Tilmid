@@ -92,7 +92,12 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post, index = 0 }) => {
             <div className="text-right">
               <p className="text-xs font-black text-slate-900">{post.author?.name || 'الأستاذ ياسين'}</p>
             </div>
-            <img src={post.author?.avatar || IMAGES.AVATARS.YASSINE} className="w-10 h-10 rounded-full border-2 border-white shadow-md ring-2 ring-slate-50" alt="" />
+            {/* Force Yassine's avatar if the name matches, otherwise use DB avatar or Fallback */}
+            <img
+              src={(post.author?.name?.includes('ياسين') || !post.author?.avatar) ? IMAGES.AVATARS.YASSINE : post.author.avatar}
+              className="w-10 h-10 rounded-full border-2 border-white shadow-md ring-2 ring-slate-50 object-cover"
+              alt={post.author?.name}
+            />
           </div>
         </div>
       </div>

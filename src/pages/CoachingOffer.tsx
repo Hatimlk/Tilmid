@@ -105,7 +105,7 @@ export const CoachingOffer: React.FC = () => {
       const { dataManager } = await import('../utils/dataManager');
 
       // 1. Send to Google Sheets
-      const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxcMK7VW8zNf7tMRnR1O4jFGwos5udpCsey9PFEUR0ECSuVywsIb85YzB9mBL_I_vUR/exec';
+      const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjkIdjHjdglElwR73th4W2F24FOAonO2Lk958jQ-dxKLfTX4BeKPEsDewAGh-vE2t3/exec';
 
       await fetch(GOOGLE_SHEET_URL, {
         method: 'POST',

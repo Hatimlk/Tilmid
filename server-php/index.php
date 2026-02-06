@@ -218,10 +218,30 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'GET') {
 }
 
 // 9. MESSAGES
-if (strpos($request_uri, '/api/messages') !== false && $method == 'GET') {
-    $stmt = $pdo->query("SELECT * FROM contact_messages ORDER BY created_at DESC");
-    echo json_encode($stmt->fetchAll());
-    exit;
+if (strpos($request_uri, '/api/messages') !== false) {
+    if ($method == 'GET') {
+        $stmt = $pdo->query("SELECT * FROM contact_messages ORDER BY created_at DESC");
+        echo json_encode($stmt->fetchAll());
+        exit;
+    }
+    if ($method == 'POST') {
+        $name = $input['name'] ?? '';
+        $phone = $input['phone'] ?? '';
+        $type = $input['type'] ?? ($input['goal'] ?? 'General'); // Handle 'goal' from frontend mapping
+        $message = $input['message'] ?? '';
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO contact_messages (name, phone, type, message) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$name, $phone, $type, $message]);
+
+            http_response_code(201);
+            echo json_encode(['message' => 'Message saved successfully', 'id' => $pdo->lastInsertId()]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['message' => 'Database error']);
+        }
+        exit;
+    }
 }
 
 // 10. RESOURCES
@@ -232,10 +252,30 @@ if (strpos($request_uri, '/api/resources') !== false && $method == 'GET') {
 }
 
 // 11. COACHING REQUESTS
-if (strpos($request_uri, '/api/coaching-requests') !== false && $method == 'GET') {
-    $stmt = $pdo->query("SELECT * FROM coaching_requests ORDER BY created_at DESC");
-    echo json_encode($stmt->fetchAll());
-    exit;
+// 11. COACHING REQUESTS
+if (strpos($request_uri, '/api/coaching-requests') !== false) {
+    if ($method == 'GET') {
+        $stmt = $pdo->query("SELECT * FROM coaching_requests ORDER BY created_at DESC");
+        echo json_encode($stmt->fetchAll());
+        exit;
+    }
+    if ($method == 'POST') {
+        $name = $input['name'] ?? '';
+        $phone = $input['phone'] ?? '';
+        $grade = $input['grade'] ?? '';
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO coaching_requests (name, phone, grade) VALUES (?, ?, ?)");
+            $stmt->execute([$name, $phone, $grade]);
+
+            http_response_code(201);
+            echo json_encode(['message' => 'Request saved successfully', 'id' => $pdo->lastInsertId()]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['message' => 'Database error']);
+        }
+        exit;
+    }
 }
 
 // 404
