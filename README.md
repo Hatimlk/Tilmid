@@ -1,10 +1,6 @@
   <h1>🎓 Tilmid Platform</h1>
   
   <p>
-    <strong>Rafiqk Towards Excellence and Smart School Guidance</strong>
-  </p>
-
-  <p>
     A comprehensive educational platform designed to support Moroccan students in their academic journey. Offering expert guidance, smart study techniques, and psychological support.
     <br />
     <br />
