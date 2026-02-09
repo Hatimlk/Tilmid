@@ -1,12 +1,5 @@
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" alt="Tilmid Banner" width="100%" />
-
   <h1>🎓 Tilmid Platform</h1>
   
-  <p>
-    <strong>Rafiqk Towards Excellence and Smart School Guidance</strong>
-  </p>
-
   <p>
     A comprehensive educational platform designed to support Moroccan students in their academic journey. Offering expert guidance, smart study techniques, and psychological support.
     <br />
@@ -98,6 +91,6 @@ Contributions are what make the open source community such an amazing place to l
 
 ## 📧 Contact
 
-**Hatim** - [Contact via Website](https://tilmide.ma/contact)
+**Hatim** - [Contact via Mail: hatimlakrouni@gmail.com]
 
 Project Link: [https://github.com/Hatimlk/Tilmid](https://github.com/Hatimlk/Tilmid)
