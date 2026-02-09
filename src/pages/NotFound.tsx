@@ -2,10 +2,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, AlertCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export const NotFound: React.FC = () => {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4 bg-gray-50">
+      <SEO
+        title="الصفحة غير موجودة - 404"
+        description="الصفحة المطلوبة غير موجودة."
+        noindex={true}
+      />
       <div className="bg-white p-10 md:p-16 rounded-[2.5rem] shadow-2xl border border-gray-100 max-w-2xl w-full relative overflow-hidden group">
         <div className="absolute inset-0 bg-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
 

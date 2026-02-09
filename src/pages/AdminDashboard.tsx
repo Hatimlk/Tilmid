@@ -6,7 +6,6 @@ import {
   Search, PenTool, Settings,
   Clock, XCircle, Check, Ban, Unlock, Edit, Save, X, UserPlus, CalendarPlus, Bell, Menu, Activity, ChevronLeft, TrendingUp, Filter, FileText, Sparkles, Wand2, Loader2, Send, Image, MessageSquare, Star, Upload, Database
 } from 'lucide-react';
-import { ADMIN_CREDENTIALS } from '../constants';
 import { BlogPost, Appointment, Student, ContactMessage, SuccessStory } from '../types';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
@@ -14,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import mammoth from 'mammoth';
 import { seeder } from '../utils/seeder';
+import SEO from '../components/SEO';
 
 
 
@@ -756,6 +756,11 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F3F6F9] flex flex-col lg:flex-row font-sans text-slate-800" dir="rtl">
+      <SEO
+        title="Admin Dashboard"
+        description="Admin Area"
+        noindex={true}
+      />
       {showAiModal && <GenerativeBlogModal onClose={() => setShowAiModal(false)} onGenerate={handleAiGeneration} />}
 
 

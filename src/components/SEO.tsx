@@ -15,8 +15,9 @@ const SEO = ({
     keywords,
     image = '/og-image.jpg',
     url = 'https://tilmide.ma',
-    type = 'website'
-}: SEOProps) => {
+    type = 'website',
+    noindex = false
+}: SEOProps & { noindex?: boolean }) => {
     const siteTitle = 'تلميذ - Tilmid';
     const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
 
@@ -31,6 +32,10 @@ const SEO = ({
             <meta name='description' content={description} />
             {keywords && <meta name='keywords' content={keywords} />}
             <link rel="canonical" href={fullUrl} />
+
+            {/* Robots Tag for Indexing Control */}
+            <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+
 
             {/* Open Graph tags (Facebook, LinkedIn, etc.) */}
             <meta property="og:type" content={type} />
