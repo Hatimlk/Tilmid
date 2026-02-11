@@ -10,9 +10,9 @@ import { IMAGES } from './images';
 
 export const NAV_ITEMS = [
   { label: "الرئيسية", href: "/" },
-  { label: "تلميذ", href: "/program/tilmid" },
-  { label: "طالب", href: "/program/talib" },
-  { label: "التوجيه", href: "/program/tawjih" },
+  { label: "تلميذ", href: "/tilmid" },
+  { label: "طالب", href: "/talib" },
+  { label: "توجيه", href: "/tawjih" },
   { label: "عرض المواكبة", href: "/coaching-offer" },
   { label: "المدونة", href: "/blog" },
   { label: "مساحة الطالب", href: "/student-area", isButton: true }

@@ -70,6 +70,7 @@ export const Contact = () => {
       <SEO
         title="تواصل معنا - تلميذ"
         description="تواصل مع فريق تلميذ للاستفسار عن برامج التوجيه والمواكبة المدرسية. نحن هنا لمساعدتك."
+        noindex={true}
       />
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <div className="bg-royal p-8 text-center">

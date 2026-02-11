@@ -260,7 +260,9 @@ const TawjihAIAdvisor: React.FC = () => {
 };
 
 export const ProgramDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  // Derive ID from the path (e.g. "/tilmid" -> "tilmid")
+  const { pathname } = window.location;
+  const id = pathname.replace('/', ''); // simple extraction, assumes root level routes like /tilmid
 
   let data: ProgramData | null = null;
   let ProgramIcon = School;

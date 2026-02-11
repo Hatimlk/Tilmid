@@ -23,7 +23,9 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/program/:id" element={<ProgramDetails />} />
+          <Route path="/tilmid" element={<ProgramDetails />} />
+          <Route path="/tawjih" element={<ProgramDetails />} />
+          <Route path="/talib" element={<ProgramDetails />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/about" element={<About />} />

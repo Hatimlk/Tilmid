@@ -348,7 +348,7 @@ export const BlogPost = () => {
                 </div>
 
                 {/* 3. Related Resource (Bonus) */}
-                <Link to="/program/tilmid" className="mt-8 block bg-slate-900 rounded-[1.5rem] p-6 text-white group overflow-hidden relative">
+                <Link to="/tilmid" className="mt-8 block bg-slate-900 rounded-[1.5rem] p-6 text-white group overflow-hidden relative">
                   <div className="relative z-10">
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 block">برامجنا الخاصة</span>
                     <h4 className="font-black text-base group-hover:text-primary transition-colors">هل تبحث عن تفوق حقيقي؟</h4>

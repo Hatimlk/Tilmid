@@ -327,19 +327,19 @@ export const Home: React.FC = () => {
               data={TAWJIH_DATA}
               icon={Compass}
               color="bg-purple-600"
-              link="/program/tawjih"
+              link="/tawjih"
             />
             <ProgramCard
               data={TILMID_DATA}
               icon={BookOpen}
               color="bg-blue-600"
-              link="/program/tilmid"
+              link="/tilmid"
             />
             <ProgramCard
               data={TALIB_DATA}
               icon={GraduationCap}
               color="bg-emerald-600"
-              link="/program/talib"
+              link="/talib"
             />
           </div>
         </div>
