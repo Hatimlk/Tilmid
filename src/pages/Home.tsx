@@ -247,7 +247,7 @@ export const Home: React.FC = () => {
     <>
       <SEO
         title="تلميذ - Tilmid"
-        description="منصة تلميذ - رفيقك نحو التفوق الدراسي. نقدم توجيهاً مدرسياً متميزاً، تقنيات حفظ ذكية، ومواكبة نفسية شاملة لتلاميذ البكالوريا والطلاب في المغرب."
+        description="منصة تلميذ للتوجيه المدرسي في المغرب. اكتشف طرق المراجعة الذكية، التحضير للبكالوريا، ونصائح التفوق الدراسي مع مواكبة نفسية شاملة."
       />
       {/* Hero Section - Redesigned */}
       <section className="relative pt-20 pb-32 lg:pt-20 lg:pb-52 overflow-hidden bg-[#f8fafc]">

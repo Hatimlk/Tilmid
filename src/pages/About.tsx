@@ -9,8 +9,8 @@ export const About: React.FC = () => {
   return (
     <div className="min-h-screen bg-white overflow-hidden font-sans">
       <SEO
-        title="من نحن - تلميذ"
-        description="تعرف على منصة تلميذ، مهمتنا ورؤيتنا في مساعدة تلاميذ المغرب على التفوق الدراسي عبر التوجيه والمواكبة."
+        title="من نحن"
+        description="تلميذ هي المنصة الأولى في المغرب للتوجيه المدرسي والمواكبة التربوية. اكتشف رؤيتنا لمساعدة التلاميذ على التفوق الدراسي وبناء مستقبل واعد."
       />
 
       {/* Hero Section */}

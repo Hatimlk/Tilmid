@@ -35,9 +35,21 @@ export const Blog: React.FC = () => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-    let matchesCategory = selectedCategory === 'الكل' || post.category.includes(selectedCategory);
-    if (selectedCategory === 'نصائح') matchesCategory = ['نصائح', 'الصحة والدراسة'].some(c => post.category.includes(c));
-    if (selectedCategory === 'تقنيات') matchesCategory = post.category.includes('تقنية');
+    if (selectedCategory === 'الكل') return matchesSearch;
+
+    let matchesCategory = false;
+
+    // Category Mapping Logic
+    if (selectedCategory === 'الحفظ والمراجعة') {
+      matchesCategory = post.category === 'طرق مراجعة' || post.category.includes('حفظ') || post.category.includes('مراجعة');
+    } else if (selectedCategory === 'نصائح') {
+      matchesCategory = post.category === 'نصائح' || post.category === 'الصحة والدراسة';
+    } else if (selectedCategory === 'تقنيات') {
+      matchesCategory = post.category === 'تقنيات' || post.category.includes('تقنية');
+    } else {
+      // Direct match for other categories like 'توجيه'
+      matchesCategory = post.category.includes(selectedCategory);
+    }
 
     return matchesSearch && matchesCategory;
   });
@@ -50,8 +62,8 @@ export const Blog: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans selection:bg-primary/20 selection:text-primary">
       <SEO
-        title="المدونة التعليمية - تلميذ | نصائح، توجيه، وطرق مراجعة"
-        description="اكتشف أحدث المقالات التعليمية، نصائح التوجيه المدرسي، تقنيات الحفظ والمراجعة، واستراتيجيات التفوق الدراسي على منصة تلميذ."
+        title="المدونة التعليمية | نصائح وتوجيه"
+        description="مكتبة شاملة من المقالات التعليمية لتلاميذ البكالوريا. نصائح في التوجيه المدرسي، طرق المراجعة الذكية، واستراتيجيات التفوق في الامتحانات الوطنية."
         image={IMAGES.BLOG.DEFAULT_SEO}
       />
 
