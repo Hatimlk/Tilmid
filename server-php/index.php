@@ -90,7 +90,7 @@ function clientIp(): string {
 
 // 0. ROOT CHECK
 if (($request_uri == '/api/' || $request_uri == '/api') && $method == 'GET') {
-    echo json_encode(['message' => 'Tilmid API is running', 'version' => '1.0.0']);
+    echo json_encode(['message' => 'Tilmid API is running', 'version' => '1.0.0-cicd-test-8f2a1']);
     exit;
 }
 
