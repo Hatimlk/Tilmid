@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MAIN_SERVICES, INSTAGRAM_REELS, TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
-import { BlogPost, SuccessStory, VideoReel } from '../types';
+import { SuccessStory, VideoReel } from '../types';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';

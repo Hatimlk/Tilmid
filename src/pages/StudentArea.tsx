@@ -10,6 +10,7 @@ import { dataManager } from '../utils/dataManager';
 import { StudyResource, TimetableTask } from '../types';
 import { IMAGES } from '../constants/images';
 import SEO from '../components/SEO';
+import { useAuth } from '../context/AuthContext';
 
 const DAYS = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
 
@@ -33,12 +34,14 @@ const SUBJECT_COLORS: Record<string, { bg: string, text: string, border: string 
 type ActiveTab = 'dashboard' | 'videos' | 'resources' | 'timetable';
 
 export const StudentArea: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user: authUser, isStudent, loading: authLoading, login, logout: authLogout } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loginPending, setLoginPending] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  const user = isStudent ? authUser : null;
 
   // Timetable State
   const [timetable, setTimetable] = useState<TimetableTask[]>([]);
@@ -49,46 +52,31 @@ export const StudentArea: React.FC = () => {
   const [resources, setResources] = useState<StudyResource[]>([]);
 
   useEffect(() => {
-    const initStudent = async () => {
-      const storedUser = localStorage.getItem('tilmid_user');
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        try {
-          const students = await dataManager.getStudents();
-          const freshUser = students.find(u => u.username === userData.username);
-          if (freshUser && freshUser.status === 'active') {
-            setUser(freshUser);
-            const res = await dataManager.getResources();
-            setResources(res);
-            const storedTable = localStorage.getItem(`timetable_${freshUser.username}`);
-            if (storedTable) setTimetable(JSON.parse(storedTable));
-          }
-        } catch (e) {
-          console.error("Error loading student data", e);
-        }
+    if (!user) return;
+    const loadStudentData = async () => {
+      try {
+        const res = await dataManager.getResources();
+        setResources(res);
+        const storedTable = localStorage.getItem(`timetable_${user.username}`);
+        if (storedTable) setTimetable(JSON.parse(storedTable));
+      } catch (e) {
+        console.error("Error loading student data", e);
       }
-      setLoading(false);
     };
-    initStudent();
-  }, []);
+    loadStudentData();
+  }, [user?.username]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoginPending(true);
     try {
-      const students = await dataManager.getStudents();
-      const account = students.find(acc => acc.username === username && acc.password === password);
-      if (account) {
-        setUser(account);
-        localStorage.setItem('tilmid_user', JSON.stringify(account));
-        const res = await dataManager.getResources();
-        setResources(res);
-        const storedTable = localStorage.getItem(`timetable_${account.username}`);
-        if (storedTable) setTimetable(JSON.parse(storedTable));
-      } else {
-        setError('بيانات الدخول غير صحيحة');
-      }
+      const { token, user: account } = await dataManager.loginStudent(username, password);
+      login({ ...account, role: 'student' }, token);
     } catch (e) {
-      setError('حدث خطأ في الاتصال');
+      setError('بيانات الدخول غير صحيحة');
+    } finally {
+      setLoginPending(false);
     }
   };
 
@@ -103,17 +91,17 @@ export const StudentArea: React.FC = () => {
     };
     const updated = [...timetable, task];
     setTimetable(updated);
-    localStorage.setItem(`timetable_${user.username}`, JSON.stringify(updated));
+    localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
     setShowTaskModal(false);
   };
 
   const removeTask = (id: string) => {
     const updated = timetable.filter(t => t.id !== id);
     setTimetable(updated);
-    localStorage.setItem(`timetable_${user.username}`, JSON.stringify(updated));
+    localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
   };
 
-  if (loading) return null;
+  if (authLoading) return null;
 
   if (!user) {
     return (
@@ -137,7 +125,7 @@ export const StudentArea: React.FC = () => {
               <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white transition-all font-bold outline-none" />
             </div>
             {error && <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2 animate-pulse"><AlertCircle size={16} /> {error}</div>}
-            <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-primary shadow-xl shadow-blue-500/10 transition-all hover:-translate-y-1">دخول للمساحة</button>
+            <button disabled={loginPending} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-primary shadow-xl shadow-blue-500/10 transition-all hover:-translate-y-1 disabled:opacity-60">{loginPending ? '...جارٍ الدخول' : 'دخول للمساحة'}</button>
           </form>
         </div>
       </div>
@@ -163,7 +151,7 @@ export const StudentArea: React.FC = () => {
             <span className="font-black text-sm text-slate-700">{user.name}</span>
             <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div> متصل الآن</span>
           </div>
-          <button onClick={() => { localStorage.removeItem('tilmid_user'); setUser(null); }} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><LogOut size={20} /></button>
+          <button onClick={authLogout} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><LogOut size={20} /></button>
         </div>
       </header>
 
@@ -205,7 +193,7 @@ export const StudentArea: React.FC = () => {
                       <img src={IMAGES.LOGOS.WHITE} alt="White Logo" className="h-full w-auto" />
                     </div>
                   </div>
-                  <h2 className="text-3xl lg:text-5xl font-black mb-4 leading-tight">أهلاً {user.name.split(' ')[0]}! 🔥</h2>
+                  <h2 className="text-3xl lg:text-5xl font-black mb-4 leading-tight">أهلاً {user!.name?.split(' ')[0]}! 🔥</h2>
                   <p className="text-blue-100 text-base lg:text-lg opacity-80 mb-8 max-w-xl leading-relaxed">
                     أنت الآن في رحلة التفوق. استعمل الأدوات الذكية لتنظيم يومك وضمان أفضل النتائج في مسارك الدراسي.
                   </p>

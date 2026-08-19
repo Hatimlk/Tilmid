@@ -2,25 +2,25 @@ const db = require('./db');
 const bcrypt = require('bcrypt');
 
 async function createAdmin() {
-    const username = 'Admin User';
-    const email = 'admin@tilmid.com';
-    const password = 'admin';
+    const username = process.env.ADMIN_USERNAME || 'Admin User';
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_BOOTSTRAP_PASSWORD;
     const role = 'admin';
 
-    try {
-        console.log(`Hashing password '${password}'...`);
-        const salt = await bcrypt.genSalt(10);
-        const password_hash = await bcrypt.hash(password, salt);
+    if (!email || !password || password.length < 12) {
+        console.error('Set ADMIN_EMAIL and ADMIN_BOOTSTRAP_PASSWORD (12+ chars) in the environment before running this script.');
+        process.exit(1);
+    }
 
-        console.log('Checking if admin exists...');
+    try {
+        const password_hash = await bcrypt.hash(password, 10);
+
         const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
         if (existing.length > 0) {
-            console.log('Admin user already exists. Updating password...');
             await db.query('UPDATE users SET password_hash = ?, role = ? WHERE email = ?', [password_hash, role, email]);
             console.log('Admin password updated successfully.');
         } else {
-            console.log('Creating new admin user...');
             await db.query('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)', [username, email, password_hash, role]);
             console.log('Admin user created successfully.');
         }

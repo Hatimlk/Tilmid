@@ -15,9 +15,14 @@ const seed = async () => {
         }
 
         // Create Admin User
-        const email = 'admin@tilmid.com';
-        const password = 'admin';
-        const username = 'Admin';
+        const email = process.env.ADMIN_EMAIL;
+        const password = process.env.ADMIN_BOOTSTRAP_PASSWORD;
+        const username = process.env.ADMIN_USERNAME || 'Admin';
+
+        if (!email || !password || password.length < 12) {
+            console.error('Set ADMIN_EMAIL and ADMIN_BOOTSTRAP_PASSWORD (12+ chars) in the environment before seeding.');
+            process.exit(1);
+        }
 
         // Check if exists
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -31,9 +36,7 @@ const seed = async () => {
                 'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
                 [username, email, hashedPassword, 'admin']
             );
-            console.log('Admin user created:');
-            console.log('Email:', email);
-            console.log('Password:', password);
+            console.log('Admin user created:', email);
         }
 
         process.exit(0);

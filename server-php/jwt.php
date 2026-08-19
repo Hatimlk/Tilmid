@@ -30,9 +30,17 @@ class JWT {
         $signatureGenerated = hash_hmac('sha256', $header . "." . $payload, $secret, true);
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signatureGenerated));
 
-        if ($base64UrlSignature !== $signatureProvided) return null;
+        // Constant-time comparison to avoid timing attacks on the signature check.
+        if (!hash_equals($base64UrlSignature, $signatureProvided)) return null;
 
-        return json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $payload)), true);
+        $decoded = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $payload)), true);
+        if (!is_array($decoded)) return null;
+
+        // Enforce expiry - previously 'exp' was set at login but never checked here,
+        // so every issued token was valid forever.
+        if (isset($decoded['exp']) && time() >= $decoded['exp']) return null;
+
+        return $decoded;
     }
 }
 ?>

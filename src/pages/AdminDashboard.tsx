@@ -357,6 +357,10 @@ export const AdminDashboard: React.FC = () => {
       alert('المرجو ملء جميع الحقول المطلوبة.');
       return;
     }
+    if (!currentStudent.id && !currentStudent.password) {
+      alert('المرجو إدخال كلمة مرور للطالب الجديد.');
+      return;
+    }
 
     try {
       if (currentStudent.id) {
@@ -366,6 +370,7 @@ export const AdminDashboard: React.FC = () => {
           id: `std-${Date.now()}`,
           name: currentStudent.name!,
           username: currentStudent.username!,
+          password: currentStudent.password,
           grade: currentStudent.grade || '2 باكالوريا',
           joinDate: new Date().toISOString().split('T')[0],
           status: 'active',
@@ -642,6 +647,22 @@ export const AdminDashboard: React.FC = () => {
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><ChevronLeft size={18} className="-rotate-90" /></div>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-600 block">
+                  كلمة المرور {currentStudent.id && <span className="text-slate-400 font-normal">(اتركها فارغة للإبقاء عليها)</span>}
+                </label>
+                <input
+                  type="text"
+                  value={currentStudent.password || ''}
+                  onChange={e => setCurrentStudent({ ...currentStudent, password: e.target.value })}
+                  className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-indigo-500 focus:bg-white outline-none font-bold transition-all text-left"
+                  placeholder={currentStudent.id ? '••••••••' : 'كلمة مرور الطالب'}
+                  dir="ltr"
+                  autoComplete="new-password"
+                  required={!currentStudent.id}
+                />
               </div>
 
               <div className="pt-4 flex gap-3">

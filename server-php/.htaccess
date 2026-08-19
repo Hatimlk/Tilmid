@@ -4,3 +4,8 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
+
+# Never serve the env file or the raw schema/config over HTTP
+<FilesMatch "^(\.env|config\.php)$">
+    Require all denied
+</FilesMatch>

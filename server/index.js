@@ -4,15 +4,70 @@ const dotenv = require('dotenv');
 const db = require('./db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_123';
 
-app.use(cors());
+// Fail fast instead of silently signing tokens with a hardcoded/guessable secret.
+if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET is not set. Refusing to start with an insecure default.');
+    process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://tilmide.ma,https://www.tilmide.ma')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // allow same-origin/non-browser requests (no Origin header) and the explicit allowlist
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+}));
 app.use(express.json());
+
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 8,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: 'Too many attempts. Please try again later.' },
+});
+
+/* ---------------- AUTH MIDDLEWARE ---------------- */
+
+function authenticate(req, res, next) {
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).json({ message: 'Unauthorized' });
+        req.user = decoded;
+        next();
+    });
+}
+
+function requireAdmin(req, res, next) {
+    authenticate(req, res, () => {
+        if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+        next();
+    });
+}
 
 // Test Route
 app.get('/api/health', (req, res) => {
@@ -25,24 +80,21 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
     const { username, email, password } = req.body;
 
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: 'All fields are required' });
+    if (!username || !email || !/^\S+@\S+\.\S+$/.test(email) || !password || password.length < 8) {
+        return res.status(400).json({ message: 'Valid username, email and a password of at least 8 characters are required' });
     }
 
     try {
-        // Check if user exists
-        const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const [existingUsers] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
         if (existingUsers.length > 0) {
             return res.status(400).json({ message: 'Email already exists' });
         }
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert user
+        // Registration always creates a plain 'user' - admin accounts are provisioned out-of-band.
         const [result] = await db.query(
-            'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'user')",
             [username, email, hashedPassword]
         );
 
@@ -54,23 +106,17 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const { email, password } = req.body;
-    console.log('Login attempt:', email); // DEBUG
 
     try {
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
         if (users.length === 0) {
-            console.log('User not found'); // DEBUG
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         const user = users[0];
-        console.log('User found:', user.id, user.role); // DEBUG
-        console.log('Hash in DB:', user.password_hash); // DEBUG
-
         const isMatch = await bcrypt.compare(password, user.password_hash);
-        console.log('Password match:', isMatch); // DEBUG
 
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -92,8 +138,55 @@ app.post('/api/auth/login', async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('LOGIN ERROR:', err); // DEBUG
-        res.status(500).json({ message: 'Server error: ' + err.message });
+        console.error('LOGIN ERROR:', err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Student login
+app.post('/api/students/login', loginLimiter, async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const [students] = await db.query('SELECT * FROM students WHERE username = ?', [username]);
+        const student = students[0];
+
+        if (!student || student.status !== 'active' || !student.password_hash) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, student.password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign({ id: student.id, role: 'student' }, JWT_SECRET, { expiresIn: '1d' });
+        delete student.password_hash;
+
+        res.json({ token, user: student });
+    } catch (err) {
+        console.error('STUDENT LOGIN ERROR:', err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Current session - lets the frontend verify a stored token is still valid server-side
+app.get('/api/auth/me', authenticate, async (req, res) => {
+    try {
+        if (req.user.role === 'student') {
+            const [rows] = await db.query(
+                'SELECT id, name, username, email, grade, join_date, status, avatar_url FROM students WHERE id = ?',
+                [req.user.id]
+            );
+            if (!rows[0] || rows[0].status !== 'active') return res.status(401).json({ message: 'Unauthorized' });
+            return res.json({ role: 'student', ...rows[0] });
+        }
+        const [rows] = await db.query('SELECT id, username, email, role FROM users WHERE id = ?', [req.user.id]);
+        if (!rows[0]) return res.status(401).json({ message: 'Unauthorized' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
@@ -101,7 +194,6 @@ app.post('/api/auth/login', async (req, res) => {
 const multer = require('multer');
 const path = require('path');
 
-// Set up storage engine
 const storage = multer.diskStorage({
     destination: './uploads/',
     filename: function (req, file, cb) {
@@ -109,7 +201,6 @@ const storage = multer.diskStorage({
     }
 });
 
-// Init upload
 const upload = multer({
     storage: storage,
     limits: { fileSize: 10000000 }, // 10MB limit
@@ -118,33 +209,27 @@ const upload = multer({
     }
 }).single('file');
 
-// Check File Type
 function checkFileType(file, cb) {
-    // Allowed ext
     const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx/;
-    // Check ext
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // Check mime
     const mimetype = filetypes.test(file.mimetype);
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb('Error: Files Only!');
+        cb(new Error('Files Only!'));
     }
 }
 
-// Serve static folder for uploads
 app.use('/uploads', express.static('uploads'));
-
 
 /* ---------------- POSTS ROUTES ---------------- */
 
-// Upload Endpoint
-app.post('/api/upload', (req, res) => {
+// Upload Endpoint - requires auth to stop anonymous disk-exhaustion via unlimited uploads
+app.post('/api/upload', authenticate, (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.status(400).json({ message: err });
+            res.status(400).json({ message: err.message || 'Upload failed' });
         } else {
             if (req.file == undefined) {
                 res.status(400).json({ message: 'No file selected!' });
@@ -158,7 +243,7 @@ app.post('/api/upload', (req, res) => {
     });
 });
 
-// Get all posts
+// Get all posts - public
 app.get('/api/posts', async (req, res) => {
     try {
         const [posts] = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
@@ -169,9 +254,8 @@ app.get('/api/posts', async (req, res) => {
     }
 });
 
-// Create post
-app.post('/api/posts', async (req, res) => {
-    // Middleware to verify token should be added here
+// Create post - admin only
+app.post('/api/posts', requireAdmin, async (req, res) => {
     const { title, content, excerpt, category, image, file_url, content_type } = req.body;
     try {
         const [result] = await db.query(
@@ -185,8 +269,8 @@ app.post('/api/posts', async (req, res) => {
     }
 });
 
-// Delete post
-app.delete('/api/posts/:id', async (req, res) => {
+// Delete post - admin only
+app.delete('/api/posts/:id', requireAdmin, async (req, res) => {
     try {
         await db.query('DELETE FROM posts WHERE id = ?', [req.params.id]);
         res.json({ message: 'Post deleted' });
@@ -196,13 +280,12 @@ app.delete('/api/posts/:id', async (req, res) => {
     }
 });
 
-
-
-
-/* ---------------- STUDENTS ROUTES ---------------- */
-app.get('/api/students', async (req, res) => {
+/* ---------------- STUDENTS ROUTES (admin only) ---------------- */
+app.get('/api/students', requireAdmin, async (req, res) => {
     try {
-        const [students] = await db.query('SELECT * FROM students ORDER BY join_date DESC');
+        const [students] = await db.query(
+            'SELECT id, name, username, email, grade, join_date, status, avatar_url FROM students ORDER BY join_date DESC'
+        );
         res.json(students);
     } catch (err) {
         console.error(err);
@@ -210,22 +293,51 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
-app.post('/api/students', async (req, res) => {
-    const { name, username, email, grade, status, avatar } = req.body;
+app.post('/api/students', requireAdmin, async (req, res) => {
+    const { id, name, username, email, grade, status, avatar, password } = req.body;
+    const isUpdate = id && /^\d+$/.test(String(id));
+
     try {
-        const [result] = await db.query(
-            'INSERT INTO students (name, username, email, grade, status, avatar_url) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, username, email, grade, status, avatar]
-        );
-        res.status(201).json({ id: result.insertId, ...req.body });
+        if (isUpdate) {
+            if (password) {
+                const hash = await bcrypt.hash(password, 10);
+                await db.query(
+                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=? WHERE id=?',
+                    [name, username, email, grade, status, avatar, hash, id]
+                );
+            } else {
+                await db.query(
+                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=? WHERE id=?',
+                    [name, username, email, grade, status, avatar, id]
+                );
+            }
+            res.json({ id: Number(id), message: 'Student updated' });
+        } else {
+            const hash = password ? await bcrypt.hash(password, 10) : null;
+            const [result] = await db.query(
+                'INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [name, username, email, grade, status, avatar, hash]
+            );
+            res.status(201).json({ id: result.insertId, message: 'Student created' });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-/* ---------------- APPOINTMENTS ROUTES ---------------- */
-app.get('/api/appointments', async (req, res) => {
+app.delete('/api/students/:id', requireAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM students WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Student deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- APPOINTMENTS ROUTES (admin only) ---------------- */
+app.get('/api/appointments', requireAdmin, async (req, res) => {
     try {
         const [appointments] = await db.query('SELECT * FROM appointments ORDER BY created_at DESC');
         res.json(appointments);
@@ -235,7 +347,7 @@ app.get('/api/appointments', async (req, res) => {
     }
 });
 
-app.post('/api/appointments', async (req, res) => {
+app.post('/api/appointments', requireAdmin, async (req, res) => {
     const { studentName, title, date, time, status, type } = req.body;
     try {
         const [result] = await db.query(
@@ -249,7 +361,7 @@ app.post('/api/appointments', async (req, res) => {
     }
 });
 
-/* ---------------- STORIES ROUTES ---------------- */
+/* ---------------- STORIES ROUTES (public - shown on the homepage) ---------------- */
 app.get('/api/stories', async (req, res) => {
     try {
         const [stories] = await db.query('SELECT * FROM success_stories ORDER BY created_at DESC');
@@ -260,7 +372,7 @@ app.get('/api/stories', async (req, res) => {
     }
 });
 
-app.post('/api/stories', async (req, res) => {
+app.post('/api/stories', requireAdmin, async (req, res) => {
     const { studentName, grade, storyText, avatar } = req.body;
     try {
         const [result] = await db.query(
@@ -275,7 +387,7 @@ app.post('/api/stories', async (req, res) => {
 });
 
 /* ---------------- CONTACT MESSAGES ROUTES ---------------- */
-app.get('/api/messages', async (req, res) => {
+app.get('/api/messages', requireAdmin, async (req, res) => {
     try {
         const [messages] = await db.query('SELECT * FROM contact_messages ORDER BY created_at DESC');
         res.json(messages);
@@ -300,7 +412,7 @@ app.post('/api/messages', async (req, res) => {
 });
 
 /* ---------------- COACHING REQUESTS ROUTES ---------------- */
-app.get('/api/coaching-requests', async (req, res) => {
+app.get('/api/coaching-requests', requireAdmin, async (req, res) => {
     try {
         const [requests] = await db.query('SELECT * FROM coaching_requests ORDER BY created_at DESC');
         res.json(requests);
@@ -324,8 +436,8 @@ app.post('/api/coaching-requests', async (req, res) => {
     }
 });
 
-/* ---------------- RESOURCES ROUTES ---------------- */
-app.get('/api/resources', async (req, res) => {
+/* ---------------- RESOURCES ROUTES (any authenticated user) ---------------- */
+app.get('/api/resources', authenticate, async (req, res) => {
     try {
         const [resources] = await db.query('SELECT * FROM resources ORDER BY created_at DESC');
         res.json(resources);
@@ -338,4 +450,3 @@ app.get('/api/resources', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-

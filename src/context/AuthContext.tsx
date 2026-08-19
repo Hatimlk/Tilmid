@@ -1,17 +1,20 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { api } from '../lib/api';
 
-// Simple user interface for our context
 interface User {
-    id: number;
-    username: string;
-    email: string;
-    role: 'user' | 'admin';
+    id: number | string;
+    username?: string;
+    name?: string;
+    email?: string;
+    role: 'user' | 'admin' | 'student';
+    [key: string]: any;
 }
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
     isAdmin: boolean;
+    isStudent: boolean;
     login: (user: User, token: string) => void;
     logout: () => void;
 }
@@ -20,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
     isAdmin: false,
+    isStudent: false,
     login: () => { },
     logout: () => { }
 });
@@ -27,24 +31,22 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const checkAuth = async () => {
             const token = localStorage.getItem('token');
-            const storedUser = localStorage.getItem('user');
 
-            if (token && storedUser) {
+            if (token) {
                 try {
-                    // Optional: Validate token with backend /api/auth/me if implemented
-                    // For now, trust localStorage but verify structure
-                    const parsedUser = JSON.parse(storedUser);
-                    setUser(parsedUser);
-                    setIsAdmin(parsedUser.role === 'admin');
+                    // Verify the token against the server instead of blindly trusting
+                    // whatever role/id is sitting in localStorage.
+                    const me = await api.get('/auth/me');
+                    setUser(me);
+                    localStorage.setItem('user', JSON.stringify(me));
                 } catch (e) {
-                    console.error("Failed to parse user", e);
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
+                    setUser(null);
                 }
             }
             setLoading(false);
@@ -53,22 +55,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkAuth();
     }, []);
 
-    const login = (userData: any, token: string) => {
+    const login = (userData: User, token: string) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
-        setIsAdmin(userData.role === 'admin');
     };
 
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
-        setIsAdmin(false);
     };
 
+    const isAdmin = user?.role === 'admin';
+    const isStudent = user?.role === 'student';
+
     return (
-        <AuthContext.Provider value={{ user, loading, isAdmin, login, logout } as any}>
+        <AuthContext.Provider value={{ user, loading, isAdmin, isStudent, login, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );

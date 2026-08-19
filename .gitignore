@@ -13,6 +13,15 @@ dist-ssr
 *.local
 *.zip
 
+# Secrets - never commit real credentials
+.env
+.env.*
+!.env.example
+server/.env
+server/uploads/*
+!server/uploads/.gitkeep
+server-php/.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

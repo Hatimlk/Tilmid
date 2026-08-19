@@ -11,19 +11,6 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('user', 'admin') DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
--- Create Database (Run this only if you have permissions, otherwise create manually)
--- CREATE DATABASE IF NOT EXISTS tilmid_db;
--- USE tilmid_db;
-
--- Users Table
-CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM('user', 'admin') DEFAULT 'user',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
 -- Blog Posts Table
 CREATE TABLE IF NOT EXISTS posts (
@@ -47,11 +34,14 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 -- Students Table
+-- NOTE: password_hash stores a bcrypt/password_hash() digest, never plaintext.
+-- Existing installs: run server-php/migrate.php once to rename the old
+-- plaintext `password` column and hash existing values in place.
 CREATE TABLE IF NOT EXISTS students (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255),
+    password_hash VARCHAR(255),
     email VARCHAR(255),
     grade VARCHAR(255),
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -118,7 +108,6 @@ CREATE TABLE IF NOT EXISTS timetable_tasks (
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
-
 -- Coaching Requests Table
 CREATE TABLE IF NOT EXISTS coaching_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -129,3 +118,10 @@ CREATE TABLE IF NOT EXISTS coaching_requests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Login Attempts Table (basic rate limiting for /api/auth/login and /api/students/login)
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    identifier VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_identifier_created (identifier, created_at)
+);

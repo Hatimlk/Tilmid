@@ -1,3 +1,14 @@
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Allow-lists third-party assets actually used by this app (Google Fonts, the
+  # Puter AI SDK loaded in index.html) instead of leaving script-src wide open.
+  # If a future third-party integration breaks, check the browser console for
+  # the specific CSP violation and extend the matching directive below.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.puter.com https://*.puter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://tilmide.ma https://*.puter.com; frame-src https://*.puter.com; object-src 'none'; base-uri 'self'"
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /

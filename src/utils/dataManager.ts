@@ -15,6 +15,10 @@ export const dataManager = {
     return await api.get('/students');
   },
 
+  loginStudent: async (username: string, password: string): Promise<{ token: string; user: Student }> => {
+    return await api.post('/students/login', { username, password });
+  },
+
   saveStudent: async (student: Student): Promise<void> => {
     await api.post('/students', student);
   },
