@@ -10,7 +10,6 @@ import { IMAGES } from './images';
 
 export const NAV_ITEMS = [
   { label: "nav.home", href: "/" },
-  { label: "nav.tilmidTalib", href: "/tilmid-talib" },
   { label: "nav.tawjih", href: "/tawjih" },
   { label: "nav.coaching", href: "/coaching-offer" },
   { label: "nav.studentArea", href: "/student-area", isButton: true }
