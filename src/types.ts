@@ -57,6 +57,7 @@ export interface ProgramData {
     title: string;
     query: string;
   }[];
+  relatedBlogIds?: string[];
 }
 
 export interface SuccessStory {
