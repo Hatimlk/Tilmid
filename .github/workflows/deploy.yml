@@ -65,16 +65,17 @@ jobs:
 
       - name: Trigger cPanel pull + deploy
         run: |
-          BASE="https://${{ secrets.CPANEL_HOST }}:2083/execute/VersionControl"
+          EXEC="https://${{ secrets.CPANEL_HOST }}:2083/execute"
           AUTH="Authorization: cpanel ${{ secrets.CPANEL_USERNAME }}:${{ secrets.CPANEL_API_TOKEN }}"
           REPO="repository_root=${{ secrets.CPANEL_REPO_PATH }}"
 
           echo "Pulling latest deploy branch into cPanel repo..."
-          UPDATE_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$BASE/update?$REPO")
+          UPDATE_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$EXEC/VersionControl/update?$REPO")
           echo "$UPDATE_RESP"
 
+          # Deployment (.cpanel.yml) lives in a separate UAPI module from repo management.
           echo "Running .cpanel.yml deployment tasks..."
-          DEPLOY_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$BASE/deploy?$REPO")
+          DEPLOY_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$EXEC/VersionControlDeployment/deploy?$REPO")
           echo "$DEPLOY_RESP"
 
           # cPanel's UAPI returns HTTP 200 even for logical failures (embeds status:0
