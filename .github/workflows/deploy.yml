@@ -74,8 +74,9 @@ jobs:
           echo "$UPDATE_RESP"
 
           # Deployment (.cpanel.yml) lives in a separate UAPI module from repo management.
+          # Each deploy is a new "deployment" record - the function is create, not deploy.
           echo "Running .cpanel.yml deployment tasks..."
-          DEPLOY_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$EXEC/VersionControlDeployment/deploy?$REPO")
+          DEPLOY_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$EXEC/VersionControlDeployment/create?$REPO")
           echo "$DEPLOY_RESP"
 
           # cPanel's UAPI returns HTTP 200 even for logical failures (embeds status:0
