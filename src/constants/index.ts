@@ -12,6 +12,7 @@ export const NAV_ITEMS = [
   { label: "nav.home", href: "/" },
   { label: "nav.tawjih", href: "/tawjih" },
   { label: "nav.coaching", href: "/coaching-offer" },
+  { label: "nav.higherSchools", href: "/higher-schools" },
   { label: "nav.studentArea", href: "/student-area", isButton: true }
 ];
 
