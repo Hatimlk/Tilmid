@@ -5,17 +5,15 @@ import {
   MessageCircle,
   Brain
 } from 'lucide-react';
-import { ServiceFeature, VideoReel, ProgramData, BlogPost } from '../types';
+import { ServiceFeature, VideoReel, ProgramData } from '../types';
 import { IMAGES } from './images';
 
 export const NAV_ITEMS = [
-  { label: "الرئيسية", href: "/" },
-  { label: "تلميذ", href: "/tilmid" },
-  { label: "طالب", href: "/talib" },
-  { label: "توجيه", href: "/tawjih" },
-  { label: "عرض المواكبة", href: "/coaching-offer" },
-  { label: "المدونة", href: "/blog" },
-  { label: "مساحة الطالب", href: "/student-area", isButton: true }
+  { label: "nav.home", href: "/" },
+  { label: "nav.tilmidTalib", href: "/tilmid-talib" },
+  { label: "nav.tawjih", href: "/tawjih" },
+  { label: "nav.coaching", href: "/coaching-offer" },
+  { label: "nav.studentArea", href: "/student-area", isButton: true }
 ];
 
 export const MAIN_SERVICES: ServiceFeature[] = [

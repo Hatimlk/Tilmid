@@ -5,6 +5,8 @@ import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
 import { Link, useLocation } from 'react-router-dom';
 import { IMAGES } from '../constants/images';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,6 +23,7 @@ export const Navbar: React.FC = () => {
   };
 
   const NavLink: React.FC<{ item: NavItem; mobile?: boolean }> = ({ item, mobile }) => {
+    const { t } = useTranslation();
     const isDropdown = !!item.subItems;
     const isActive = location.pathname === item.href;
 
@@ -35,7 +38,7 @@ export const Navbar: React.FC = () => {
                 : 'hover:text-primary'
               }`}
           >
-            {item.label}
+            {t(item.label)}
             <ChevronDown size={16} className={`transition-transform duration-300 ${dropdownOpen === item.label ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} />
           </button>
 
@@ -49,7 +52,7 @@ export const Navbar: React.FC = () => {
                     to={sub.href}
                     className="block px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors mb-1 last:mb-0"
                   >
-                    {sub.label}
+                    {t(sub.label)}
                   </Link>
                 ))}
               </div>
@@ -69,7 +72,7 @@ export const Navbar: React.FC = () => {
                   }}
                   className="block px-10 py-3 text-base text-slate-600 hover:text-primary font-medium"
                 >
-                  {sub.label}
+                  {t(sub.label)}
                 </Link>
               ))}
             </div>
@@ -90,7 +93,7 @@ export const Navbar: React.FC = () => {
             hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300
           `}
         >
-          <span className="relative z-10">{item.label}</span>
+          <span className="relative z-10">{t(item.label)}</span>
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
         </Link>
       );
@@ -110,7 +113,7 @@ export const Navbar: React.FC = () => {
           group
         `}
       >
-        {item.label}
+        {t(item.label)}
         {!mobile && !item.isButton && (
           <span className={`
             absolute -bottom-1 right-0 h-0.5 bg-primary rounded-full transition-all duration-300
@@ -141,6 +144,7 @@ export const Navbar: React.FC = () => {
               {NAV_ITEMS.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
+              <LanguageSwitcher />
             </nav>
 
             {/* Mobile Menu Button */}
@@ -183,6 +187,10 @@ export const Navbar: React.FC = () => {
           >
             <X size={24} />
           </button>
+        </div>
+
+        <div className="px-6 py-4 border-b border-slate-100 flex justify-end">
+          <LanguageSwitcher />
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4">

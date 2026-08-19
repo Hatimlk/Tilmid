@@ -6,8 +6,8 @@ import { dataManager } from '../utils/dataManager';
 import { BlogPost, SuccessStory, VideoReel } from '../types';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp, ExternalLink, Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
-import { LatestArticles } from '../components/LatestArticles';
 import SEO from '../components/SEO';
+import { useTranslation } from 'react-i18next';
 
 const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   const [days, setDays] = useState<number>(0);
@@ -181,6 +181,7 @@ const HeroImage: React.FC = () => (
 );
 
 export const Home: React.FC = () => {
+  const { t } = useTranslation();
   const [successStories, setSuccessStories] = useState<SuccessStory[]>([]);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -246,8 +247,8 @@ export const Home: React.FC = () => {
   return (
     <>
       <SEO
-        title="تلميذ - Tilmid"
-        description="منصة تلميذ للتوجيه المدرسي في المغرب. اكتشف طرق المراجعة الذكية، التحضير للبكالوريا، ونصائح التفوق الدراسي مع مواكبة نفسية شاملة."
+        title={t('home.seoTitle')}
+        description={t('home.seoDesc')}
       />
       {/* Hero Section - Redesigned */}
       <section className="relative pt-20 pb-32 lg:pt-20 lg:pb-52 overflow-hidden bg-[#f8fafc]">
@@ -273,18 +274,18 @@ export const Home: React.FC = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
-                <span className="text-sm font-bold text-slate-700">المنصة رقم 1# للتوجيه والمواكبة في المغرب</span>
+                <span className="text-sm font-bold text-slate-700">{t('home.badge')}</span>
               </div>
 
               <h1 className="text-5xl sm:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight animate-fade-in-up animate-delay-100">
-                تلميذ رفيقك <br />
+                {t('home.heroTitle1')} <br />
                 <span className="relative inline-block">
-                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">نحو قمة التفوق</span>
+                  <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">{t('home.heroTitle2')}</span>
                   <svg className="absolute w-full h-3 -bottom-1 left-0 text-blue-200/50 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
                     <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
                   </svg>
                 </span>
-                <span className="block text-3xl sm:text-5xl mt-2 text-slate-400 font-extrabold tracking-tight">الدراسي والمهني</span>
+                <span className="block text-3xl sm:text-5xl mt-2 text-slate-400 font-extrabold tracking-tight">{t('home.heroTitle3')}</span>
               </h1>
 
               {/* Mobile Hero Image */}
@@ -293,7 +294,7 @@ export const Home: React.FC = () => {
               </div>
 
               <p className="text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0 animate-fade-in-up animate-delay-200">
-                اكتشف منهجيات التعلم الحديثة، احصل على توجيه مدرسي دقيق، وانضم لآلاف التلاميذ الذين حققوا أهدافهم الدراسية معنا.
+                {t('home.heroDesc')}
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4 animate-fade-in-up animate-delay-300">
@@ -426,11 +427,6 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
-
-      {/* Latest Articles Section */}
-      <LatestArticles />
-
 
 
       {/* Success Stories Slider */}

@@ -1,6 +1,6 @@
 
 import { api } from '../lib/api';
-import { BlogPost, Student, Appointment, SuccessStory, StudyResource, ContactMessage } from '../types';
+import { Student, Appointment, SuccessStory, StudyResource, ContactMessage } from '../types';
 
 export const dataManager = {
   // --- Initialization ---
@@ -8,22 +8,7 @@ export const dataManager = {
     console.log("DataManager Initialized with MySQL API");
   },
 
-  // --- Posts ---
-  getPosts: async (): Promise<BlogPost[]> => {
-    return await api.get('/posts');
-  },
 
-  getPost: async (id: string | number): Promise<BlogPost> => {
-    return await api.get(`/posts/${id}`);
-  },
-
-  savePost: async (post: BlogPost): Promise<void> => {
-    await api.post('/posts', post);
-  },
-
-  deletePost: async (id: string): Promise<void> => {
-    await api.delete(`/posts/${id}`);
-  },
 
   // --- Students ---
   getStudents: async (): Promise<Student[]> => {

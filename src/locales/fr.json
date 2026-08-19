@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "tilmidTalib": "Programme Tilmid & Talib",
+    "tawjih": "Programme Tawjih",
+    "coaching": "Offre d'accompagnement",
+    "studentArea": "Espace Étudiant",
+    "menu": "Menu"
+  },
+  "footer": {
+    "description": "Une plateforme prometteuse qui aide les étudiants à améliorer leur niveau académique vers un stade avancé loin des méthodes traditionnelles.",
+    "about": "À propos",
+    "aboutUs": "Qui sommes-nous",
+    "coachingOffer": "Offre d'accompagnement",
+    "studentArea": "Espace Étudiant",
+    "contactUs": "Contactez-nous",
+    "socialMedia": "Réseaux Sociaux",
+    "rights": "© {{year}} Tilmid. Tous droits réservés.",
+    "privacyPolicy": "Politique de confidentialité",
+    "admin": "Administration"
+  },
+  "home": {
+    "seoTitle": "Tilmid - Orientation Scolaire",
+    "seoDesc": "Plateforme Tilmid pour l'orientation scolaire au Maroc. Découvrez des méthodes de révision intelligentes, la préparation au Bac, et des conseils pour l'excellence académique.",
+    "badge": "La plateforme n°1 d'orientation et d'accompagnement au Maroc",
+    "heroTitle1": "Tilmid, votre compagnon",
+    "heroTitle2": "vers l'excellence",
+    "heroTitle3": "académique et professionnelle",
+    "heroDesc": "Découvrez des méthodes d'apprentissage modernes, obtenez une orientation précise, et rejoignez des milliers d'élèves qui ont atteint leurs objectifs avec nous."
+  }
+}

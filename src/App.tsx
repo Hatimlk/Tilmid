@@ -4,8 +4,6 @@ import { Layout } from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { Home } from './pages/Home';
 import { ProgramDetails } from './pages/ProgramDetails';
-import { Blog } from './pages/Blog';
-import { BlogPost } from './pages/BlogPost';
 import { StudentArea } from './pages/StudentArea';
 import { CoachingOffer } from './pages/CoachingOffer';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
@@ -23,11 +21,8 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/tilmid" element={<ProgramDetails />} />
+          <Route path="/tilmid-talib" element={<ProgramDetails />} />
           <Route path="/tawjih" element={<ProgramDetails />} />
-          <Route path="/talib" element={<ProgramDetails />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/student-area" element={<StudentArea />} />

@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { HelmetProvider } from 'react-helmet-async';
+import './i18n';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

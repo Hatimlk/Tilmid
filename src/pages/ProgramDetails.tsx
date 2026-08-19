@@ -31,10 +31,7 @@ import {
   Gift,
   Brain
 } from 'lucide-react';
-import { BlogCard } from '../components/BlogCard';
 import SEO from '../components/SEO';
-import { RelatedArticles } from '../components/RelatedArticles';
-
 const FeatureStep: React.FC<{
   feature: { title: string; description: string };
   index: number;
@@ -260,9 +257,11 @@ const TawjihAIAdvisor: React.FC = () => {
 };
 
 export const ProgramDetails: React.FC = () => {
-  // Derive ID from the path (e.g. "/tilmid" -> "tilmid")
   const { pathname } = window.location;
-  const id = pathname.replace('/', ''); // simple extraction, assumes root level routes like /tilmid
+  const basePath = pathname.replace('/', '');
+  const [activeTab, setActiveTab] = useState<'tilmid' | 'talib'>('tilmid');
+  
+  const id = basePath === 'tilmid-talib' ? activeTab : basePath;
 
   let data: ProgramData | null = null;
   let ProgramIcon = School;
@@ -354,7 +353,7 @@ export const ProgramDetails: React.FC = () => {
       />
 
       {/* Hero Section */}
-      <div className={`relative pt-16 pb-32 lg:pt-24 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient}`}>
+      <div className={`relative pt-16 pb-32 lg:pt-24 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient} transition-all duration-1000`}>
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className={`absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[120px] opacity-30 animate-blob ${theme.blob1}`}></div>
@@ -368,6 +367,26 @@ export const ProgramDetails: React.FC = () => {
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           <div className="max-w-5xl mx-auto text-center animate-fade-in-up">
+
+            
+            {basePath === 'tilmid-talib' && (
+              <div className="flex justify-center mb-8 relative z-50">
+                <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-full inline-flex border border-white/20 shadow-lg">
+                  <button 
+                    onClick={() => setActiveTab('tilmid')}
+                    className={`px-8 py-2.5 rounded-full text-base md:text-lg font-black transition-all ${activeTab === 'tilmid' ? 'bg-white text-blue-600 shadow-md' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
+                  >
+                    تلميذ (High School)
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('talib')}
+                    className={`px-8 py-2.5 rounded-full text-base md:text-lg font-black transition-all ${activeTab === 'talib' ? 'bg-white text-violet-600 shadow-md' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
+                  >
+                    طالب (University)
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-bold shadow-lg animate-bounce-slow ring-1 ring-white/10">
               <Sparkles size={16} className="text-yellow-400 fill-current" />
@@ -511,10 +530,7 @@ export const ProgramDetails: React.FC = () => {
               </div>
             )}
 
-            {/* 3. Related Blog Posts Grid */}
-            {data.relatedBlogIds && (
-              <RelatedArticles relatedIds={data.relatedBlogIds} />
-            )}
+
           </div>
 
           {/* 4. Sticky Sidebar Column - Optimized for visibility and containment */}

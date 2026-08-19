@@ -3,8 +3,10 @@ import React from 'react';
 import { Instagram, Youtube, Mail, Phone, Facebook } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../constants/images';
+import { useTranslation } from 'react-i18next';
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-white pt-24 border-t border-slate-100">
       <div className="container mx-auto px-4 lg:px-8">
@@ -20,7 +22,7 @@ export const Footer: React.FC = () => {
               />
             </Link>
             <p className="text-slate-500 leading-relaxed text-lg font-medium max-w-sm">
-              منصة واعدة تساعد التلاميذ في الرقي بمستواهم الدراسي نحو مرحلة متقدمة بعيداً عن الطرق التقليدية.
+              {t('footer.description')}
             </p>
           </div>
 
@@ -28,13 +30,13 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-1 bg-primary rounded-full"></span>
-              عنـا
+              {t('footer.about')}
             </h4>
             <ul className="space-y-4">
               {[
-                { label: 'من نحن', href: '/about' },
-                { label: 'عرض المواكبة', href: '/coaching-offer' },
-                { label: 'مساحة الطالب', href: '/student-area' }
+                { label: t('footer.aboutUs'), href: '/about' },
+                { label: t('footer.coachingOffer'), href: '/coaching-offer' },
+                { label: t('footer.studentArea'), href: '/student-area' }
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -52,7 +54,7 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-1 bg-primary rounded-full"></span>
-              تواصل معنا
+              {t('footer.contactUs')}
             </h4>
             <ul className="space-y-6">
               <li>
@@ -78,7 +80,7 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-1 bg-primary rounded-full"></span>
-              مواقع التواصل
+              {t('footer.socialMedia')}
             </h4>
             <div className="flex gap-4">
               {[
@@ -109,16 +111,16 @@ export const Footer: React.FC = () => {
 
         <div className="border-t border-slate-100 py-10 flex flex-col md:flex-row justify-center items-center gap-6 text-center">
           <p className="text-slate-400 text-sm font-medium">
-            &copy; {new Date().getFullYear()} Tilmid. All Rights Reserved.
+            {t('footer.rights', { year: new Date().getFullYear() })}
           </p>
           <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-200" />
           <div className="flex items-center gap-6">
             <Link to="/privacy-policy" className="text-slate-400 text-sm hover:text-primary transition-colors font-medium">
-              سياسة الخصوصية
+              {t('footer.privacyPolicy')}
             </Link>
             <span className="text-slate-200">|</span>
             <Link to="/admin" className="text-slate-400 text-sm hover:text-primary transition-colors font-medium">
-              الإدارة
+              {t('footer.admin')}
             </Link>
           </div>
         </div>

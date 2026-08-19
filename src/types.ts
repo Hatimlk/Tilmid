@@ -15,30 +15,6 @@ export interface ServiceFeature {
   highlight?: boolean;
 }
 
-export interface BlogPost {
-  id: string;
-  title: string;
-  date: string;
-  category: string;
-  image: string;
-  excerpt: string;
-  content?: string;
-  html?: string;
-  status?: 'published' | 'draft';
-  views?: number;
-  readingTime?: string;
-  author?: {
-    name: string;
-    avatar: string;
-  };
-  sections?: {
-    title: string;
-    content: string;
-    list?: { t: string; d: string; }[];
-  }[];
-  file_url?: string;
-  contentType?: 'html' | 'file' | 'text';
-}
 
 export interface StudyResource {
   id: string;
@@ -81,7 +57,6 @@ export interface ProgramData {
     title: string;
     query: string;
   }[];
-  relatedBlogIds?: string[];
 }
 
 export interface SuccessStory {
