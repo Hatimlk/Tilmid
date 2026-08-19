@@ -323,7 +323,7 @@ export const Home: React.FC = () => {
       {/* Programs Showcase Section */}
       <section className="relative z-20 -mt-20 px-4 mb-12">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             <ProgramCard
               data={TAWJIH_DATA}
               icon={Compass}
@@ -331,16 +331,10 @@ export const Home: React.FC = () => {
               link="/tawjih"
             />
             <ProgramCard
-              data={TILMID_DATA}
-              icon={BookOpen}
+              data={{ title: 'عرض المواكبة', subtitle: 'برنامج متكامل يضمن لك التفوق الدراسي وتجاوز كل العقبات' }}
+              icon={Star}
               color="bg-blue-600"
-              link="/tilmid"
-            />
-            <ProgramCard
-              data={TALIB_DATA}
-              icon={GraduationCap}
-              color="bg-emerald-600"
-              link="/talib"
+              link="/coaching-offer"
             />
           </div>
         </div>
