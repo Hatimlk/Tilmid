@@ -69,23 +69,39 @@ jobs:
           AUTH="Authorization: cpanel ${{ secrets.CPANEL_USERNAME }}:${{ secrets.CPANEL_API_TOKEN }}"
           REPO="repository_root=${{ secrets.CPANEL_REPO_PATH }}"
 
+          # The host's edge (WAF/bot-check) sometimes intercepts these calls with an
+          # HTML "please wait, verifying your browser" page instead of forwarding to
+          # cPanel - this happens intermittently, not on a fixed pattern, so retry
+          # with backoff whenever the response isn't the JSON cPanel's UAPI returns.
+          call_uapi () {
+            local url="$1" label="$2" attempt resp body status
+            for attempt in 1 2 3 4; do
+              resp=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$url" || true)
+              body="${resp%$'\n'HTTP_STATUS:*}"
+              status="${resp##*HTTP_STATUS:}"
+              if [[ "$body" == \{* ]]; then
+                echo "$body"
+                if [ "$status" != "200" ]; then
+                  echo "::error::$label - HTTP $status"
+                  return 1
+                fi
+                if echo "$body" | grep -q '"status":0'; then
+                  echo "::error::$label - cPanel reported a logical failure"
+                  return 1
+                fi
+                return 0
+              fi
+              echo "$label - attempt $attempt got a non-JSON response (likely a WAF/bot-check challenge page), retrying in $((attempt * 5))s..."
+              sleep $((attempt * 5))
+            done
+            echo "::error::$label - never got a JSON response from cPanel after 4 attempts"
+            return 1
+          }
+
           echo "Pulling latest deploy branch into cPanel repo..."
-          UPDATE_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$EXEC/VersionControl/update?$REPO")
-          echo "$UPDATE_RESP"
+          call_uapi "$EXEC/VersionControl/update?$REPO" "update" || exit 1
 
           # Deployment (.cpanel.yml) lives in a separate UAPI module from repo management.
           # Each deploy is a new "deployment" record - the function is create, not deploy.
           echo "Running .cpanel.yml deployment tasks..."
-          DEPLOY_RESP=$(curl -sS -w '\nHTTP_STATUS:%{http_code}' -H "$AUTH" "$EXEC/VersionControlDeployment/create?$REPO")
-          echo "$DEPLOY_RESP"
-
-          # cPanel's UAPI returns HTTP 200 even for logical failures (embeds status:0
-          # + an errors array in the JSON body) - fail the job on either signal.
-          if echo "$UPDATE_RESP" | grep -q '"status":0' || echo "$DEPLOY_RESP" | grep -q '"status":0'; then
-            echo "::error::cPanel reported a logical failure - see response body above"
-            exit 1
-          fi
-          if ! echo "$UPDATE_RESP" | grep -q 'HTTP_STATUS:200' || ! echo "$DEPLOY_RESP" | grep -q 'HTTP_STATUS:200'; then
-            echo "::error::cPanel API call did not return HTTP 200 - see response above"
-            exit 1
-          fi
+          call_uapi "$EXEC/VersionControlDeployment/create?$REPO" "deploy" || exit 1
