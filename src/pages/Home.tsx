@@ -374,35 +374,6 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Services Grid - Interactive Cards */}
-      <section id="services" className="py-16 bg-[#f8fafc] pt-24 lg:pt-32 relative">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-1/4 left-0 w-full h-[500px] bg-gradient-to-b from-white/0 via-white/80 to-white/0 skew-y-3 pointer-events-none"></div>
-
-        <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-24 space-y-6">
-            <span className="inline-block px-4 py-1.5 bg-blue-100 text-primary font-black tracking-widest text-[10px] uppercase rounded-full">بماذا نتميز؟</span>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">نساعدك تحقق <span className="text-primary">أهدافك</span> <br />بدون ضغط وتوتر</h2>
-            <p className="text-slate-500 font-medium text-xl max-w-2xl mx-auto leading-relaxed">نقدم باقة من الخدمات المتكاملة التي تغطي الجانب النفسي، الدراسي والتقني.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
-            {MAIN_SERVICES.map((service, idx) => (
-              <div key={idx} className="bg-white p-10 lg:p-12 rounded-[3.5rem] border border-slate-100 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.05)] hover:shadow-[0_40px_80px_-20px_rgba(37,99,235,0.15)] hover:-translate-y-2 transition-all duration-500 flex flex-col md:flex-row items-center md:items-start gap-8 group relative overflow-hidden">
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[100%] transition-transform duration-700 group-hover:scale-150 z-0`}></div>
-
-                <div className="relative z-10 p-5 rounded-[2.5rem] bg-slate-50 text-slate-900 shadow-sm ring-1 ring-slate-100 group-hover:bg-primary group-hover:text-white group-hover:scale-110 transition-all duration-500 shrink-0">
-                  <service.icon size={42} strokeWidth={1.5} />
-                </div>
-                <div className="text-center md:text-right relative z-10">
-                  <h3 className="text-2xl font-black mb-4 text-slate-900 group-hover:text-primary transition-colors">{service.title}</h3>
-                  <p className="text-slate-500 leading-relaxed font-bold text-lg opacity-80 group-hover:opacity-100 transition-opacity">{service.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Media & Reels Section - Visual Video Cards */}
       <section id="media" className="py-10 bg-[#f8fafc] relative overflow-hidden">
