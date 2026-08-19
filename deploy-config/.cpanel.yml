@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/tilmide1/public_html/
+    - export APIPATH=/home/tilmide1/public_html/api/
+    - /bin/cp -R dist/. $DEPLOYPATH
+    - /bin/cp -R api/. $APIPATH

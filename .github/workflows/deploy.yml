@@ -1,0 +1,78 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_API_URL: https://tilmide.ma/api
+
+      - name: Assemble deploy branch content
+        run: |
+          set -e
+          rm -rf /tmp/deploy-out
+          mkdir -p /tmp/deploy-out/dist /tmp/deploy-out/api
+
+          cp -r dist/. /tmp/deploy-out/dist/
+
+          # GitHub hard-rejects any pushed file over 100MB. Strip anything that
+          # large from the deploy branch - it must already exist on the server
+          # (e.g. uploaded once manually) since it can't change via this pipeline.
+          echo "Files excluded from deploy branch for exceeding 50MB:"
+          find /tmp/deploy-out/dist -type f -size +50M -print
+          find /tmp/deploy-out/dist -type f -size +50M -delete
+
+          cp server-php/index.php server-php/cors.php server-php/db.php \
+             server-php/jwt.php server-php/config.php server-php/seed_admin.php \
+             server-php/.htaccess /tmp/deploy-out/api/
+
+          cp deploy-config/.cpanel.yml /tmp/deploy-out/.cpanel.yml
+
+      - name: Publish to deploy branch
+        run: |
+          set -e
+          cd /tmp/deploy-out
+          git init -q
+          git checkout -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Deploy ${{ github.sha }}"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push -f origin deploy
+
+      - name: Trigger cPanel pull + deploy
+        run: |
+          set -e
+          BASE="https://${{ secrets.CPANEL_HOST }}:2083/execute/VersionControl"
+          AUTH="Authorization: cpanel ${{ secrets.CPANEL_USERNAME }}:${{ secrets.CPANEL_API_TOKEN }}"
+          REPO="repository_root=${{ secrets.CPANEL_REPO_PATH }}"
+
+          echo "Pulling latest deploy branch into cPanel repo..."
+          curl -sS -f -H "$AUTH" "$BASE/update?$REPO"
+          echo
+          echo "Running .cpanel.yml deployment tasks..."
+          curl -sS -f -H "$AUTH" "$BASE/deploy?$REPO"
+          echo
