@@ -44,7 +44,7 @@ export const INSTAGRAM_REELS: VideoReel[] = [
     id: '1',
     reelId: 'C7J4pnzC-VR',
     thumbnail: 'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    title: 'جرعة أمل، و الله حتا تفرحوا براسكوم.. ماتستاسلموش ✌️❤️🫡',
+    title: 'reels.reel1',
     duration: '0:47',
     views: '125.5K',
     url: 'https://www.instagram.com/reel/C7J4pnzC-VR/'
@@ -53,7 +53,7 @@ export const INSTAGRAM_REELS: VideoReel[] = [
     id: '2',
     reelId: 'C4ob4c3iLkv',
     thumbnail: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    title: 'إلى يالاه بديتي المراجعة هاد النصائح الثمينة ليك',
+    title: 'reels.reel2',
     duration: '0:27',
     views: '98.2K',
     url: 'https://www.instagram.com/reel/C4ob4c3iLkv/'
@@ -62,7 +62,7 @@ export const INSTAGRAM_REELS: VideoReel[] = [
     id: '3',
     reelId: 'C6wzMqkrN_x',
     thumbnail: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    title: 'حداااااااري من وهم المراجعة',
+    title: 'reels.reel3',
     duration: '1:02',
     views: '150.1K',
     url: 'https://www.instagram.com/reel/C6wzMqkrN_x/'
@@ -76,30 +76,30 @@ export const INSTAGRAM_REELS: VideoReel[] = [
 // Data from PDF 1 (Tawjih)
 export const TAWJIH_DATA: ProgramData = {
   id: 'tawjih',
-  title: 'التوجيه المدرسي',
-  subtitle: 'أهدافنا الكبرى لي غادي تعاونك كتلميذ فالمسار التوجيهي ديالك',
+  title: 'programs.tawjih.title',
+  subtitle: 'programs.tawjih.subtitle',
   features: [
     {
-      title: 'ضمان اختيار التخصص المناسب للمستقبل',
-      description: 'نوجه التلميذ لاختيار الشعب والمسالك اللي منسجمة مع قدراته وطموحاته، باش يضمن مسار دراسي ومهني ناجح.'
+      title: 'programs.tawjih.features.0.title',
+      description: 'programs.tawjih.features.0.description'
     },
     {
-      title: 'تبسيط عملية التسجيل في المدارس العليا',
-      description: 'نوفر خدمة شاملة كنقومو فيها بجميع إجراءات التسجيل والتتبع، وكنخففو الضغط والارتباك اللي كيعيشوه التلاميذ وعائلاتهم.'
+      title: 'programs.tawjih.features.1.title',
+      description: 'programs.tawjih.features.1.description'
     },
     {
-      title: 'مواكبة شخصية لفتح أفضل الفرص الدراسية',
-      description: 'كل تلميذ كيستافد من استشارات فردية كاتضمن ليه يختار أحسن الخيارات التعليمية اللي تفتح ليه آفاق مستقبيلة واسعة.'
+      title: 'programs.tawjih.features.2.title',
+      description: 'programs.tawjih.features.2.description'
     },
     {
-      title: 'متابعة دقيقة للوائح الرئيسية ولوائح الانتظار',
-      description: 'ما نخليوش أي فرصة تضيع، كنراقبو ونوجهو التلاميذ لحظة بلحظة حتى يضمنو مقعدهم فالمدرسة اللي يستحقوها.'
+      title: 'programs.tawjih.features.3.title',
+      description: 'programs.tawjih.features.3.description'
     }
   ],
   extraTopics: [
-    { title: 'الفرق بين المدارس و المعاهد و الجامعات', query: 'نصائح' },
-    { title: 'المدارس بعد الباك', query: 'توجيه' },
-    { title: 'كيفية حساب عتبة الانتقاء', query: 'توجيه' }
+    { title: 'programs.tawjih.extraTopics.0.title', query: 'programs.tawjih.extraTopics.0.query' },
+    { title: 'programs.tawjih.extraTopics.1.title', query: 'programs.tawjih.extraTopics.1.query' },
+    { title: 'programs.tawjih.extraTopics.2.title', query: 'programs.tawjih.extraTopics.2.query' }
   ],
   relatedBlogIds: ['9', '10', '11']
 };
@@ -107,30 +107,30 @@ export const TAWJIH_DATA: ProgramData = {
 // Data from PDF 2 (Tilmid)
 export const TILMID_DATA: ProgramData = {
   id: 'tilmid',
-  title: 'برنامج تلميذ',
-  subtitle: 'أهدافنا الكبرى لي غادي تعاونك كتلميذ فالمسار ديالك',
+  title: 'programs.tilmid.title',
+  subtitle: 'programs.tilmid.subtitle',
   features: [
     {
-      title: 'نوصلوك لأفضل مستوى دراسي',
-      description: 'نساعدك تبني مسار ناجح بخطوات واضحة ومركزة.'
+      title: 'programs.tilmid.features.0.title',
+      description: 'programs.tilmid.features.0.description'
     },
     {
-      title: 'نعلموك كيفاش تخدم بذكاء مشي بالجهد',
-      description: 'عن طريق تقنيات متطورة فالمراجعة وبخطط عملية وفعالة غادي تعطيك نتائج أسرع وأفضل.'
+      title: 'programs.tilmid.features.1.title',
+      description: 'programs.tilmid.features.1.description'
     },
     {
-      title: 'نختاصرو عليك الطريق ونبعدوك على الأخطاء',
-      description: 'نعطيك جميع الأخطاء لي خاصك تفاداهم باش تستفد وما تعاودش نفس العثرات.'
+      title: 'programs.tilmid.features.2.title',
+      description: 'programs.tilmid.features.2.description'
     },
     {
-      title: 'نوفرو لك التوجيه والمواكبة الصحيحة',
-      description: 'باش تختار الطريق الأنسب ليك وتبقى ديما واثق من اختياراتك.'
+      title: 'programs.tilmid.features.3.title',
+      description: 'programs.tilmid.features.3.description'
     }
   ],
   extraTopics: [
-    { title: 'تقنيات المراجعة الفعالة', query: 'تقنية' },
-    { title: 'تنظيم الوقت المدرسي', query: 'كانبان' },
-    { title: 'الاستعداد للامتحانات', query: 'الامتحانات' }
+    { title: 'programs.tilmid.extraTopics.0.title', query: 'programs.tilmid.extraTopics.0.query' },
+    { title: 'programs.tilmid.extraTopics.1.title', query: 'programs.tilmid.extraTopics.1.query' },
+    { title: 'programs.tilmid.extraTopics.2.title', query: 'programs.tilmid.extraTopics.2.query' }
   ],
   relatedBlogIds: ['6', '8', '1']
 };
@@ -138,30 +138,30 @@ export const TILMID_DATA: ProgramData = {
 // Data from PDF 3 (Talib)
 export const TALIB_DATA: ProgramData = {
   id: 'talib',
-  title: 'برنامج طالب',
-  subtitle: 'أهدافنا الكبرى لي غادي تعاونك كطالب فالمسار ديالك',
+  title: 'programs.talib.title',
+  subtitle: 'programs.talib.subtitle',
   features: [
     {
-      title: 'تمكين الطلبة من التفوق الأكاديمي بأقل جهد ووقت',
-      description: 'عبر تزويدهم بأدوات عملية وتقنيات ذكية للمراجعة والتنظيم، كيختاصروا الطريق ويحققوا نتائج قوية بلا تضييع سنوات فالمحاولات العشوائية.'
+      title: 'programs.talib.features.0.title',
+      description: 'programs.talib.features.0.description'
     },
     {
-      title: 'بناء طالب منظم وواعي بقدراته',
-      description: 'الهدف ماشي غير النجاح، ولكن تكوين شخصية مستقلة قادرة تنظم وقتها وتبني خططها الدراسية بثقة، باش يبقا النجاح أسلوب حياة ماشي مجرد محطة.'
+      title: 'programs.talib.features.1.title',
+      description: 'programs.talib.features.1.description'
     },
     {
-      title: 'توفير مواكبة شخصية تُسرّع التقدم',
-      description: 'كل طالب كيستافد من استشارات فردية مصممة على مقاسه، باش يلقى حلول سريعة لأي صعوبة، ويستافد من خبرات وتجارب سنوات فمجال التوجيه.'
+      title: 'programs.talib.features.2.title',
+      description: 'programs.talib.features.2.description'
     },
     {
-      title: 'تحويل مسار التعليم العالي إلى تجربة ناجحة ومُلهمة',
-      description: 'هدفنا الكبير أننا نحولو سنوات الدراسة من معاناة وضغط إلى تجربة إيجابية عامرة بالإنجازات، كتخلي الطالب يحس أنه غادي فالطريق الصحيح.'
+      title: 'programs.talib.features.3.title',
+      description: 'programs.talib.features.3.description'
     }
   ],
   extraTopics: [
-    { title: 'منهجية البحث الجامعي', query: 'تفوق' },
-    { title: 'الموازنة بين الدراسة والحياة الشخصية', query: 'عادات' },
-    { title: 'التخطيط للمسار المهني', query: 'تطوير' }
+    { title: 'programs.talib.extraTopics.0.title', query: 'programs.talib.extraTopics.0.query' },
+    { title: 'programs.talib.extraTopics.1.title', query: 'programs.talib.extraTopics.1.query' },
+    { title: 'programs.talib.extraTopics.2.title', query: 'programs.talib.extraTopics.2.query' }
   ],
   relatedBlogIds: ['4', '5', '7']
 };

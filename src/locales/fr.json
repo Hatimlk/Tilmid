@@ -27,6 +27,149 @@
     "heroTitle1": "Tilmid, votre compagnon",
     "heroTitle2": "vers l'excellence",
     "heroTitle3": "académique et professionnelle",
-    "heroDesc": "Découvrez des méthodes d'apprentissage modernes, obtenez une orientation précise, et rejoignez des milliers d'élèves qui ont atteint leurs objectifs avec nous."
+    "heroDesc": "Découvrez des méthodes d'apprentissage modernes, obtenez une orientation précise, et rejoignez des milliers d'élèves qui ont atteint leurs objectifs avec nous.",
+    "startJourney": "Commencer votre voyage",
+    "discoverUs": "Découvrez-nous",
+    "successRate": "Taux de réussite",
+    "yearlyRate": "+98% par an",
+    "joinUs": "Rejoignez-nous aujourd'hui",
+    "discoverProgram": "Découvrir le programme",
+    "liveCountdown": "En direct : Compte à rebours des examens",
+    "decisiveDay": "Le jour J approche !",
+    "prepareWell": "Préparez-vous bien pour le national et régional",
+    "nationalExam": "National (2 Bac)",
+    "regionalExam": "Régional (1 Bac)",
+    "calculateAverage": "Calculez votre moyenne",
+    "daysRemaining": "Jours restants",
+    "timerActive": "Compte à rebours actif",
+    "mostWatched": "Les plus regardés sur Tilmid 🔥",
+    "motivationDoses": "Doses de motivation et astuces d'étude rapides",
+    "reels": "Reels",
+    "views": "vues",
+    "successStories": "Histoires à succès",
+    "heroesShare1": "Les héros de Tilmid",
+    "heroesShare2": "partagent",
+    "heroesShare3": "leur expérience",
+    "readySuccess": "Prêt à commencer votre voyage vers le succès avec nous ?",
+    "bookConsultation": "Réservez votre première consultation aujourd'hui et découvrez comment nous pouvons améliorer votre parcours d'études.",
+    "registerNow": "S'inscrire maintenant",
+    "contactWhatsapp": "Contacter via WhatsApp"
+  },
+  "programs": {
+    "tawjih": {
+      "title": "Orientation Scolaire",
+      "subtitle": "Nos objectifs principaux pour t'accompagner en tant qu'élève dans ton parcours d'orientation",
+      "features": [
+        { "title": "Garantir le choix de la filière adaptée pour l'avenir", "description": "Nous orientons l'élève pour choisir la filière et le parcours en adéquation avec ses capacités et ambitions, afin d'assurer un parcours scolaire et professionnel réussi." },
+        { "title": "Simplification du processus d'inscription aux grandes écoles", "description": "Nous offrons un service complet couvrant toutes les procédures d'inscription et de suivi, allégeant la pression et la confusion que vivent les élèves et leurs familles." },
+        { "title": "Accompagnement personnalisé pour de meilleures opportunités", "description": "Chaque élève bénéficie de consultations individuelles garantissant les meilleurs choix éducatifs lui ouvrant de larges perspectives d'avenir." },
+        { "title": "Suivi rigoureux des listes principales et d'attente", "description": "Pour ne laisser échapper aucune opportunité, nous surveillons et guidons les élèves à chaque instant jusqu'à ce qu'ils sécurisent leur place dans l'école qu'ils méritent." }
+      ],
+      "extraTopics": [
+        { "title": "La différence entre écoles, instituts et universités", "query": "conseils" },
+        { "title": "Les écoles post-bac", "query": "orientation" },
+        { "title": "Comment calculer le seuil de sélection", "query": "orientation" }
+      ]
+    },
+    "tilmid": {
+      "title": "Programme Tilmid",
+      "subtitle": "Nos grands objectifs qui t'aideront en tant qu'élève dans ton parcours",
+      "features": [
+        { "title": "Atteindre le meilleur niveau scolaire", "description": "Nous t'aidons à construire un parcours réussi avec des étapes claires et ciblées." },
+        { "title": "Apprendre à travailler intelligemment", "description": "Grâce à des techniques avancées de révision et des plans pratiques et efficaces qui te donneront des résultats plus rapides et meilleurs." },
+        { "title": "Raccourcir le chemin et t'éloigner des erreurs", "description": "Nous te donnons toutes les erreurs à éviter pour que tu puisses avancer sans répéter les mêmes faux pas." },
+        { "title": "T'offrir l'orientation et l'accompagnement adéquats", "description": "Pour que tu choisisses le chemin qui te convient le mieux et que tu restes toujours confiant dans tes choix." }
+      ],
+      "extraTopics": [
+        { "title": "Techniques de révision efficaces", "query": "technique" },
+        { "title": "Organisation du temps scolaire", "query": "kanban" },
+        { "title": "Préparation aux examens", "query": "examens" }
+      ]
+    },
+    "talib": {
+      "title": "Programme Talib",
+      "subtitle": "Nos grands objectifs qui t'aideront en tant qu'étudiant dans ton parcours",
+      "features": [
+        { "title": "Permettre aux étudiants d'exceller avec moins d'effort et de temps", "description": "En les équipant d'outils pratiques et de techniques intelligentes de révision et d'organisation, raccourcissant le chemin pour de solides résultats sans perdre des années." },
+        { "title": "Bâtir un étudiant organisé et conscient de ses capacités", "description": "L'objectif n'est pas seulement de réussir, mais de former une personnalité indépendante capable d'organiser son temps et de construire ses plans avec confiance." },
+        { "title": "Offrir un accompagnement personnel qui accélère les progrès", "description": "Chaque étudiant bénéficie de consultations personnalisées sur mesure pour trouver des solutions rapides à toute difficulté." },
+        { "title": "Transformer le parcours d'études supérieures en une expérience réussie", "description": "Notre grand objectif est de transformer les années d'études de la souffrance et la pression à une expérience positive pleine de réalisations." }
+      ],
+      "extraTopics": [
+        { "title": "Méthodologie de recherche universitaire", "query": "excellence" },
+        { "title": "Équilibre entre études et vie personnelle", "query": "habitudes" },
+        { "title": "Planification du parcours professionnel", "query": "développement" }
+      ]
+    },
+    "coaching": {
+      "title": "Offre d'Accompagnement",
+      "subtitle": "Un programme complet qui garantit ton excellence académique et surmonte tous les obstacles"
+    }
+  },
+  "programDetails": {
+    "tabTilmid": "Tilmid (Lycée)",
+    "tabTalib": "Talib (Université)",
+    "mostRequested": "Le programme le plus demandé cette saison",
+    "discoverProgram": "Découvrir le programme",
+    "stats": {
+      "beneficiaries": "Élèves bénéficiaires",
+      "satisfaction": "Taux de satisfaction",
+      "experience": "Années d'expérience"
+    },
+    "programFeatures": "Caractéristiques du programme",
+    "bonus": {
+      "badge": "Cadeau exclusif",
+      "titlePart1": "Obtenez gratuitement le cours",
+      "titlePart2": "\"Les secrets de l'orientation universitaire\"",
+      "desc": "Le guide complet pour planifier votre parcours post-bac (Grandes Écoles, Classes Prépa, Facultés de Médecine) est maintenant entre vos mains.",
+      "feat1Title": "Analyse détaillée des écoles",
+      "feat1Desc": "Conditions d'accès, perspectives et seuils de sélection",
+      "feat2Title": "Découverte de la passion professionnelle",
+      "feat2Desc": "Tests et applications pratiques pour déterminer votre voie"
+    },
+    "helpCard": {
+      "title": "Besoin d'aide ?",
+      "desc": "Notre équipe spécialisée est prête à répondre à toutes vos questions et à vous guider vers l'excellence.",
+      "whatsappBtn": "Parlez-nous via WhatsApp",
+      "consultBtn": "Réserver une consultation",
+      "communityLabel": "Rejoignez la communauté d'excellence"
+    },
+    "guarantee": {
+      "title": "Garantie Tilmid",
+      "desc": "Nous nous engageons à offrir la plus haute qualité éducative. Si vous n'êtes pas satisfait du contenu dans les 7 premiers jours, nous vous remboursons intégralement votre abonnement.",
+      "badge": "Garantie de remboursement 100%"
+    },
+    "advisor": {
+      "title": "Conseiller d'Orientation IA",
+      "desc": "Laissez l'intelligence artificielle analyser vos penchants et vous suggérer le parcours le mieux adapté à votre personnalité et vos capacités.",
+      "startBtn": "Commencer l'analyse",
+      "stepTracker": "Question {{current}} sur {{total}}",
+      "analyzingTitle": "Analyse de vos données en cours...",
+      "analyzingDesc": "Nous faisons correspondre vos réponses avec les spécialités des grandes écoles au Maroc.",
+      "resultSuccess": "Analyse réussie",
+      "resultPrefix": "Le domaine suggéré :",
+      "chatBtn": "Parler à un conseiller",
+      "retryBtn": "Refaire le test",
+      "questions": [
+        { "text": "Quelle activité vous fait perdre la notion du temps ?", "options": ["Résoudre des énigmes et des problèmes logiques", "Aider les autres et expliquer des choses", "Écrire, dessiner ou concevoir", "Organiser des projets et des plans"] },
+        { "text": "Dans le travail d'équipe, quel rôle préférez-vous généralement ?", "options": ["L'analyste technique", "L'auditeur et le soutien", "Le créateur d'idées", "Le leader et l'organisateur"] },
+        { "text": "Comment préférez-vous aborder les problèmes complexes ?", "options": ["Les décomposer en petites parties logiques", "Chercher une solution qui satisfait tout le monde", "Penser hors des sentiers battus", "Prendre une décision rapide et ferme"] },
+        { "text": "Dans quel type d'environnement préférez-vous travailler ?", "options": ["Un laboratoire ou un bureau calme avec de la technologie", "Un lieu avec une communication constante avec les gens", "Un studio ouvert et flexible", "Un environnement de travail dynamique et changeant"] },
+        { "text": "Qu'est-ce qui suscite le plus votre curiosité ?", "options": ["Comment fonctionnent les objets et les machines", "Le comportement humain et la psychologie", "L'esthétique et l'expression artistique", "Les histoires de réussite et de richesse"] },
+        { "text": "Comment agissez-vous sous pression ?", "options": ["Je me concentre sur des solutions logiques", "Je demande de l'aide et collabore avec l'équipe", "Je cherche des solutions alternatives et innovantes", "Je prends les devants et distribue les tâches"] },
+        { "text": "Quelle est la valeur la plus importante pour vous sur le plan professionnel ?", "options": ["Précision et innovation technique", "Impact direct sur la vie des gens", "Liberté d'expression et unicité", "Croissance, leadership et influence"] }
+      ],
+      "results": {
+        "eng": { "t": "Ingénierie et Sciences Appliquées", "d": "Vous avez une forte pensée analytique et logique. Vous avez tendance à comprendre comment les choses fonctionnent et vous aimez résoudre des problèmes complexes avec des chiffres et des données. Des domaines tels que l'ingénierie (informatique, civile, industrielle) ou l'intelligence artificielle vous conviennent parfaitement." },
+        "med": { "t": "Sciences Médicales et Humaines", "d": "Vous avez une grande intelligence émotionnelle et un désir sincère d'aider les autres. Vous vous retrouvez dans des domaines nécessitant de la communication et des soins, tels que la médecine, la pharmacie, les soins infirmiers, ou même la psychologie et l'enseignement." },
+        "art": { "t": "Arts, Design et Médias", "d": "Votre imagination est votre super-pouvoir. Vous n'aimez pas les restrictions et la routine, et vous cherchez toujours de nouvelles façons d'exprimer vos idées. L'architecture, le design graphique, le journalisme ou les arts numériques sont votre terrain de jeu naturel." },
+        "bus": { "t": "Management, Économie et Entrepreneuriat", "d": "Vous êtes un leader né. Vous avez une vision stratégique, vous vous souciez des résultats et de la croissance, et vous appréciez la compétition. Des spécialités comme le commerce et la gestion (ENCG), l'administration des affaires ou l'économie permettront à vos capacités de direction de s'épanouir." }
+      }
+    }
+  },
+  "reels": {
+    "reel1": "Une dose d'espoir, vous allez être fiers de vous... N'abandonnez pas ✌️❤️🫡",
+    "reel2": "Si vous venez de commencer à réviser, ces précieux conseils sont pour vous",
+    "reel3": "Attention à l'illusion de la révision"
   }
 }

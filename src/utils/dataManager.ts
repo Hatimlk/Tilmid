@@ -2,6 +2,11 @@
 import { api } from '../lib/api';
 import { Student, Appointment, SuccessStory, StudyResource, ContactMessage } from '../types';
 
+// The backend stores/returns the students table's avatar_url column as-is;
+// the frontend Student type uses `avatar`. Normalize here so <img src={student.avatar}>
+// doesn't silently render a broken image everywhere a student record is read.
+const mapStudent = (s: any): Student => (s ? { ...s, avatar: s.avatar ?? s.avatar_url } : s);
+
 export const dataManager = {
   // --- Initialization ---
   init: async () => {
@@ -12,11 +17,13 @@ export const dataManager = {
 
   // --- Students ---
   getStudents: async (): Promise<Student[]> => {
-    return await api.get('/students');
+    const students = await api.get('/students');
+    return students.map(mapStudent);
   },
 
   loginStudent: async (username: string, password: string): Promise<{ token: string; user: Student }> => {
-    return await api.post('/students/login', { username, password });
+    const res = await api.post('/students/login', { username, password });
+    return { ...res, user: mapStudent(res.user) };
   },
 
   saveStudent: async (student: Student): Promise<void> => {
@@ -34,6 +41,10 @@ export const dataManager = {
 
   saveAppointment: async (app: Appointment): Promise<void> => {
     await api.post('/appointments', app);
+  },
+
+  updateAppointmentStatus: async (id: number, status: Appointment['status']): Promise<void> => {
+    await api.post('/appointments', { id, status });
   },
 
   deleteAppointment: async (id: string | number): Promise<void> => {

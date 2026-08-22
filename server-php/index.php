@@ -392,8 +392,48 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'GET') {
     exit;
 }
 
+if (preg_match('#^/api/appointments/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM appointments WHERE id = ?");
+    $stmt->execute([$matches[1]]);
+    echo json_encode(['message' => 'Appointment deleted']);
+    exit;
+}
+
 if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
     requireAdmin($secret_key);
+    $id = $input['id'] ?? null;
+    $isUpdate = $id !== null && ctype_digit((string)$id);
+
+    if ($isUpdate) {
+        $stmt = $pdo->prepare("SELECT * FROM appointments WHERE id = ?");
+        $stmt->execute([$id]);
+        $existing = $stmt->fetch();
+        if (!$existing) {
+            http_response_code(404);
+            echo json_encode(['message' => 'Appointment not found']);
+            exit;
+        }
+
+        $studentName = $input['studentName'] ?? $existing['student_name'];
+        $title = $input['title'] ?? $existing['title'];
+        $date = $input['date'] ?? $existing['date'];
+        $time = $input['time'] ?? $existing['time'];
+        $status = $input['status'] ?? $existing['status'];
+        $type = $input['type'] ?? $existing['type'];
+
+        try {
+            $stmt = $pdo->prepare("UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=? WHERE id=?");
+            $stmt->execute([$studentName, $title, $date, $time, $status, $type, $id]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Appointment updated']);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['message' => 'Database error']);
+            error_log('Update appointment failed: ' . $e->getMessage());
+        }
+        exit;
+    }
+
     $studentName = $input['studentName'] ?? '';
     $title = $input['title'] ?? '';
     $date = $input['date'] ?? '';

@@ -118,14 +118,14 @@ export const StudentArea: React.FC = () => {
           <form onSubmit={handleLogin} className="space-y-6 relative z-10">
             <div className="space-y-2">
               <label className="text-xs font-black text-slate-400 mr-2 uppercase">اسم المستخدم</label>
-              <input type="text" placeholder="أدخل اسم المستخدم" value={username} onChange={e => setUsername(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white transition-all font-bold outline-none" />
+              <input type="text" placeholder="أدخل اسم المستخدم" value={username} onChange={e => setUsername(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all font-bold outline-none" />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-black text-slate-400 mr-2 uppercase">كلمة المرور</label>
-              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-primary/20 focus:bg-white transition-all font-bold outline-none" />
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all font-bold outline-none" />
             </div>
             {error && <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2 animate-pulse"><AlertCircle size={16} /> {error}</div>}
-            <button disabled={loginPending} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-primary shadow-xl shadow-blue-500/10 transition-all hover:-translate-y-1 disabled:opacity-60">{loginPending ? '...جارٍ الدخول' : 'دخول للمساحة'}</button>
+            <button disabled={loginPending} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-indigo-600 shadow-xl shadow-blue-500/10 transition-all hover:-translate-y-1 disabled:opacity-60">{loginPending ? '...جارٍ الدخول' : 'دخول للمساحة'}</button>
           </form>
         </div>
       </div>
@@ -151,6 +151,13 @@ export const StudentArea: React.FC = () => {
             <span className="font-black text-sm text-slate-700">{user.name}</span>
             <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div> متصل الآن</span>
           </div>
+          {(user as any).avatar ? (
+            <img src={(user as any).avatar} alt={user.name} className="w-10 h-10 rounded-2xl object-cover bg-slate-100 ring-2 ring-white shadow-md" />
+          ) : (
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md ring-2 ring-white">
+              {user.name?.trim().slice(0, 2).toUpperCase()}
+            </div>
+          )}
           <button onClick={authLogout} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><LogOut size={20} /></button>
         </div>
       </header>
@@ -227,20 +234,19 @@ export const StudentArea: React.FC = () => {
                   </div>
                 </div>
 
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between group hover:-translate-y-1 transition-all">
-                <div className="flex justify-between items-start">
-                  <div className="w-16 h-16 bg-yellow-50 text-yellow-500 rounded-3xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><Trophy size={32} /></div>
-                  <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">ممتاز</span>
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between group hover:-translate-y-1 transition-all">
+                  <div className="flex justify-between items-start">
+                    <div className="w-16 h-16 bg-yellow-50 text-yellow-500 rounded-3xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><Trophy size={32} /></div>
+                    <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">ممتاز</span>
+                  </div>
+                  <div className="mt-6">
+                    <h4 className="text-3xl font-black text-slate-900 tracking-tight">92%</h4>
+                    <p className="text-slate-400 text-sm font-bold mt-1">معدل التزامك بالجدول الدراسي</p>
+                  </div>
+                  <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden">
+                    <div className="bg-yellow-400 h-full w-[92%] rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-6">
-                <h4 className="text-3xl font-black text-slate-900 tracking-tight">92%</h4>
-                <p className="text-slate-400 text-sm font-bold mt-1">معدل التزامك بالجدول الدراسي</p>
-              </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden">
-                <div className="bg-yellow-400 h-full w-[92%] rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
               </div>
             </div>
 
@@ -290,7 +296,7 @@ export const StudentArea: React.FC = () => {
                   <h2 className="text-3xl font-black text-slate-900">منظم الوقت الذكي</h2>
                   <p className="text-slate-400 font-bold mt-2">قم ببرمجة حصص المراجعة لضمان التوازن الأسبوعي</p>
                 </div>
-                <button onClick={() => setShowTaskModal(true)} className="bg-primary text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-royal transition-all shadow-xl shadow-blue-500/20 hover:-translate-y-1"><Plus size={24} /> إضافة حصة مراجعة</button>
+                <button onClick={() => setShowTaskModal(true)} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-blue-600 transition-all shadow-xl shadow-indigo-500/20 hover:-translate-y-1"><Plus size={24} /> إضافة حصة مراجعة</button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
@@ -337,28 +343,36 @@ export const StudentArea: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {resources.map((res, i) => {
-                  const ResourceIcon = ICON_MAP[res.iconName] || Library;
-                  return (
-                    <div key={res.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 hover:shadow-2xl shadow-slate-200/50 transition-all group relative overflow-hidden opacity-0 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'forwards' }}>
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[3rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                      <div className="flex justify-between items-start mb-8 relative z-10">
-                        <div className="w-16 h-16 bg-white text-primary rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-slate-200 group-hover:scale-110 transition-transform"><ResourceIcon size={32} /></div>
-                        <span className="text-[10px] font-black bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full uppercase tracking-widest border border-emerald-100">{res.subject}</span>
+              {resources.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[4rem] border-4 border-dashed border-slate-100">
+                  <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-8 text-slate-300"><Library size={48} /></div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-4">المستودع فارغ حالياً</h3>
+                  <p className="text-slate-400 font-bold max-w-sm text-center">سيتم إضافة الملخصات ونماذج الامتحانات قريباً، تابعونا.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {resources.map((res, i) => {
+                    const ResourceIcon = ICON_MAP[res.iconName] || Library;
+                    return (
+                      <div key={res.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 hover:shadow-2xl shadow-slate-200/50 transition-all group relative overflow-hidden opacity-0 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'forwards' }}>
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[3rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                        <div className="flex justify-between items-start mb-8 relative z-10">
+                          <div className="w-16 h-16 bg-white text-primary rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-slate-200 group-hover:scale-110 transition-transform"><ResourceIcon size={32} /></div>
+                          <span className="text-[10px] font-black bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full uppercase tracking-widest border border-emerald-100">{res.subject}</span>
+                        </div>
+                        <h3 className="font-black text-slate-900 text-xl mb-3 group-hover:text-primary transition-colors">{res.title}</h3>
+                        <div className="flex items-center gap-4 text-xs font-bold text-slate-400 mb-8">
+                          <span className="flex items-center gap-1.5"><FileText size={14} /> {res.fileSize}</span>
+                          <span className="flex items-center gap-1.5"><DownloadCloud size={14} /> {res.downloadCount} تحميل</span>
+                        </div>
+                        <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-slate-900/10">
+                          تحميل الملف <Download size={20} />
+                        </button>
                       </div>
-                      <h3 className="font-black text-slate-900 text-xl mb-3 group-hover:text-primary transition-colors">{res.title}</h3>
-                      <div className="flex items-center gap-4 text-xs font-bold text-slate-400 mb-8">
-                        <span className="flex items-center gap-1.5"><FileText size={14} /> {res.fileSize}</span>
-                        <span className="flex items-center gap-1.5"><DownloadCloud size={14} /> {res.downloadCount} تحميل</span>
-                      </div>
-                      <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-primary transition-all flex items-center justify-center gap-3 shadow-xl shadow-slate-900/10">
-                        تحميل الملف <Download size={20} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )
         }
@@ -378,7 +392,7 @@ export const StudentArea: React.FC = () => {
       </main >
 
       {/* Floating Add Button for Mobile */}
-      <button onClick={() => setShowTaskModal(true)} className="lg:hidden fixed bottom-8 left-8 w-16 h-16 bg-primary text-white rounded-full shadow-2xl shadow-blue-500/40 flex items-center justify-center z-50 animate-bounce-slow"><Plus size={32} /></button>
+      <button onClick={() => setShowTaskModal(true)} className="lg:hidden fixed bottom-8 left-8 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl shadow-indigo-500/40 flex items-center justify-center z-50 animate-bounce-slow"><Plus size={32} /></button>
 
       {/* Task Modal */}
       {
@@ -396,27 +410,27 @@ export const StudentArea: React.FC = () => {
               <form onSubmit={handleAddTask} className="space-y-6 relative z-10">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 mr-2 uppercase">المادة الدراسية</label>
-                  <select value={newTask.subject} onChange={e => setNewTask({ ...newTask, subject: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary/20 rounded-2xl outline-none font-bold appearance-none cursor-pointer">
+                  <select value={newTask.subject} onChange={e => setNewTask({ ...newTask, subject: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-bold appearance-none cursor-pointer">
                     <option>رياضيات</option><option>فيزياء</option><option>علوم</option><option>فلسفة</option><option>لغات</option>
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 mr-2 uppercase">اليوم</label>
-                  <select value={newTask.day} onChange={e => setNewTask({ ...newTask, day: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary/20 rounded-2xl outline-none font-bold appearance-none cursor-pointer">
+                  <select value={newTask.day} onChange={e => setNewTask({ ...newTask, day: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-bold appearance-none cursor-pointer">
                     {DAYS.map(d => <option key={d}>{d}</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-black text-slate-400 mr-2 uppercase">وقت البدء</label>
-                    <input type="time" value={newTask.startTime} onChange={e => setNewTask({ ...newTask, startTime: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-primary/20 outline-none" />
+                    <input type="time" value={newTask.startTime} onChange={e => setNewTask({ ...newTask, startTime: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-indigo-500 outline-none" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-black text-slate-400 mr-2 uppercase">وقت الانتهاء</label>
-                    <input type="time" value={newTask.endTime} onChange={e => setNewTask({ ...newTask, endTime: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-primary/20 outline-none" />
+                    <input type="time" value={newTask.endTime} onChange={e => setNewTask({ ...newTask, endTime: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-indigo-500 outline-none" />
                   </div>
                 </div>
-                <button type="submit" className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl shadow-slate-900/10 hover:bg-primary transition-all hover:-translate-y-1">تأكيد الإضافة للجدول</button>
+                <button type="submit" className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl shadow-slate-900/10 hover:bg-indigo-600 transition-all hover:-translate-y-1">تأكيد الإضافة للجدول</button>
               </form>
             </div>
           </div>

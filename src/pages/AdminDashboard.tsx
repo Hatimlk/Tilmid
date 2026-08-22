@@ -121,7 +121,7 @@ const StatCard = ({ label, val, icon: Icon, color, trend }: any) => (
 // --- MAIN COMPONENT ---
 
 export const AdminDashboard: React.FC = () => {
-  const { isAdmin, loading, logout } = useAuth();
+  const { isAdmin, loading, logout, user } = useAuth();
   const navigate = useNavigate();
 
   const notifRef = useRef<HTMLDivElement>(null);
@@ -140,8 +140,11 @@ export const AdminDashboard: React.FC = () => {
   // UI Toggle States
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [adminName, setAdminName] = useState('Admin User');
   const [dbStatus, setDbStatus] = useState({ isEmpty: false, loading: false });
+
+  const adminDisplayName = user?.username || user?.name || user?.email || 'المسؤول';
+  const adminInitials = adminDisplayName.trim().slice(0, 2).toUpperCase();
+  const greeting = new Date().getHours() < 12 ? 'صباح الخير' : 'مساء الخير';
 
   // Modal States
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -466,6 +469,7 @@ export const AdminDashboard: React.FC = () => {
         setAppointments(updated);
       } catch (e) {
         console.error("Error deleting appointment", e);
+        alert("حدث خطأ أثناء حذف الموعد.");
       }
     }
   };
@@ -572,9 +576,16 @@ export const AdminDashboard: React.FC = () => {
     setCreationMode('editor');
   };
 
-  function updateAppointmentStatus(id: number, arg1: string): void {
-    throw new Error('Function not implemented.');
-  }
+  const updateAppointmentStatus = async (id: number, status: Appointment['status']) => {
+    try {
+      await dataManager.updateAppointmentStatus(id, status);
+      const updated = await dataManager.getAppointments();
+      setAppointments(updated);
+    } catch (e) {
+      console.error("Error updating appointment status", e);
+      alert("حدث خطأ أثناء تحديث حالة الموعد.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F3F6F9] flex flex-col lg:flex-row font-sans text-slate-800" dir="rtl">
@@ -752,6 +763,39 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
+      {/* --- SETTINGS / PROFILE MODAL --- */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="h-24 bg-gradient-to-r from-indigo-600 to-blue-600 relative">
+              <button onClick={() => setShowSettings(false)} className="absolute top-4 left-4 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-md transition-all"><X size={20} /></button>
+            </div>
+            <div className="px-8 pb-8 text-center -mt-12">
+              <div className="w-24 h-24 mx-auto bg-white rounded-[1.75rem] p-1.5 shadow-xl mb-4">
+                <div className="w-full h-full rounded-[1.5rem] bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-2xl">{adminInitials}</div>
+              </div>
+              <h3 className="text-xl font-black text-slate-800 mb-1">{adminDisplayName}</h3>
+              <p className="text-slate-400 font-bold text-sm mb-6">{user?.email || 'Super Admin'}</p>
+
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-right mb-6">
+                <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-400">الصلاحية</span>
+                  <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">مسؤول عام</span>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-xs font-bold text-slate-400">حالة الجلسة</span>
+                  <span className="text-xs font-black text-emerald-600 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> نشطة</span>
+                </div>
+              </div>
+
+              <button onClick={handleLogout} className="w-full py-4 bg-rose-50 text-rose-600 rounded-2xl font-black hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2">
+                <LogOut size={18} /> تسجيل الخروج
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -823,7 +867,7 @@ export const AdminDashboard: React.FC = () => {
                 {activeTab === 'messages' && 'الرسائل'}
                 {activeTab === 'stories' && 'قصص النجاح'}
               </h2>
-              <p className="text-xs font-bold text-slate-400 mt-1 hidden sm:block">مرحباً بك في لوحة التحكم، لديك تحديثات جديدة اليوم.</p>
+              <p className="text-xs font-bold text-slate-400 mt-1 hidden sm:block">{greeting} يا {adminDisplayName.split(' ')[0]}، لوحة التحكم جاهزة.</p>
             </div>
           </div>
 
@@ -836,12 +880,12 @@ export const AdminDashboard: React.FC = () => {
 
             <div className="flex items-center gap-3 cursor-pointer group p-1.5 pr-4 pl-1.5 rounded-full hover:bg-white hover:shadow-md border border-transparent hover:border-gray-100 transition-all" onClick={() => setShowSettings(true)}>
               <div className="text-right hidden md:block">
-                <p className="text-sm font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors">{adminName}</p>
+                <p className="text-sm font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition-colors">{adminDisplayName}</p>
                 <p className="text-[10px] text-slate-400 font-bold mt-0.5">Super Admin</p>
               </div>
               <div className="relative">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white group-hover:scale-105 transition-transform">
-                  AD
+                  {adminInitials}
                 </div>
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
               </div>
@@ -1000,7 +1044,7 @@ export const AdminDashboard: React.FC = () => {
                       placeholder="بحث عن طالب..."
                       value={studentSearch}
                       onChange={(e) => setStudentSearch(e.target.value)}
-                      className="w-full pl-4 pr-14 py-4 bg-slate-50/50 rounded-2xl border-2 border-transparent focus:border-indigo-100 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner hover:shadow-md"
+                      className="w-full pl-4 pr-14 py-4 bg-slate-50/50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all shadow-inner hover:shadow-md"
                     />
                   </div>
                   <button onClick={() => handleOpenStudentModal()} className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold text-sm hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 hover:translate-y-[-2px] transition-all w-full lg:w-auto justify-center group">
@@ -1052,6 +1096,22 @@ export const AdminDashboard: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    {filteredStudents.length === 0 && (
+                      <div className="flex flex-col items-center justify-center text-center py-20">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300"><Users size={28} /></div>
+                        {studentSearch ? (
+                          <>
+                            <p className="font-black text-slate-500 mb-1">لا توجد نتائج لـ "{studentSearch}"</p>
+                            <p className="text-sm text-slate-400 font-bold">جرّب اسماً أو معرّف دخول آخر</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-black text-slate-500 mb-1">لا يوجد طلاب بعد</p>
+                            <p className="text-sm text-slate-400 font-bold">اضغط على "إضافة طالب جديد" للبدء</p>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1109,6 +1169,9 @@ export const AdminDashboard: React.FC = () => {
                             <button onClick={() => deleteAppointment(app.id)} className="p-2.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={18} /></button>
                           </div>
                         ))}
+                        {appointments.filter(a => a.status === 'confirmed').length === 0 && (
+                          <div className="text-center py-10 opacity-50"><p className="text-sm font-bold text-slate-400">لا توجد مواعيد قادمة مؤكدة بعد</p></div>
+                        )}
                       </div>
                     </div>
                   </div>

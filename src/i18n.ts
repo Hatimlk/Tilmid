@@ -13,7 +13,11 @@ i18n
       ar: { translation: arTranslations },
       fr: { translation: frTranslations },
     },
-    fallbackLng: 'ar',
+    fallbackLng: 'fr',
+    detection: {
+      order: ['localStorage', 'cookie'],
+      caches: ['localStorage', 'cookie']
+    },
     debug: false,
     interpolation: {
       escapeValue: false,
@@ -21,9 +25,14 @@ i18n
   });
 
 // Automatically update the document direction based on the current language
-i18n.on('languageChanged', (lng) => {
+const updateDirection = (lng: string) => {
   document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
   document.documentElement.lang = lng;
-});
+};
+
+// Set initial direction
+updateDirection(i18n.language || 'fr');
+
+i18n.on('languageChanged', updateDirection);
 
 export default i18n;

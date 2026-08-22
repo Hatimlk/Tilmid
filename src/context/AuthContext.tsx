@@ -41,6 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // Verify the token against the server instead of blindly trusting
                     // whatever role/id is sitting in localStorage.
                     const me = await api.get('/auth/me');
+                    // Student rows come back with avatar_url (DB column name); normalize
+                    // to `avatar` so <img src={user.avatar}> doesn't break after a refresh.
+                    if (me.avatar_url && !me.avatar) me.avatar = me.avatar_url;
                     setUser(me);
                     localStorage.setItem('user', JSON.stringify(me));
                 } catch (e) {

@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
 import { ProgramData } from '../types';
 import {
@@ -39,6 +40,7 @@ const FeatureStep: React.FC<{
   lightThemeBg: string;
   borderColor: string;
 }> = ({ feature, index, themeColor, lightThemeBg, borderColor }) => {
+  const { t } = useTranslation();
   const [isActive, setIsActive] = useState(false);
   const stepRef = useRef<HTMLDivElement>(null);
 
@@ -65,8 +67,8 @@ const FeatureStep: React.FC<{
           ? 'opacity-100 translate-y-0 scale-100'
           : 'opacity-0 translate-y-12 scale-90'}`}
     >
-      <div className={`absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-${themeColor.split('-')[1]}-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700`}>\</div>
-      <div className={`absolute -right-10 -top-10 w-32 h-32 ${lightThemeBg} rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
+      <div className={`absolute top-0 end-0 w-48 h-full ltr:bg-gradient-to-l rtl:bg-gradient-to-r from-${themeColor.split('-')[1]}-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700`}>\</div>
+      <div className={`absolute -end-10 -top-10 w-32 h-32 ${lightThemeBg} rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
 
       {/* Icon Circle */}
       <div className="w-full flex justify-between items-start mb-6 relative z-10">
@@ -79,37 +81,39 @@ const FeatureStep: React.FC<{
         <span className="text-[10px] font-black text-slate-200 group-hover:text-slate-300 transition-colors">0{index + 1}</span>
       </div>
 
-      <div className="relative z-10 text-right w-full mt-auto">
+      <div className="relative z-10 text-start w-full mt-auto">
         <h3 className="text-xl md:text-2xl font-black mb-4 transition-colors duration-700 text-slate-900 leading-tight group-hover:text-primary">
-          {feature.title}
+          {t(feature.title)}
         </h3>
         <p className="leading-relaxed text-base text-slate-500 font-medium group-hover:text-slate-600 transition-colors">
-          {feature.description}
+          {t(feature.description)}
         </p>
       </div>
 
       {/* Decorative Line */}
-      <div className={`absolute bottom-0 right-0 h-1 bg-gradient-to-r ${isActive ? 'from-' + themeColor.split('-')[1] + '-500 to-transparent w-full' : 'w-0'} transition-all duration-1000 delay-300`}></div>
+      <div className={`absolute bottom-0 end-0 h-1 ltr:bg-gradient-to-r rtl:bg-gradient-to-l ${isActive ? 'from-' + themeColor.split('-')[1] + '-500 to-transparent w-full' : 'w-0'} transition-all duration-1000 delay-300`}></div>
     </div>
   );
 };
 
 // 1. Interactive AI Advisor Card with futuristic animations
 const TawjihAIAdvisor: React.FC = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<'intro' | 'quiz' | 'analyzing' | 'result'>('intro');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [resultType, setResultType] = useState<string>('');
 
-  const questions = [
-    { id: 1, text: "ما هو النشاط الذي تجد نفسك منغمساً فيه وتنسى الوقت؟", options: [{ label: "حل الألغاز والمشاكل المنطقية", type: "eng" }, { label: "مساعدة الآخرين وشرح الأمور", type: "med" }, { label: "الكتابة، الرسم أو التصميم", type: "art" }, { label: "تنظيم المشاريع والخطط", type: "bus" }] },
-    { id: 2, text: "في العمل الجماعي، ما هو الدور الذي تفضله عادة؟", options: [{ label: "المحلل التقني", type: "eng" }, { label: "المستمع والداعم", type: "med" }, { label: "صاحب الأفكار الإبداعية", type: "art" }, { label: "القائد والمنظم", type: "bus" }] },
-    { id: 3, text: "كيف تفضل التعامل مع المشاكل المعقدة؟", options: [{ label: "تفكيكها إلى أجزاء صغيرة ومنطقية", type: "eng" }, { label: "البحث عن حل يرضي جميع الأطراف", type: "med" }, { label: "التفكير خارج الصندوق وبطرق غير تقليدية", type: "art" }, { label: "اتخاذ قرار سريع وحاسم", type: "bus" }] },
-    { id: 4, text: "أي نوع من البيئات تفضل العمل فيه؟", options: [{ label: "مختبر أو مكتب هادئ مع تقنيات", type: "eng" }, { label: "مكان فيه تواصل دائم مع الناس", type: "med" }, { label: "استوديو مفتوح ومرن", type: "art" }, { label: "بيئة عمل ديناميكية ومتغيرة", type: "bus" }] },
-    { id: 5, text: "ما هو أكثر شيء يثير فضولك؟", options: [{ label: "كيف تعمل الأشياء والآلات", type: "eng" }, { label: "سلوك الإنسان وعلم النفس", type: "med" }, { label: "الجماليات والتعبير الفني", type: "art" }, { label: "قصص النجاح والثروة", type: "bus" }] },
-    { id: 6, text: "كيف تتصرف تحت الضغط؟", options: [{ label: "أركز على الحلول المنطقية", type: "eng" }, { label: "أطلب المساعدة وأتعاون مع الفريق", type: "med" }, { label: "أبحث عن حلول بديلة ومبتكرة", type: "art" }, { label: "أتولى القيادة وأوزع المهام", type: "bus" }] },
-    { id: 7, text: "ما هي القيمة الأهم بالنسبة لك مهنياً؟", options: [{ label: "الدقة والابتكار التقني", type: "eng" }, { label: "الأثر المباشر على حياة الناس", type: "med" }, { label: "حرية التعبير والتفرد", type: "art" }, { label: "النمو، القيادة والتأثير", type: "bus" }] }
-  ];
+  const translatedQuestions = t('programDetails.advisor.questions', { returnObjects: true }) as any[];
+  const questionTypes = ["eng", "med", "art", "bus"];
+  const questions = translatedQuestions.map((q, i) => ({
+    id: i + 1,
+    text: q.text,
+    options: q.options.map((optLabel: string, optIndex: number) => ({
+      label: optLabel,
+      type: questionTypes[optIndex]
+    }))
+  }));
 
   const handleAnswer = (type: string) => {
     const newAnswers = [...answers, type];
@@ -129,24 +133,7 @@ const TawjihAIAdvisor: React.FC = () => {
   };
 
   const getResult = () => {
-    const map: any = {
-      eng: {
-        t: "الهندسة والعلوم التطبيقية",
-        d: "أنت تتمتع بتفكير تحليلي ومنطقي قوي. تميل لفهم كيف تعمل الأشياء وتستمتع بحل المشكلات المعقدة بالأرقام والبيانات. مجالات مثل الهندسة (المعلوماتية، المدنية، الصناعية) أو الذكاء الاصطناعي تناسبك تماماً."
-      },
-      med: {
-        t: "العلوم الطبية والإنسانية",
-        d: "لديك ذكاء عاطفي عالٍ ورغبة حقيقية في مساعدة الآخرين. تجد نفسك في المجالات التي تتطلب تواصلاً إنسانياً وعناية، مثل الطب، الصيدلة، التمريض، أو حتى علم النفس والتعليم."
-      },
-      art: {
-        t: "الفنون، التصميم والإعلام",
-        d: "خيّالك هو قوتك الخارقة. لا تحب القيود والروتين، وتبحث دائماً عن طرق جديدة للتعبير عن أفكارك. مجالات مثل الهندسة المعمارية، التصميم الجرافيكي، الصحافة، أو الفنون الرقمية هي ملعبك الطبيعي."
-      },
-      bus: {
-        t: "التسيير، الاقتصاد والمقاولات",
-        d: "أنت قائد بالفطرة. لديك رؤية استراتيجية وتهتم بالنتائج والنمو وتستمتع بالمنافسة. تخصصات مثل التجارة والتسيير (ENCG)، إدارة الأعمال، أو الاقتصاد ستسمح لقدراتك القيادية بالازدهار."
-      }
-    };
+    const map: any = t('programDetails.advisor.results', { returnObjects: true });
     return map[resultType] || map.eng;
   };
 
@@ -166,21 +153,21 @@ const TawjihAIAdvisor: React.FC = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-royal rounded-[1.8rem] flex items-center justify-center relative shadow-xl animate-float overflow-hidden">
                   <BrainCircuit size={40} className="text-white relative z-10 animate-pulse" />
                   {/* Scanning Line Effect */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-white/40 blur-sm animate-[scan_2s_ease-in-out_infinite]"></div>
+                  <div className="absolute top-0 start-0 w-full h-1 bg-white/40 blur-sm animate-[scan_2s_ease-in-out_infinite]"></div>
                 </div>
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">المستشار الذكي للتوجيه</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">{t('programDetails.advisor.title')}</h2>
               <p className="text-blue-200 text-lg mb-8 max-w-lg font-medium opacity-80 leading-relaxed">
-                دع الذكاء الاصطناعي يحلل ميولك ويقترح عليك المسار الأنسب لشخصيتك وقدراتك.
+                {t('programDetails.advisor.desc')}
               </p>
 
               <button
                 onClick={() => setStep('quiz')}
                 className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-bold text-lg shadow-xl hover:bg-primary hover:text-white hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-3"
               >
-                <span>ابدأ التحليل الآن</span>
-                <ArrowUpRight size={20} strokeWidth={2.5} />
+                <span>{t('programDetails.advisor.startBtn')}</span>
+                <ArrowUpRight size={20} strokeWidth={2.5} className="rtl:rotate-[-90deg]" />
               </button>
             </div>
           )}
@@ -188,18 +175,18 @@ const TawjihAIAdvisor: React.FC = () => {
           {step === 'quiz' && (
             <div className="relative z-10 flex-grow flex flex-col p-8 lg:p-16">
               <div className="flex justify-between items-center mb-12">
-                <span className="text-blue-400 font-black text-sm uppercase tracking-widest">سؤال {currentQuestion + 1} من 3</span>
+                <span className="text-blue-400 font-black text-sm uppercase tracking-widest">{t('programDetails.advisor.stepTracker', { current: currentQuestion + 1, total: questions.length })}</span>
                 <div className="w-32 h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${((currentQuestion + 1) / 3) * 100}%` }}></div>
+                  <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}></div>
                 </div>
               </div>
-              <h3 className="text-2xl md:text-4xl font-black text-white mb-12 text-right leading-tight">{questions[currentQuestion].text}</h3>
+              <h3 className="text-2xl md:text-4xl font-black text-white mb-12 text-start leading-tight">{questions[currentQuestion].text}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {questions[currentQuestion].options.map((o, i) => (
+                {questions[currentQuestion].options.map((o: any, i: number) => (
                   <button
                     key={i}
                     onClick={() => handleAnswer(o.type)}
-                    className="p-8 bg-slate-800/50 hover:bg-white text-gray-200 hover:text-slate-900 text-right transition-all rounded-3xl font-black text-xl border border-slate-700 shadow-lg group/opt flex items-center justify-between"
+                    className="p-8 bg-slate-800/50 hover:bg-white text-gray-200 hover:text-slate-900 text-start transition-all rounded-3xl font-black text-xl border border-slate-700 shadow-lg group/opt flex items-center justify-between"
                   >
                     <span>{o.label}</span>
                     <div className="w-8 h-8 rounded-full border-2 border-slate-600 group-hover/opt:border-primary flex items-center justify-center transition-colors">
@@ -217,21 +204,21 @@ const TawjihAIAdvisor: React.FC = () => {
                 <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-20 animate-pulse"></div>
                 <Cpu size={80} className="animate-spin mb-8 text-blue-400 relative z-10" />
               </div>
-              <h3 className="font-black text-3xl mb-4">جاري تحليل بياناتك...</h3>
-              <p className="text-blue-100 opacity-60 font-bold">نقوم بمطابقة إجاباتك مع تخصصات المدارس العليا في المغرب.</p>
+              <h3 className="font-black text-3xl mb-4">{t('programDetails.advisor.analyzingTitle')}</h3>
+              <p className="text-blue-100 opacity-60 font-bold">{t('programDetails.advisor.analyzingDesc')}</p>
             </div>
           )}
 
           {step === 'result' && (
             <div className="relative z-10 p-10 lg:p-20 text-center text-white animate-in zoom-in duration-500 flex flex-col items-center">
               <div className="inline-flex items-center gap-2 px-6 py-2 bg-green-500/10 text-green-400 rounded-full text-sm font-black mb-8 border border-green-500/20">
-                <CheckCircle size={18} /> تم التحليل بنجاح
+                <CheckCircle size={18} /> {t('programDetails.advisor.resultSuccess')}
               </div>
-              <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">المجال المقترح: <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400 drop-shadow-sm">{getResult().t}</span></h2>
+              <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">{t('programDetails.advisor.resultPrefix')} <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400 drop-shadow-sm">{getResult().t}</span></h2>
               <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-2xl mx-auto font-bold opacity-80 leading-relaxed">{getResult().d}</p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center">تحدث مع موجه</a>
+                <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-10 py-4 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center">{t('programDetails.advisor.chatBtn')}</a>
                 <button onClick={() => {
                   setStep('intro');
                   setCurrentQuestion(0);
@@ -239,7 +226,7 @@ const TawjihAIAdvisor: React.FC = () => {
                   setResultType('');
                   document.getElementById('ai-advisor')?.scrollIntoView({ behavior: 'smooth' });
                 }} className="px-10 py-4 bg-slate-800 text-white rounded-2xl font-black border border-slate-700 hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
-                  <RefreshCcw size={18} /> إعادة الاختبار
+                  <RefreshCcw size={18} /> {t('programDetails.advisor.retryBtn')}
                 </button>
               </div>
             </div>
@@ -257,6 +244,7 @@ const TawjihAIAdvisor: React.FC = () => {
 };
 
 export const ProgramDetails: React.FC = () => {
+  const { t } = useTranslation();
   const { pathname } = window.location;
   const basePath = pathname.replace('/', '');
   const [activeTab, setActiveTab] = useState<'tilmid' | 'talib'>('tilmid');
@@ -340,25 +328,25 @@ export const ProgramDetails: React.FC = () => {
   if (!data) return <Navigate to="/" />;
 
   const stats = [
-    { value: "+3500", label: "تلميذ مستفيد", icon: User },
-    { value: "98%", label: "نسبة الرضا", icon: CheckCircle },
-    { value: "+10", label: "سنوات خبرة", icon: Clock },
+    { value: "+3500", label: t('programDetails.stats.beneficiaries'), icon: User },
+    { value: "98%", label: t('programDetails.stats.satisfaction'), icon: CheckCircle },
+    { value: "+10", label: t('programDetails.stats.experience'), icon: Clock },
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30">
       <SEO
-        title={`${data.title} - تلميذ`}
-        description={data.subtitle}
+        title={`${t(data.title)} - Tilmid`}
+        description={t(data.subtitle)}
       />
 
       {/* Hero Section */}
       <div className={`relative pt-16 pb-32 lg:pt-24 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient} transition-all duration-1000`}>
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[120px] opacity-30 animate-blob ${theme.blob1}`}></div>
-          <div className={`absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] opacity-30 animate-blob animation-delay-2000 ${theme.blob2}`}></div>
-          <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-white rounded-full blur-[90px] opacity-10 animate-pulse"></div>
+          <div className={`absolute top-[-20%] start-[-10%] w-[800px] h-[800px] rounded-full blur-[120px] opacity-30 animate-blob ${theme.blob1}`}></div>
+          <div className={`absolute bottom-[-20%] end-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] opacity-30 animate-blob animation-delay-2000 ${theme.blob2}`}></div>
+          <div className="absolute top-[40%] start-[20%] w-[400px] h-[400px] bg-white rounded-full blur-[90px] opacity-10 animate-pulse"></div>
 
           {/* Grid Pattern */}
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05] mix-blend-overlay"></div>
@@ -376,13 +364,13 @@ export const ProgramDetails: React.FC = () => {
                     onClick={() => setActiveTab('tilmid')}
                     className={`px-8 py-2.5 rounded-full text-base md:text-lg font-black transition-all ${activeTab === 'tilmid' ? 'bg-white text-blue-600 shadow-md' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
                   >
-                    تلميذ (High School)
+                    {t('programDetails.tabTilmid')}
                   </button>
                   <button 
                     onClick={() => setActiveTab('talib')}
                     className={`px-8 py-2.5 rounded-full text-base md:text-lg font-black transition-all ${activeTab === 'talib' ? 'bg-white text-violet-600 shadow-md' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}
                   >
-                    طالب (University)
+                    {t('programDetails.tabTalib')}
                   </button>
                 </div>
               </div>
@@ -390,7 +378,7 @@ export const ProgramDetails: React.FC = () => {
 
             <div className="inline-flex items-center gap-2 mb-8 px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-bold shadow-lg animate-bounce-slow ring-1 ring-white/10">
               <Sparkles size={16} className="text-yellow-400 fill-current" />
-              <span className="tracking-wide">البرنامج الأكثر طلباً هذا الموسم</span>
+              <span className="tracking-wide">{t('programDetails.mostRequested')}</span>
             </div>
 
             <div className="w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-2xl rounded-[2.5rem] mb-10 shadow-2xl border border-white/20 transform hover:rotate-6 transition-all duration-500 mx-auto flex items-center justify-center group/icon relative">
@@ -399,11 +387,11 @@ export const ProgramDetails: React.FC = () => {
             </div>
 
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 tracking-tight leading-[1.1] drop-shadow-xl">
-              {data.title}
+              {t(data.title)}
             </h1>
 
             <p className="text-xl md:text-3xl text-blue-50/90 font-bold leading-relaxed max-w-3xl mx-auto opacity-90 drop-shadow-md">
-              {data.subtitle}
+              {t(data.subtitle)}
             </p>
 
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
@@ -411,7 +399,7 @@ export const ProgramDetails: React.FC = () => {
                 onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 className="px-10 py-4 bg-white text-slate-900 rounded-[2rem] font-black text-lg hover:bg-slate-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center gap-3 group"
               >
-                <span>اكتشف البرنامج</span>
+                <span>{t('programDetails.discoverProgram')}</span>
                 <ArrowDown size={20} className="animate-bounce group-hover:text-primary transition-colors" />
               </button>
             </div>
@@ -423,8 +411,8 @@ export const ProgramDetails: React.FC = () => {
 
         {/* Polished Stats Card - Hovering Glass Effect */}
         <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] p-6 md:p-10 mb-20 border border-white/50 relative z-30 max-w-5xl mx-auto overflow-hidden group">
-          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${theme.gradient} opacity-50`}></div>
-          <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-slate-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+          <div className={`absolute top-0 start-0 w-full h-1 ltr:bg-gradient-to-r rtl:bg-gradient-to-l ${theme.gradient} opacity-50`}></div>
+          <div className="absolute -start-20 -bottom-20 w-64 h-64 bg-slate-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8 items-center relative z-10">
             {stats.map((stat, idx) => (
@@ -455,7 +443,7 @@ export const ProgramDetails: React.FC = () => {
                 <div className={`w-10 h-10 rounded-xl ${theme.lightBg} flex items-center justify-center ${theme.primary}`}>
                   <Sparkles size={20} />
                 </div>
-                <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">مميزات البرنامج</h2>
+                <h2 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight">{t('programDetails.programFeatures')}</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
@@ -479,47 +467,47 @@ export const ProgramDetails: React.FC = () => {
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-20 mix-blend-overlay group-hover:opacity-30 transition-opacity"></div>
 
                   {/* Shimmer Effect */}
-                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-[200%] group-hover:animate-shimmer z-20 pointer-events-none"></div>
+                  <div className="absolute top-0 start-0 w-full h-full ltr:bg-gradient-to-r rtl:bg-gradient-to-l from-transparent via-white/40 to-transparent -translate-x-[200%] rtl:translate-x-[200%] group-hover:animate-shimmer z-20 pointer-events-none"></div>
 
                   <div className="relative bg-slate-900 rounded-[2.9rem] p-8 md:p-14 text-center overflow-hidden border-4 border-slate-900">
-                    <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-500/10 rounded-full blur-[100px] -mr-40 -mt-40 animate-pulse"></div>
-                    <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-600/10 rounded-full blur-[100px] -ml-40 -mb-40"></div>
+                    <div className="absolute top-0 end-0 w-80 h-80 bg-yellow-500/10 rounded-full blur-[100px] -me-40 -mt-40 animate-pulse"></div>
+                    <div className="absolute bottom-0 start-0 w-80 h-80 bg-amber-600/10 rounded-full blur-[100px] -ms-40 -mb-40"></div>
 
                     <div className="relative z-10">
                       <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 rounded-full text-xs font-black uppercase tracking-widest mb-8 shadow-lg shadow-yellow-500/20 animate-bounce-slow">
-                        <Gift size={16} /> هدية حصرية
+                        <Gift size={16} /> {t('programDetails.bonus.badge')}
                       </div>
 
                       <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
-                        احصل مجاناً على دورة <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-100 italic">"أسرار التوجيه الجامعي"</span>
+                        {t('programDetails.bonus.titlePart1')} <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-100 italic">{t('programDetails.bonus.titlePart2')}</span>
                       </h2>
 
                       <p className="text-lg md:text-xl text-slate-300 font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
-                        الدليل الشامل للتخطيط لمسارك بعد الباكالوريا (المدارس العليا، الأقسام التحضيرية، كليات الطب) بين يديك الآن.
+                        {t('programDetails.bonus.desc')}
                       </p>
 
                       <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] p-6 border border-white/10 max-w-3xl mx-auto">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                          <div className="flex items-center gap-4 text-right flex-1 p-2">
+                          <div className="flex items-center gap-4 text-start flex-1 p-2">
                             <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shrink-0">
                               <CheckCircle size={24} className="text-slate-900" />
                             </div>
                             <div className="flex flex-col">
-                              <h4 className="text-white font-bold text-lg mb-1">تحليل مفصل للمدارس</h4>
-                              <span className="text-slate-400 text-sm">شروط الولوج، الآفاق، وعتبات الانتقاء</span>
+                              <h4 className="text-white font-bold text-lg mb-1">{t('programDetails.bonus.feat1Title')}</h4>
+                              <span className="text-slate-400 text-sm">{t('programDetails.bonus.feat1Desc')}</span>
                             </div>
                           </div>
 
                           <div className="w-full h-px sm:w-px sm:h-12 bg-white/10"></div>
 
-                          <div className="flex items-center gap-4 text-right flex-1 p-2">
+                          <div className="flex items-center gap-4 text-start flex-1 p-2">
                             <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shrink-0">
                               <Brain size={24} className="text-slate-900" />
                             </div>
                             <div className="flex flex-col">
-                              <h4 className="text-white font-bold text-lg mb-1">اكتشاف الشغف المهني</h4>
-                              <span className="text-slate-400 text-sm">اختبارات وتطبيقات عملية لتحديد مسارك</span>
+                              <h4 className="text-white font-bold text-lg mb-1">{t('programDetails.bonus.feat2Title')}</h4>
+                              <span className="text-slate-400 text-sm">{t('programDetails.bonus.feat2Desc')}</span>
                             </div>
                           </div>
                         </div>
@@ -538,26 +526,26 @@ export const ProgramDetails: React.FC = () => {
             <div className="sticky top-32 space-y-8">
               {/* Premium Booking Card */}
               <div id="registration-card" className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-6 border border-slate-100 text-center relative overflow-hidden group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 ring-4 ring-slate-50/50">
-                <div className={`absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r ${theme.gradient}`}></div>
+                <div className={`absolute top-0 start-0 w-full h-1.5 ltr:bg-gradient-to-r rtl:bg-gradient-to-l ${theme.gradient}`}></div>
 
                 <div className="relative z-10">
                   <div className={`w-24 h-24 mx-auto rounded-[2rem] ${theme.lightBg} flex items-center justify-center ${theme.primary} mb-6 shadow-inner border-4 border-white group-hover:scale-110 transition-transform duration-700 relative`}>
                     <MessageCircle size={40} strokeWidth={2} />
-                    <div className="absolute top-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                    <div className="absolute top-0 end-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
                   </div>
 
-                  <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">هل تحتاج مساعدة؟</h3>
-                  <p className="text-slate-500 mb-8 text-base font-bold leading-relaxed px-2">فريقنا المختص جاهز للإجابة على جميع تساؤلاتك وتوجيهك نحو التفوق.</p>
+                  <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">{t('programDetails.helpCard.title')}</h3>
+                  <p className="text-slate-500 mb-8 text-base font-bold leading-relaxed px-2">{t('programDetails.helpCard.desc')}</p>
 
                   <div className="space-y-4">
                     <a href={id === 'tawjih' ? "https://wa.me/212703749901" : "https://wa.me/message/GN4XKUOMHNHGO1"} target="_blank" rel="noreferrer" className="w-full py-4 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 text-lg group/btn active:scale-95 transition-all relative overflow-hidden">
                       <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                       <MessageCircle size={24} fill="white" className="group-hover/btn:rotate-12 transition-transform relative z-10" />
-                      <span className="relative z-10">تحدث معنا عبر واتساب</span>
+                      <span className="relative z-10">{t('programDetails.helpCard.whatsappBtn')}</span>
                     </a>
 
                     <Link to="/contact" className={`w-full py-4 bg-white border-2 rounded-2xl font-black transition-all flex items-center justify-center gap-2 text-lg hover:bg-slate-50 active:scale-95 group/cal ${theme.primary} ${theme.border}`}>
-                      <span>حجز موعد استشارة</span>
+                      <span>{t('programDetails.helpCard.consultBtn')}</span>
                       <Calendar size={20} className="group-hover/cal:-translate-y-1 transition-transform" />
                     </Link>
                   </div>
@@ -565,7 +553,7 @@ export const ProgramDetails: React.FC = () => {
 
                 <div className="mt-8 pt-6 border-t border-slate-50">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="flex -space-x-3 space-x-reverse">
+                    <div className="flex -space-x-3 rtl:space-x-reverse">
                       {[1, 2, 3, 4].map(i => (
                         <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-100 overflow-hidden shadow-sm hover:z-10 hover:scale-110 transition-transform cursor-pointer">
                           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + id! + 'student'}`} alt="Student" className="w-full h-full object-cover" />
@@ -573,7 +561,7 @@ export const ProgramDetails: React.FC = () => {
                       ))}
                       <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black border-4 border-white shadow-sm">+3k</div>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">انضم إلى مجتمع المتفوقين</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{t('programDetails.helpCard.communityLabel')}</p>
                   </div>
                 </div>
               </div>
@@ -581,7 +569,7 @@ export const ProgramDetails: React.FC = () => {
               {/* Premium Guarantee Card */}
               <div className={`p-8 rounded-[3rem] ${theme.bg} text-white shadow-2xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-500`}>
                 <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent pointer-events-none"></div>
-                <div className="absolute -right-20 -bottom-20 opacity-20 rotate-12 group-hover:scale-110 group-hover:rotate-6 transition-all duration-1000">
+                <div className="absolute -end-20 -bottom-20 opacity-20 rotate-12 group-hover:scale-110 group-hover:rotate-6 transition-all duration-1000">
                   <ProgramIcon size={240} />
                 </div>
 
@@ -591,18 +579,18 @@ export const ProgramDetails: React.FC = () => {
                       <ShieldCheck size={32} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <h4 className="font-black text-2xl tracking-tighter leading-none mb-1">ضمان تلميـذ</h4>
+                      <h4 className="font-black text-2xl tracking-tighter leading-none mb-1">{t('programDetails.guarantee.title')}</h4>
                       <div className="h-1 w-12 bg-white/30 rounded-full"></div>
                     </div>
                   </div>
 
                   <p className="text-white/90 text-lg leading-relaxed font-bold mb-4">
-                    نحن نلتزم بتقديم أعلى جودة تعليمية. إذا لم تكن راضياً عن المحتوى في أول 7 أيام، نسترجع لك مبلغ اشتراكك بالكامل.
+                    {t('programDetails.guarantee.desc')}
                   </p>
 
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg text-xs font-bold border border-white/20">
                     <Check size={12} strokeWidth={4} />
-                    <span>ضمان استرجاع الأموال 100%</span>
+                    <span>{t('programDetails.guarantee.badge')}</span>
                   </div>
                 </div>
               </div>

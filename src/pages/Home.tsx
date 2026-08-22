@@ -9,7 +9,7 @@ import { ArrowLeft, Users, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap
 import SEO from '../components/SEO';
 import { useTranslation } from 'react-i18next';
 
-const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
+const DayCard: React.FC<{ date: Date; label: string; t: any }> = ({ date, label, t }) => {
   const [days, setDays] = useState<number>(0);
 
   useEffect(() => {
@@ -27,14 +27,14 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   return (
     <div className="relative overflow-hidden flex items-center gap-5 bg-white/5 backdrop-blur-md px-6 py-5 rounded-[2.5rem] border border-white/10 flex-1 w-full md:min-w-[240px] group hover:bg-white/10 transition-all duration-300 ring-1 ring-white/5 hover:ring-white/20 hover:shadow-lg hover:shadow-blue-500/10">
       {/* Background Glow */}
-      <div className="absolute -left-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div className="absolute -start-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
       <div className="relative w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] group-hover:scale-110 transition-transform tabular-nums border border-blue-400/30">
         {days}
       </div>
-      <div className="text-right flex-1 select-none">
+      <div className="text-end flex-1 select-none">
         <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-1">{label}</p>
-        <div className="text-lg font-black text-white">يوماً متبقياً</div>
+        <div className="text-lg font-black text-white">{t('home.daysRemaining')}</div>
         <div className="flex items-center justify-between mt-1.5 ">
           <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
             <div className="flex gap-0.5">
@@ -42,10 +42,10 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
               <span className="w-1 h-2 bg-emerald-500/60 rounded-full"></span>
               <span className="w-1 h-1.5 bg-emerald-500/40 rounded-full"></span>
             </div>
-            <span className="text-[10px] font-bold text-emerald-400">العداد شغال</span>
+            <span className="text-[10px] font-bold text-emerald-400">{t('home.timerActive')}</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-500 -translate-x-2 group-hover:translate-x-0">
-            {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+          <span className="text-[10px] text-slate-400 font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-500 -translate-x-2 group-hover:translate-x-0 rtl:translate-x-2 rtl:group-hover:translate-x-0">
+            {date.toLocaleDateString(t('nav.home') === 'الرئيسية' ? 'ar-MA' : 'fr-FR', { day: 'numeric', month: 'short' })}
           </span>
         </div>
       </div>
@@ -53,7 +53,7 @@ const DayCard: React.FC<{ date: Date; label: string }> = ({ date, label }) => {
   );
 };
 
-const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
+const VideoCard: React.FC<{ reel: VideoReel; t: any }> = ({ reel, t }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
@@ -67,7 +67,7 @@ const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
               src={`https://www.instagram.com/reel/${reel.reelId}/embed/`}
               className="w-full h-full border-0"
               allowFullScreen
-              title={reel.title}
+              title={t(reel.title)}
               scrolling="no"
               loading="lazy"
             ></iframe>
@@ -82,7 +82,7 @@ const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
                 <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-0 group-hover:opacity-100 duration-1000"></div>
                 {/* Button */}
                 <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500">
-                  <Play size={36} fill="white" className="text-white ml-2 opacity-90" />
+                  <Play size={36} fill="white" className="text-white ms-2 opacity-90" />
                 </div>
               </div>
             </div>
@@ -91,19 +91,19 @@ const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
             <div className={`absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-10 pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}></div>
 
             {/* Caption */}
-            <div className={`absolute bottom-6 inset-x-6 z-20 text-right pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
+            <div className={`absolute bottom-6 inset-x-6 z-20 text-start pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
               <div className="flex items-center justify-end gap-2 mb-2">
-                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-white/10 flex items-center gap-1.5 direction-rtl">
+                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-white/10 flex items-center gap-1.5">
                   <Globe size={10} className="text-blue-400" />
-                  ريلز
+                  {t('home.reels')}
                 </span>
               </div>
-              <h4 className="text-white font-black text-sm leading-relaxed line-clamp-2 drop-shadow-md pb-2" dir="rtl">
-                {reel.title}
+              <h4 className="text-white font-black text-sm leading-relaxed line-clamp-2 drop-shadow-md pb-2 text-end">
+                {t(reel.title)}
               </h4>
               <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
                 <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-1">
-                  {reel.views} مشاهدة
+                  {reel.views} {t('home.views')}
                 </span>
                 <div className="flex gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
@@ -121,49 +121,49 @@ const VideoCard: React.FC<{ reel: VideoReel }> = ({ reel }) => {
   );
 };
 
-const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string }> = ({ data, icon: Icon, color, link }) => (
-  <Link to={link} className="group relative bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/50 shadow-lg hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-3 overflow-hidden flex flex-col h-full ring-1 ring-slate-100">
+const ProgramCard: React.FC<{ data: any; icon: any; color: string; link: string; t: any }> = ({ data, icon: Icon, color, link, t }) => (
+  <Link to={link} className="group relative bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/50 shadow-lg hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-3 overflow-hidden flex flex-col h-full ring-1 ring-slate-100 text-start">
     {/* Animated Gradient Background on Hover */}
     <div className={`absolute inset-0 bg-gradient-to-br from-white via-white to-${color.split('-')[1]}-50 opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
 
     {/* Decorative Blob */}
-    <div className={`absolute -top-10 -right-10 w-40 h-40 ${color} opacity-10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
+    <div className={`absolute -top-10 -end-10 w-40 h-40 ${color} opacity-10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
 
     <div className="relative z-10">
       <div className="w-20 h-20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
         <Icon size={48} className={`${color.replace('bg-', 'text-')} drop-shadow-sm`} />
       </div>
 
-      <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight group-hover:text-primary transition-colors">{data.title}</h3>
-      <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8 line-clamp-3 opacity-90">{data.subtitle}</p>
+      <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight group-hover:text-primary transition-colors">{t(data.title)}</h3>
+      <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8 line-clamp-3 opacity-90">{t(data.subtitle)}</p>
 
       <div className="flex items-center gap-2 text-sm font-black text-slate-900 group-hover:text-primary group-hover:gap-4 transition-all mt-auto pt-6 border-t border-slate-100/50">
-        <span>اكتشف البرنامج</span>
-        <ArrowLeftIcon size={18} className="transform group-hover:-translate-x-1 transition-transform" />
+        <span>{t('home.discoverProgram')}</span>
+        <ArrowLeftIcon size={18} className="transform rtl:group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
       </div>
     </div>
   </Link>
 );
 
-const HeroImage: React.FC = () => (
+const HeroImage: React.FC<{ t: any }> = ({ t }) => (
   <div className="relative z-10 animate-float">
     <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-[6px] border-white ring-1 ring-slate-900/5">
       <img src={IMAGES.HERO.HOME_MAIN} alt="Student Achievement" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700" />
     </div>
 
     {/* Floating Elements */}
-    <div className="absolute -bottom-6 -right-4 lg:-right-8 bg-white p-4 lg:p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-bounce-slow z-20">
+    <div className="absolute -bottom-6 -end-4 lg:-end-8 bg-white p-4 lg:p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center gap-4 animate-bounce-slow z-20">
       <div className="bg-green-100 p-3 rounded-xl text-green-600">
         <TrendingUp size={24} />
       </div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">معدل النجاح</p>
-        <p className="text-lg font-black text-slate-900">+98% سنوياً</p>
+      <div className="text-start">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('home.successRate')}</p>
+        <p className="text-lg font-black text-slate-900">{t('home.yearlyRate')}</p>
       </div>
     </div>
 
-    <div className="absolute -top-6 -left-4 lg:-left-8 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-white/50 animate-bounce-reverse z-20">
-      <div className="flex -space-x-3 space-x-reverse">
+    <div className="absolute -top-6 -start-4 lg:-start-8 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] border border-white/50 animate-bounce-reverse z-20">
+      <div className="flex -space-x-3 rtl:space-x-reverse">
         <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center overflow-hidden">
           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="" />
         </div>
@@ -175,7 +175,7 @@ const HeroImage: React.FC = () => (
         </div>
         <div className="w-10 h-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-xs font-black text-blue-600">+3k</div>
       </div>
-      <p className="text-center text-[10px] font-bold text-slate-400 mt-2">انضم إلينا اليوم</p>
+      <p className="text-center text-[10px] font-bold text-slate-400 mt-2">{t('home.joinUs')}</p>
     </div>
   </div>
 );
@@ -268,7 +268,7 @@ export const Home: React.FC = () => {
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             {/* Text Content */}
-            <div className="w-full lg:w-1/2 text-center lg:text-right space-y-8 order-2 lg:order-1">
+            <div className="w-full lg:w-1/2 text-center lg:text-start space-y-8 order-2 lg:order-1">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md rounded-full border border-blue-100 shadow-sm mx-auto lg:mx-0 animate-fade-in-up ring-1 ring-blue-50/50">
                 <span className="flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -290,7 +290,7 @@ export const Home: React.FC = () => {
 
               {/* Mobile Hero Image */}
               <div className="block lg:hidden w-full max-w-md mx-auto my-8 px-4">
-                <HeroImage />
+                <HeroImage t={t} />
               </div>
 
               <p className="text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0 animate-fade-in-up animate-delay-200">
@@ -299,19 +299,19 @@ export const Home: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4 animate-fade-in-up animate-delay-300">
                 <Link to="/coaching-offer" className="w-full sm:w-auto px-10 py-4 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-1 flex items-center justify-center gap-2 group ring-4 ring-transparent hover:ring-blue-100">
-                  <span>ابدأ رحلتك الآن</span>
-                  <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                  <span>{t('home.startJourney')}</span>
+                  <ArrowLeft size={20} className="transform rtl:group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link to="/about" className="w-full sm:w-auto px-10 py-4 bg-white text-slate-700 border border-slate-200 rounded-full font-bold text-lg hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md">
                   <PlayCircle size={20} className="group-hover:text-blue-600" />
-                  <span>تعرف علينا</span>
+                  <span>{t('home.discoverUs')}</span>
                 </Link>
               </div>
             </div>
 
             {/* Hero Image - Desktop Only */}
             <div className="hidden lg:block w-full lg:w-1/2 relative order-1 lg:order-2 px-4 lg:px-0">
-              <HeroImage />
+              <HeroImage t={t} />
 
               {/* Decorative Background for Image */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-blue-100/50 to-purple-100/50 rounded-full blur-3xl -z-10"></div>
@@ -329,12 +329,14 @@ export const Home: React.FC = () => {
               icon={Compass}
               color="bg-purple-600"
               link="/tawjih"
+              t={t}
             />
             <ProgramCard
-              data={{ title: 'عرض المواكبة', subtitle: 'برنامج متكامل يضمن لك التفوق الدراسي وتجاوز كل العقبات' }}
+              data={{ title: 'programs.coaching.title', subtitle: 'programs.coaching.subtitle' }}
               icon={Star}
               color="bg-blue-600"
               link="/coaching-offer"
+              t={t}
             />
           </div>
         </div>
@@ -344,25 +346,25 @@ export const Home: React.FC = () => {
       <section className="relative z-30 mt-8 lg:mt-12 px-4">
         <div className="container mx-auto max-w-7xl">
           <div className="bg-slate-900 bg-gradient-to-br from-slate-900 via-[#0f172a] to-slate-900 rounded-[3.5rem] md:rounded-[4rem] px-6 py-10 lg:px-12 lg:py-8 shadow-[0_40px_80px_-20px_rgba(15,23,42,0.6)] flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative overflow-hidden group border border-white/10 ring-1 ring-white/5">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
+            <div className="absolute top-0 end-0 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] -me-40 -mt-40 pointer-events-none"></div>
 
-            <div className="text-center lg:text-right shrink-0 lg:max-w-[250px] space-y-2">
+            <div className="text-center lg:text-start shrink-0 lg:max-w-[250px] space-y-2">
               <div className="flex items-center justify-center lg:justify-start gap-2 text-[#38bdf8] font-black text-[11px] uppercase tracking-[0.2em]">
                 <Zap size={16} fill="currentColor" className="animate-pulse" />
-                <span>مباشر: عداد الامتحانات</span>
+                <span>{t('home.liveCountdown')}</span>
               </div>
-              <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight">يوم الحسم يقترب!</h2>
-              <p className="text-gray-500 text-[11px] font-bold italic opacity-80">استعد جيداً للوطني والجهوي</p>
+              <h2 className="text-3xl lg:text-4xl font-black text-white leading-tight">{t('home.decisiveDay')}</h2>
+              <p className="text-gray-500 text-[11px] font-bold italic opacity-80">{t('home.prepareWell')}</p>
             </div>
 
             <div className="flex flex-col md:flex-row gap-5 lg:gap-6 flex-grow w-full">
-              <DayCard date={nationalDate} label="الوطني (2 باك)" />
-              <DayCard date={regionalDate} label="الجهوي (1 باك)" />
+              <DayCard date={nationalDate} label={t('home.nationalExam')} t={t} />
+              <DayCard date={regionalDate} label={t('home.regionalExam')} t={t} />
             </div>
 
             <Link to="/bac-simulator" className="bg-white text-[#0f172a] px-10 py-5 rounded-[2.5rem] font-black text-lg flex items-center gap-3 hover:bg-primary hover:text-white transition-all shadow-xl hover:shadow-primary/20 shrink-0 group/btn transform active:scale-95 w-full lg:w-auto justify-center">
-              <span>احسب معدلك</span>
-              <ArrowLeftIcon size={22} className="group-hover:-translate-x-1 transition-transform" />
+              <span>{t('home.calculateAverage')}</span>
+              <ArrowLeftIcon size={22} className="transform rtl:group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
@@ -380,14 +382,14 @@ export const Home: React.FC = () => {
         <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
           <div className="max-w-3xl mx-auto mb-20 space-y-6">
             <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-              الأكثر مشاهدة على تلميذ 🔥
+              {t('home.mostWatched')}
             </h2>
-            <p className="text-slate-500 text-lg font-bold">جرعات من التحفيز والنصائح الدراسية السريعة</p>
+            <p className="text-slate-500 text-lg font-bold">{t('home.motivationDoses')}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 max-w-6xl mx-auto">
             {INSTAGRAM_REELS.map((reel) => (
-              <VideoCard key={reel.id} reel={reel} />
+              <VideoCard key={reel.id} reel={reel} t={t} />
             ))}
           </div>
         </div>
@@ -397,20 +399,20 @@ export const Home: React.FC = () => {
       {/* Success Stories Slider */}
       <section className="py-10 bg-[#f8fafc] overflow-hidden border-t border-slate-100 relative">
         <div className="container mx-auto px-4 lg:px-8 mb-20 text-center relative z-10">
-          <span className="text-primary font-black tracking-widest text-xs uppercase block mb-4">قصص نجاح</span>
-          <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">أبطال تلميذ <span className="text-primary">يشاركون</span> تجربتهم</h2>
+          <span className="text-primary font-black tracking-widest text-xs uppercase block mb-4">{t('home.successStories')}</span>
+          <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">{t('home.heroesShare1')} <span className="text-primary">{t('home.heroesShare2')}</span> {t('home.heroesShare3')}</h2>
         </div>
 
         <div className="relative w-full group/slider">
           {/* Controls */}
-          <div className="absolute top-1/2 -translate-y-1/2 left-4 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity">
+          <div className="absolute top-1/2 -translate-y-1/2 start-4 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity">
             <button onClick={scrollLeft} className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-slate-700 hover:text-primary hover:scale-110 transition-all border border-slate-100">
-              <ChevronLeft size={28} />
+              <ChevronLeft size={28} className="rtl:rotate-180" />
             </button>
           </div>
-          <div className="absolute top-1/2 -translate-y-1/2 right-4 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity">
+          <div className="absolute top-1/2 -translate-y-1/2 end-4 z-20 opacity-0 group-hover/slider:opacity-100 transition-opacity">
             <button onClick={scrollRight} className="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-slate-700 hover:text-primary hover:scale-110 transition-all border border-slate-100">
-              <ChevronRight size={28} />
+              <ChevronRight size={28} className="rtl:rotate-180" />
             </button>
           </div>
 
@@ -418,24 +420,23 @@ export const Home: React.FC = () => {
           <div
             ref={scrollContainerRef}
             className="flex gap-8 overflow-x-auto snap-x snap-mandatory px-8 lg:px-16 py-10 no-scrollbar scroll-smooth"
-            dir="ltr"
           >
             {successStories.map((story, i) => (
               <div key={i} className="w-[85vw] md:w-[480px] bg-white p-10 rounded-[3rem] shadow-sm ring-1 ring-slate-100 flex-shrink-0 hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group snap-center">
-                <div className="flex items-center gap-5 mb-8" dir="rtl">
+                <div className="flex items-center gap-5 mb-8">
                   <div className="relative">
                     <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <img src={story.image} alt={story.name} className="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-md relative z-10" />
                   </div>
-                  <div>
+                  <div className="text-start">
                     <h4 className="font-black text-slate-900 text-xl">{story.name}</h4>
                     <span className="text-primary text-xs font-bold uppercase tracking-wider bg-primary/5 px-2 py-1 rounded-full">{story.role}</span>
                   </div>
-                  <div className="mr-auto w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 shadow-sm border border-slate-100 group-hover:text-primary/20 group-hover:scale-110 transition-all">
+                  <div className="ms-auto w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 shadow-sm border border-slate-100 group-hover:text-primary/20 group-hover:scale-110 transition-all">
                     <Quote size={24} fill="currentColor" />
                   </div>
                 </div>
-                <p className="text-slate-600 font-bold leading-[1.8] text-lg opacity-80 group-hover:opacity-100 transition-opacity text-right" dir="rtl">"{story.content}"</p>
+                <p className="text-slate-600 font-bold leading-[1.8] text-lg opacity-80 group-hover:opacity-100 transition-opacity text-start">"{story.content}"</p>
                 <div className="mt-8 flex gap-1 justify-end">
                   {[1, 2, 3, 4, 5].map(star => <Star key={star} size={16} className="text-yellow-400 fill-yellow-400" />)}
                 </div>
@@ -450,14 +451,14 @@ export const Home: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 text-center relative overflow-hidden shadow-2xl border border-white/5 max-w-5xl mx-auto">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-royal/20 opacity-40"></div>
-            <div className="absolute -top-24 -right-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
+            <div className="absolute -top-24 -end-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
 
             <div className="relative z-10 space-y-6 max-w-3xl mx-auto">
               <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl border border-primary/30">
                 <Sparkles size={32} className="text-primary animate-pulse" />
               </div>
-              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">جاهز لتبدأ رحلة النجاح معنا؟</h2>
-              <p className="text-slate-400 text-lg font-bold max-w-xl mx-auto leading-relaxed">احجز استشارتك الأولى اليوم واكتشف كيف يمكننا تغيير مسارك الدراسي للأفضل.</p>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">{t('home.readySuccess')}</h2>
+              <p className="text-slate-400 text-lg font-bold max-w-xl mx-auto leading-relaxed">{t('home.bookConsultation')}</p>
 
               <div className="flex flex-col md:flex-row justify-center items-center gap-4 pt-4">
                 {/* Primary Action */}
@@ -465,7 +466,7 @@ export const Home: React.FC = () => {
                   to="/coaching-offer"
                   className="w-full md:w-auto px-10 py-4 bg-primary text-white rounded-[2rem] font-black text-lg hover:bg-white hover:text-[#0f172a] transition-all shadow-xl shadow-primary/30 transform hover:-translate-y-1 active:scale-95"
                 >
-                  سجل الآن
+                  {t('home.registerNow')}
                 </Link>
 
                 {/* Secondary Action */}
@@ -476,7 +477,7 @@ export const Home: React.FC = () => {
                   className="w-full md:w-auto px-8 py-4 bg-transparent text-white border-2 border-white/20 hover:border-white hover:bg-white/5 rounded-[2rem] font-black text-lg transition-all flex items-center justify-center gap-3 group active:scale-95"
                 >
                   <MessageCircle size={22} className="group-hover:rotate-12 transition-transform" />
-                  تواصل عبر واتساب
+                  {t('home.contactWhatsapp')}
                 </a>
               </div>
             </div>
