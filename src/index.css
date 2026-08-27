@@ -15,6 +15,14 @@
   /* Utilities */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* animation-delay utilities — used to stagger animate-fade-in-up / animate-blob
+     across the site; Tailwind has no built-in animation-delay scale (delay-* only
+     covers transition-delay), so these are defined by hand. */
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animation-delay-2000 { animation-delay: 2000ms; }
 }
 
 @layer components {

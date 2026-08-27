@@ -68,15 +68,24 @@ export interface SuccessStory {
   image: string;
 }
 
+export type MouwakabaPackage = 'essentiel' | 'boost' | 'premium';
+
+export type StudentStatus = 'active' | 'pending_activation' | 'suspended' | 'completed' | 'archived';
+
 export interface Student {
   id: string;
   name: string;
   username: string;
   password?: string;
+  email?: string;
   grade: string;
   joinDate: string;
   avatar?: string;
-  status: 'active' | 'suspended';
+  status: StudentStatus;
+  /** Active Mouwakaba coaching pack. Absent/null = no coaching pack purchased. */
+  package?: MouwakabaPackage | null;
+  /** Plain-text coach label. No Coach entity yet — see admin `/coaches` module. */
+  coachName?: string | null;
   stats?: {
     studyHours: number;
     commitmentRate: number;
@@ -90,18 +99,29 @@ export interface Appointment {
   title: string;
   date: string;
   time: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   type: string;
+}
+
+export interface ActivityEntry {
+  id: number;
+  actor_name: string;
+  action: string;
+  entity_type: string;
+  entity_label: string;
+  meta: Record<string, any> | null;
+  created_at: string;
 }
 
 export interface ContactMessage {
   id: string;
   name: string;
+  email?: string;
   phone: string;
   type: string;
   message: string;
-  date: string;
-  status: 'new' | 'read';
+  created_at: string;
+  status: 'new' | 'read' | 'archived';
 }
 
 export interface CoachingRequest {
@@ -109,6 +129,19 @@ export interface CoachingRequest {
   name: string;
   phone: string;
   grade: string;
+  status: 'new' | 'contacted' | 'enrolled' | 'archived';
+  date: string;
+}
+
+export interface OrientationRequest {
+  id: string;
+  name: string;
+  phone: string;
+  filiere: string;
+  city: string;
+  bacYear: string;
+  regionalGrade: string;
+  pack: string;
   status: 'new' | 'contacted' | 'enrolled' | 'archived';
   date: string;
 }

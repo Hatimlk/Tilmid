@@ -59,6 +59,21 @@ function requireAdmin(string $secret_key): array {
     return $user;
 }
 
+/* ---------------- ACTIVITY LOG ---------------- */
+// Best-effort: a logging failure (e.g. migration not run yet) must never break
+// the underlying student/appointment action, so failures are swallowed.
+function logActivity(PDO $pdo, array $actor, string $action, string $entityType, string $entityLabel, ?array $meta = null): void {
+    try {
+        $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+        $stmt->execute([$actor['id'] ?? 0]);
+        $actorName = $stmt->fetch()['username'] ?? 'Admin';
+        $stmt = $pdo->prepare("INSERT INTO activity_log (actor_name, action, entity_type, entity_label, meta) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$actorName, $action, $entityType, $entityLabel, $meta ? json_encode($meta) : null]);
+    } catch (PDOException $e) {
+        error_log('Activity log insert failed: ' . $e->getMessage());
+    }
+}
+
 /* ---------------- RATE LIMITING (login endpoints) ---------------- */
 
 function rateLimited(PDO $pdo, string $identifier, int $maxAttempts = 8, int $windowMinutes = 15): bool {
@@ -174,7 +189,7 @@ if (($request_uri == '/api/auth/me') && $method == 'GET') {
     $decoded = requireAuth($secret_key);
 
     if ($decoded['role'] === 'student') {
-        $stmt = $pdo->prepare("SELECT id, name, username, email, grade, join_date, status, avatar_url FROM students WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, name, username, email, grade, join_date, status, avatar_url, package FROM students WHERE id = ?");
         $stmt->execute([$decoded['id']]);
         $record = $stmt->fetch();
         if (!$record || $record['status'] !== 'active') {
@@ -333,13 +348,13 @@ if (preg_match('#^/api/students/(\d+)$#', $request_uri, $matches) && $method == 
 
 if ($request_uri === '/api/students' && $method == 'GET') {
     requireAdmin($secret_key);
-    $stmt = $pdo->query("SELECT id, name, username, email, grade, join_date, status, avatar_url FROM students ORDER BY join_date DESC");
+    $stmt = $pdo->query("SELECT id, name, username, email, grade, join_date, status, avatar_url, package, coach_name FROM students ORDER BY join_date DESC");
     echo json_encode($stmt->fetchAll());
     exit;
 }
 
 if ($request_uri === '/api/students' && $method == 'POST') {
-    requireAdmin($secret_key);
+    $admin = requireAdmin($secret_key);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
 
@@ -350,22 +365,38 @@ if ($request_uri === '/api/students' && $method == 'POST') {
     $status = $input['status'] ?? 'active';
     $avatar = $input['avatar'] ?? null;
     $password = $input['password'] ?? null; // optional - only set/changed when provided
+    $validPackages = ['essentiel', 'boost', 'premium'];
+    $package = in_array($input['package'] ?? null, $validPackages, true) ? $input['package'] : null;
+    $coachName = $input['coachName'] ?? null;
 
     try {
         if ($isUpdate) {
+            $stmt = $pdo->prepare("SELECT status, package FROM students WHERE id = ?");
+            $stmt->execute([$id]);
+            $existing = $stmt->fetch();
+
             if ($password) {
-                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=? WHERE id=?");
-                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, password_hash($password, PASSWORD_DEFAULT), $id]);
+                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=? WHERE id=?");
+                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, password_hash($password, PASSWORD_DEFAULT), $package, $coachName, $id]);
             } else {
-                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=? WHERE id=?");
-                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $id]);
+                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, package=?, coach_name=? WHERE id=?");
+                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $package, $coachName, $id]);
             }
+
+            if ($existing && $existing['package'] !== $package) {
+                logActivity($pdo, $admin, 'package_changed', 'student', $name, ['from' => $existing['package'], 'to' => $package]);
+            }
+            if ($existing && $existing['status'] !== $status) {
+                logActivity($pdo, $admin, 'status_changed', 'student', $name, ['from' => $existing['status'], 'to' => $status]);
+            }
+
             http_response_code(200);
             echo json_encode(['id' => (int)$id, 'message' => 'Student updated']);
         } else {
             $hash = $password ? password_hash($password, PASSWORD_DEFAULT) : null;
-            $stmt = $pdo->prepare("INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $hash]);
+            $stmt = $pdo->prepare("INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash, package, coach_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $hash, $package, $coachName]);
+            logActivity($pdo, $admin, 'student_created', 'student', $name, ['package' => $package]);
             http_response_code(201);
             echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Student created']);
         }
@@ -401,7 +432,7 @@ if (preg_match('#^/api/appointments/(\d+)$#', $request_uri, $matches) && $method
 }
 
 if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
-    requireAdmin($secret_key);
+    $admin = requireAdmin($secret_key);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
 
@@ -425,6 +456,9 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
         try {
             $stmt = $pdo->prepare("UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=? WHERE id=?");
             $stmt->execute([$studentName, $title, $date, $time, $status, $type, $id]);
+            if ($existing['status'] !== $status) {
+                logActivity($pdo, $admin, 'appointment_status_changed', 'appointment', $title, ['student' => $studentName, 'from' => $existing['status'], 'to' => $status]);
+            }
             echo json_encode(['id' => (int)$id, 'message' => 'Appointment updated']);
         } catch (PDOException $e) {
             http_response_code(500);
@@ -444,6 +478,7 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
     try {
         $stmt = $pdo->prepare("INSERT INTO appointments (student_name, title, date, time, status, type) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$studentName, $title, $date, $time, $status, $type]);
+        logActivity($pdo, $admin, 'appointment_created', 'appointment', $title, ['student' => $studentName, 'date' => $date, 'time' => $time]);
         http_response_code(201);
         echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Appointment created']);
     } catch (PDOException $e) {
@@ -451,6 +486,14 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
         echo json_encode(['message' => 'Database error']);
         error_log('Create appointment failed: ' . $e->getMessage());
     }
+    exit;
+}
+
+// 9b. ACTIVITY LOG (admin only, read-only feed for the dashboard)
+if ($request_uri === '/api/activity' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query("SELECT id, actor_name, action, entity_type, entity_label, meta, created_at FROM activity_log ORDER BY created_at DESC LIMIT 30");
+    echo json_encode($stmt->fetchAll());
     exit;
 }
 
@@ -514,6 +557,38 @@ if (strpos($request_uri, '/api/coaching-requests') !== false) {
             http_response_code(500);
             echo json_encode(['message' => 'Database error']);
             error_log('Save coaching request failed: ' . $e->getMessage());
+        }
+        exit;
+    }
+}
+
+// 13. ORIENTATION REQUESTS (POST public pack-selection form / GET admin-only)
+if (strpos($request_uri, '/api/orientation-requests') !== false) {
+    if ($method == 'GET') {
+        requireAdmin($secret_key);
+        $stmt = $pdo->query("SELECT * FROM orientation_requests ORDER BY created_at DESC");
+        echo json_encode($stmt->fetchAll());
+        exit;
+    }
+    if ($method == 'POST') {
+        $name = $input['name'] ?? '';
+        $phone = $input['phone'] ?? '';
+        $filiere = $input['filiere'] ?? '';
+        $city = $input['city'] ?? '';
+        $bacYear = $input['bacYear'] ?? '';
+        $regionalGrade = $input['regionalGrade'] ?? '';
+        $pack = $input['pack'] ?? '';
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO orientation_requests (name, phone, filiere, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $phone, $filiere, $city, $bacYear, $regionalGrade, $pack]);
+
+            http_response_code(201);
+            echo json_encode(['message' => 'Request saved successfully', 'id' => $pdo->lastInsertId()]);
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['message' => 'Database error']);
+            error_log('Save orientation request failed: ' . $e->getMessage());
         }
         exit;
     }

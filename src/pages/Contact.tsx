@@ -26,7 +26,7 @@ export const Contact = () => {
       phone: formState.phone,
       type: formState.type,
       message: formState.message,
-      date: new Date().toLocaleDateString('ar-MA'),
+      created_at: new Date().toISOString(),
       status: 'new'
     };
 

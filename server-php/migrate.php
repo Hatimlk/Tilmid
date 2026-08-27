@@ -62,4 +62,67 @@ foreach ($students as $s) {
 }
 $log[] = "rehashed $rehashed plaintext student password(s)";
 
+// 4. add students.package (active Mouwakaba coaching pack) if missing
+if (!in_array('package', $cols, true)) {
+    $pdo->exec("ALTER TABLE students ADD COLUMN package ENUM('essentiel','boost','premium') DEFAULT NULL");
+    $log[] = 'added students.package column';
+} else {
+    $log[] = 'students.package already present';
+}
+
+// 5. widen students.status for the admin lifecycle (pending activation / completed / archived)
+$statusCol = $pdo->query("SHOW COLUMNS FROM students WHERE Field = 'status'")->fetch();
+if ($statusCol && strpos($statusCol['Type'], 'pending_activation') === false) {
+    $pdo->exec("ALTER TABLE students MODIFY COLUMN status ENUM('active','pending_activation','suspended','completed','archived') DEFAULT 'active'");
+    $log[] = 'widened students.status enum';
+} else {
+    $log[] = 'students.status already widened';
+}
+
+// 6. add students.coach_name (plain text label until a real Coach entity exists) if missing
+$cols = $pdo->query("SHOW COLUMNS FROM students")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('coach_name', $cols, true)) {
+    $pdo->exec("ALTER TABLE students ADD COLUMN coach_name VARCHAR(255) DEFAULT NULL");
+    $log[] = 'added students.coach_name column';
+} else {
+    $log[] = 'students.coach_name already present';
+}
+
+// 7. widen appointments.status to include 'completed'
+$apptStatusCol = $pdo->query("SHOW COLUMNS FROM appointments WHERE Field = 'status'")->fetch();
+if ($apptStatusCol && strpos($apptStatusCol['Type'], 'completed') === false) {
+    $pdo->exec("ALTER TABLE appointments MODIFY COLUMN status ENUM('confirmed','pending','cancelled','completed') DEFAULT 'confirmed'");
+    $log[] = 'widened appointments.status enum';
+} else {
+    $log[] = 'appointments.status already widened';
+}
+
+// 8. activity_log table (powers the admin "Activité récente" widget)
+$pdo->exec("CREATE TABLE IF NOT EXISTS activity_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    actor_name VARCHAR(255) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_label VARCHAR(255) NOT NULL,
+    meta JSON DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_created_at (created_at)
+)");
+$log[] = 'activity_log table ensured';
+
+// 9. orientation_requests table (pack-selection lead form on the Tawjih page)
+$pdo->exec("CREATE TABLE IF NOT EXISTS orientation_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    filiere VARCHAR(100),
+    city VARCHAR(100),
+    bac_year VARCHAR(20),
+    regional_grade VARCHAR(20),
+    pack VARCHAR(100),
+    status ENUM('new', 'contacted', 'enrolled', 'archived') DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+$log[] = 'orientation_requests table ensured';
+
 echo json_encode(['message' => 'Migration complete', 'log' => $log, 'next_step' => 'Delete this file from the server now.']);

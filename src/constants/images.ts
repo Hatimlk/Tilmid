@@ -1,5 +1,6 @@
 import YassineImage from '../assets/yassine-image.png';
 import TilmidHomeHero from '../assets/tilmid-home page.jpg';
+import TilmidHeroPortrait from '../assets/tilmid-hero-portrait.jpg';
 import TilmidVideo from '../assets/tilmidesite-web.mov';
 import TilmidVideoThumbnail from '../assets/tilmid-video-thumbnail.png';
 
@@ -9,8 +10,10 @@ export const IMAGES = {
     WHITE: 'https://res.cloudinary.com/do4mapb11/image/upload/v1766146135/WhiteLogo-Tilmid_bc8jmy.png'
   },
   HERO: {
-    // Main Hero Image on Home Page
-    HOME_MAIN: TilmidHomeHero,
+    // Main Hero Image on Home Page (cropped portrait, no baked-in overlay)
+    HOME_MAIN: TilmidHeroPortrait,
+    // Original uncropped source (kept for reference / other uses)
+    HOME_MAIN_FULL: TilmidHomeHero,
   },
   ABOUT: {
     // Founder (Professor Yassine) Profile Picture

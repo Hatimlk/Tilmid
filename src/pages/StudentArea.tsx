@@ -1,54 +1,293 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Clock, Calendar, Download, PlayCircle, User, ChevronRight,
-  LogOut, AlertCircle, X, FileText,
-  Play, Activity, Plus, LayoutDashboard, Library, Film,
-  Sparkles, Trophy, Target, MessageCircle, BookText, FileSpreadsheet, FileCode, DownloadCloud, Flame, GraduationCap
+  User, AlertCircle, Clock, Library, MessageCircle, GraduationCap, Target,
+  Lock, Eye, EyeOff, Loader2, CheckCircle2, WifiOff, Keyboard, ShieldCheck, ArrowLeft
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
-import { StudyResource, TimetableTask } from '../types';
+import { Student, StudyResource, TimetableTask } from '../types';
 import { IMAGES } from '../constants/images';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { ApiError } from '../lib/api';
+import { getEntitlements } from '../utils/entitlements';
+import { StudentTab, StudentSidebar, StudentMobileNav } from '../components/student/navigation';
+import { StudentHeader } from '../components/student/StudentHeader';
+import { DashboardHome } from './student/DashboardHome';
+import { MonParcours } from './student/MonParcours';
+import { MonPlan } from './student/MonPlan';
+import { Planning } from './student/Planning';
+import { Progression } from './student/Progression';
+import { MesContenus } from './student/MesContenus';
+import { Bibliotheque } from './student/Bibliotheque';
+import { MesOutils } from './student/MesOutils';
+import { Coaching } from './student/Coaching';
+import { CheckIns } from './student/CheckIns';
+import { Feedback } from './student/Feedback';
+import { Support } from './student/Support';
+import { Profil } from './student/Profil';
 
-const DAYS = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+/* -------------------------------------------------------------------------- */
+/* Login gate — shown when there is no authenticated student session          */
+/* -------------------------------------------------------------------------- */
 
-const ICON_MAP: Record<string, any> = {
-  BookText,
-  FileSpreadsheet,
-  FileCode,
-  Library
+type LoginErrorKind = 'invalid' | 'network' | 'rateLimit' | null;
+
+const LoginAlert: React.FC<{ kind: LoginErrorKind; t: any }> = ({ kind, t }) => {
+  if (!kind) return null;
+  const content = {
+    invalid: { title: t('studentLogin.errors.invalidTitle'), desc: t('studentLogin.errors.invalidDesc'), icon: AlertCircle, tone: 'red' },
+    network: { title: t('studentLogin.errors.networkTitle'), desc: t('studentLogin.errors.networkDesc'), icon: WifiOff, tone: 'red' },
+    rateLimit: { title: t('studentLogin.errors.rateLimitTitle'), desc: t('studentLogin.errors.rateLimitDesc'), icon: Clock, tone: 'blue' },
+  }[kind];
+  const toneClasses = content.tone === 'red'
+    ? 'bg-red-50 border-red-200 text-red-700'
+    : 'bg-blue-50 border-blue-200 text-blue-700';
+
+  return (
+    <div role="alert" aria-live="polite" className={`rounded-2xl p-4 border flex items-start gap-3 ${toneClasses}`}>
+      <content.icon size={18} className="shrink-0 mt-0.5" />
+      <div>
+        <p className="font-black text-sm">{content.title}</p>
+        <p className="text-[13px] font-medium opacity-90 mt-0.5">{content.desc}</p>
+      </div>
+    </div>
+  );
 };
 
-// Subject Color Mapping for UI consistency
-const SUBJECT_COLORS: Record<string, { bg: string, text: string, border: string }> = {
-  'رياضيات': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100' },
-  'فيزياء': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100' },
-  'علوم': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
-  'فلسفة': { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-100' },
-  'لغات': { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
-  'default': { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-100' }
+const StudentWelcomePanel: React.FC<{ t: any }> = ({ t }) => {
+  const benefits = (t('studentLogin.panel.benefits', { returnObjects: true }) as unknown as { title: string; desc: string }[]) || [];
+  const icons = [Clock, Library, MessageCircle];
+  return (
+    <div className="relative hidden lg:flex flex-col justify-between w-full lg:w-[45%] p-10 xl:p-12 text-white overflow-hidden" style={{ background: 'linear-gradient(145deg, #0B1A3D 0%, #10285E 55%, #1449C9 100%)' }}>
+      <div className="absolute -top-20 -end-20 w-72 h-72 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 start-0 w-56 h-56 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div
+        className="absolute inset-0 opacity-[0.15] pointer-events-none [mask-image:radial-gradient(ellipse_60%_60%_at_30%_20%,black,transparent)]"
+        style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '26px 26px' }}
+      ></div>
+
+      <div className="relative z-10">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-white/10 ring-1 ring-white/15 mb-8">
+          <GraduationCap size={13} />
+          {t('studentLogin.panel.badge')}
+        </span>
+        <h2 className="text-3xl xl:text-4xl font-black leading-tight tracking-tight mb-4">
+          {t('studentLogin.panel.title1')}<br />{t('studentLogin.panel.title2')}
+        </h2>
+        <p className="text-blue-100/80 text-[15px] font-medium leading-relaxed max-w-sm">{t('studentLogin.panel.description')}</p>
+      </div>
+
+      <div className="relative z-10 space-y-5 mt-10">
+        {benefits.map((b, i) => {
+          const Icon = icons[i] || Target;
+          return (
+            <div key={b.title} className="flex items-start gap-4 bg-white/5 rounded-2xl p-4 ring-1 ring-white/10">
+              <span className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                <Icon size={18} />
+              </span>
+              <div>
+                <p className="font-black text-[14px] mb-0.5">{b.title}</p>
+                <p className="text-blue-100/70 text-[13px] font-medium leading-snug">{b.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
-type ActiveTab = 'dashboard' | 'videos' | 'resources' | 'timetable';
+const StudentLoginGate: React.FC<{
+  onLogin: (username: string, password: string) => Promise<void>;
+  loginPending: boolean;
+  errorKind: LoginErrorKind;
+  loginSuccess: boolean;
+}> = ({ onLogin, loginPending, errorKind, loginSuccess }) => {
+  const { t } = useTranslation();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [capsLockOn, setCapsLockOn] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({});
+  const usernameRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors: { username?: string; password?: string } = {};
+    if (!username.trim()) errors.username = t('studentLogin.errors.emptyIdentifier');
+    if (!password) errors.password = t('studentLogin.errors.emptyPassword');
+    setFieldErrors(errors);
+    if (errors.username) { usernameRef.current?.focus(); return; }
+    if (errors.password) return;
+    onLogin(username, password);
+  };
+
+  const handlePasswordKeyEvent = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setCapsLockOn(e.getModifierState && e.getModifierState('CapsLock'));
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 lg:p-6 font-sans relative overflow-hidden">
+      <SEO
+        title="Connexion Espace Étudiant | Tilmid"
+        description="Connectez-vous à votre espace étudiant Tilmid pour accéder à vos contenus et services."
+        noindex
+      />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 20% 20%, rgba(22,139,255,0.08), transparent 30%), radial-gradient(circle at 85% 75%, rgba(139,92,246,0.05), transparent 32%), #F7F9FC' }}
+      ></div>
+
+      <div className="relative z-10 w-full max-w-[1080px] bg-white rounded-[28px] shadow-[0_24px_60px_rgba(15,23,42,0.09)] border border-slate-100 flex overflow-hidden">
+        <StudentWelcomePanel t={t} />
+
+        <div className="w-full lg:w-[55%] p-6 sm:p-10 lg:p-12">
+          <div className="max-w-sm mx-auto">
+            <div className="text-center mb-8">
+              <img src={IMAGES.LOGOS.OFFICIAL} alt="Tilmid" className="h-14 w-auto mx-auto mb-6" />
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.14em] bg-primary/5 text-primary ring-1 ring-primary/10 mb-4">
+                {t('studentLogin.eyebrow')}
+              </span>
+              <h1 className="text-[28px] sm:text-[32px] font-black text-slate-900 tracking-tight leading-tight mb-2">{t('studentLogin.title')}</h1>
+              <p className="text-slate-500 text-[15px] font-medium leading-relaxed">{t('studentLogin.subtitle')}</p>
+            </div>
+
+            {loginSuccess ? (
+              <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-5 flex items-center gap-3 justify-center">
+                <CheckCircle2 size={20} className="text-emerald-600" />
+                <span className="font-black text-emerald-700 text-sm">{t('studentLogin.submitSuccess')}</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                {errorKind && <LoginAlert kind={errorKind} t={t} />}
+
+                <div>
+                  <label htmlFor="student-username" className="block text-[13px] font-bold text-slate-700 mb-2">{t('studentLogin.identifierLabel')}</label>
+                  <div className="relative">
+                    <User size={18} className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      id="student-username"
+                      ref={usernameRef}
+                      type="text"
+                      autoComplete="username"
+                      value={username}
+                      onChange={(e) => { setUsername(e.target.value); setFieldErrors((f) => ({ ...f, username: undefined })); }}
+                      placeholder={t('studentLogin.identifierPlaceholder')}
+                      aria-invalid={!!fieldErrors.username}
+                      aria-describedby={fieldErrors.username ? 'username-error' : undefined}
+                      className={`w-full h-14 ps-11 pe-4 rounded-2xl border outline-none font-medium text-[15px] bg-[#F9FAFC] transition-all focus:bg-white ${fieldErrors.username ? 'border-red-400' : 'border-slate-200 focus:border-primary'
+                        }`}
+                      style={fieldErrors.username ? { boxShadow: '0 0 0 4px rgba(240,68,56,.08)' } : undefined}
+                      onFocus={(e) => { if (!fieldErrors.username) e.currentTarget.style.boxShadow = '0 0 0 4px rgba(22,139,255,.10)'; }}
+                      onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+                  {fieldErrors.username && <p id="username-error" className="mt-1.5 text-[12px] font-bold text-red-500">{fieldErrors.username}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="student-password" className="block text-[13px] font-bold text-slate-700 mb-2">{t('studentLogin.passwordLabel')}</label>
+                  <div className="relative">
+                    <Lock size={18} className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      id="student-password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setFieldErrors((f) => ({ ...f, password: undefined })); }}
+                      onKeyUp={handlePasswordKeyEvent}
+                      onKeyDown={handlePasswordKeyEvent}
+                      placeholder={t('studentLogin.passwordPlaceholder')}
+                      aria-invalid={!!fieldErrors.password}
+                      aria-describedby={fieldErrors.password ? 'password-error' : undefined}
+                      className={`w-full h-14 ps-11 pe-11 rounded-2xl border outline-none font-medium text-[15px] bg-[#F9FAFC] transition-all focus:bg-white ${fieldErrors.password ? 'border-red-400' : 'border-slate-200 focus:border-primary'
+                        }`}
+                      style={fieldErrors.password ? { boxShadow: '0 0 0 4px rgba(240,68,56,.08)' } : undefined}
+                      onFocus={(e) => { if (!fieldErrors.password) e.currentTarget.style.boxShadow = '0 0 0 4px rgba(22,139,255,.10)'; }}
+                      onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? t('studentLogin.hidePassword') : t('studentLogin.showPassword')}
+                      className="absolute end-3.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {fieldErrors.password && <p id="password-error" className="mt-1.5 text-[12px] font-bold text-red-500">{fieldErrors.password}</p>}
+                  {capsLockOn && !fieldErrors.password && (
+                    <p className="mt-1.5 flex items-center gap-1.5 text-[12px] font-bold text-amber-600">
+                      <Keyboard size={13} /> {t('studentLogin.capsLock')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold text-primary hover:underline">
+                    {t('studentLogin.helpLink')}
+                  </a>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loginPending}
+                  className="w-full h-[54px] bg-primary text-white rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#0875E8] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {loginPending ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>{t('studentLogin.submitLoading')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{t('studentLogin.submit')}</span>
+                      <ArrowLeft size={17} className="transform ltr:rotate-180" />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            <div className="mt-7 pt-6 border-t border-slate-100">
+              <p className="text-[13px] font-bold text-slate-700 mb-1">{t('studentLogin.noAccount.title')}</p>
+              <p className="text-[12.5px] text-slate-400 font-medium leading-relaxed mb-3">{t('studentLogin.noAccount.desc')}</p>
+              <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-primary hover:gap-2.5 transition-all">
+                {t('studentLogin.noAccount.cta')} <ArrowLeft size={14} className="transform ltr:rotate-180" />
+              </a>
+            </div>
+
+            <p className="flex items-center justify-center gap-1.5 text-[11.5px] font-bold text-slate-400 mt-6">
+              <ShieldCheck size={13} />
+              {t('studentLogin.trust')}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Page                                                                       */
+/* -------------------------------------------------------------------------- */
 
 export const StudentArea: React.FC = () => {
   const { user: authUser, isStudent, loading: authLoading, login, logout: authLogout } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loginPending, setLoginPending] = useState(false);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [loginErrorKind, setLoginErrorKind] = useState<LoginErrorKind>(null);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<StudentTab>('dashboard');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const user = isStudent ? authUser : null;
+  const user = isStudent ? (authUser as unknown as Student) : null;
+  const entitlements = getEntitlements(user?.package);
 
-  // Timetable State
+  // Timetable state — real, on-device (no backend model exists for it yet)
   const [timetable, setTimetable] = useState<TimetableTask[]>([]);
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [newTask, setNewTask] = useState<Partial<TimetableTask>>({ subject: 'رياضيات', day: 'الاثنين', startTime: '08:00', endTime: '10:00' });
-
-  // Resources State
+  // Resources — real data from the backend
   const [resources, setResources] = useState<StudyResource[]>([]);
 
   useEffect(() => {
@@ -66,376 +305,92 @@ export const StudentArea: React.FC = () => {
     loadStudentData();
   }, [user?.username]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleLogin = async (username: string, password: string) => {
+    setLoginErrorKind(null);
     setLoginPending(true);
     try {
       const { token, user: account } = await dataManager.loginStudent(username, password);
-      login({ ...account, role: 'student' }, token);
+      setLoginPending(false);
+      setLoginSuccess(true);
+      // Brief confirmation before handing off to the dashboard — avoids an
+      // instant, jarring swap from the login card straight to the app shell.
+      setTimeout(() => login({ ...account, role: 'student' }, token), 450);
     } catch (e) {
-      setError('بيانات الدخول غير صحيحة');
-    } finally {
+      const apiErr = e as ApiError;
+      if (apiErr?.status === 429) setLoginErrorKind('rateLimit');
+      else if (apiErr?.status === 400) setLoginErrorKind('invalid');
+      else setLoginErrorKind('network');
       setLoginPending(false);
     }
   };
 
-  const handleAddTask = (e: React.FormEvent) => {
-    e.preventDefault();
-    const task: TimetableTask = {
-      id: Date.now().toString(),
-      subject: newTask.subject!,
-      day: newTask.day!,
-      startTime: newTask.startTime!,
-      endTime: newTask.endTime!
-    };
-    const updated = [...timetable, task];
-    setTimetable(updated);
-    localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
-    setShowTaskModal(false);
+  const addTimetableTask = (task: TimetableTask) => {
+    setTimetable((prev) => {
+      const updated = [...prev, task];
+      localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  const removeTask = (id: string) => {
-    const updated = timetable.filter(t => t.id !== id);
-    setTimetable(updated);
-    localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
+  const removeTimetableTask = (id: string) => {
+    setTimetable((prev) => {
+      const updated = prev.filter((t) => t.id !== id);
+      localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   if (authLoading) return null;
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
-        <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-          <div className="text-center mb-8 relative z-10">
-            <div className="w-32 h-auto mx-auto mb-6">
-              <img src={IMAGES.LOGOS.OFFICIAL} alt="Tilmid Logo" className="w-full h-auto" />
-            </div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">مرحباً بك مجدداً</h2>
-            <p className="text-slate-500 font-bold mt-2">سجل دخولك لمتابعة رحلة التفوق</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
-            <div className="space-y-2">
-              <label className="text-xs font-black text-slate-400 mr-2 uppercase">اسم المستخدم</label>
-              <input type="text" placeholder="أدخل اسم المستخدم" value={username} onChange={e => setUsername(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all font-bold outline-none" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-black text-slate-400 mr-2 uppercase">كلمة المرور</label>
-              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-500 focus:bg-white transition-all font-bold outline-none" />
-            </div>
-            {error && <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2 animate-pulse"><AlertCircle size={16} /> {error}</div>}
-            <button disabled={loginPending} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-indigo-600 shadow-xl shadow-blue-500/10 transition-all hover:-translate-y-1 disabled:opacity-60">{loginPending ? '...جارٍ الدخول' : 'دخول للمساحة'}</button>
-          </form>
-        </div>
-      </div>
+      <StudentLoginGate
+        onLogin={handleLogin}
+        loginPending={loginPending}
+        errorKind={loginErrorKind}
+        loginSuccess={loginSuccess}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-24 lg:pb-10 font-sans text-slate-800">
-      <SEO title="مساحة التميز - تلميذ" description="مساحتك الخاصة لمتابعة الدراسة وتنظيم الوقت." />
-      {/* Modern Glass Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-auto">
-            <img src={IMAGES.LOGOS.OFFICIAL} alt="Logo" className="h-full w-auto object-contain" />
+    <div dir="ltr" className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 text-start">
+      <SEO title="Espace Étudiant | Tilmid" description="Votre espace personnel Tilmid : parcours Mouwakaba, planning, contenus et outils." noindex />
+
+      <StudentHeader student={user} entitlements={entitlements} onNavigate={setActiveTab} onLogout={authLogout} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+
+      <div className="flex">
+        <StudentSidebar active={activeTab} onSelect={setActiveTab} entitlements={entitlements} />
+
+        <main className="flex-1 min-w-0 p-4 lg:p-8 pb-24 lg:pb-8">
+          <div className="max-w-6xl mx-auto">
+            {activeTab === 'dashboard' && <DashboardHome student={user} entitlements={entitlements} timetable={timetable} onNavigate={setActiveTab} />}
+            {activeTab === 'parcours' && <MonParcours student={user} entitlements={entitlements} />}
+            {activeTab === 'plan' && <MonPlan student={user} entitlements={entitlements} onNavigate={setActiveTab} />}
+            {activeTab === 'planning' && <Planning timetable={timetable} onAdd={addTimetableTask} onRemove={removeTimetableTask} />}
+            {activeTab === 'progression' && <Progression student={user} timetable={timetable} />}
+            {activeTab === 'contenus' && <MesContenus entitlements={entitlements} />}
+            {activeTab === 'bibliotheque' && <Bibliotheque entitlements={entitlements} resources={resources} onNavigate={setActiveTab} />}
+            {activeTab === 'outils' && <MesOutils student={user} entitlements={entitlements} />}
+            {activeTab === 'coaching' && <Coaching entitlements={entitlements} />}
+            {activeTab === 'checkins' && <CheckIns student={user} entitlements={entitlements} />}
+            {activeTab === 'feedback' && <Feedback entitlements={entitlements} />}
+            {activeTab === 'support' && <Support entitlements={entitlements} />}
+            {activeTab === 'profil' && <Profil student={user} entitlements={entitlements} onLogout={authLogout} />}
           </div>
-          <div className="border-r-2 border-slate-100 pr-4">
-            <span className="font-bold text-slate-900 block leading-tight text-sm">مساحة التميز</span>
-            <span className="text-[10px] font-black text-primary uppercase tracking-widest">{user.grade}</span>
+        </main>
+      </div>
+
+      <StudentMobileNav active={activeTab} onSelect={setActiveTab} entitlements={entitlements} />
+
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+          <div className="absolute inset-y-0 start-0 w-72 bg-white shadow-2xl overflow-y-auto">
+            <StudentSidebar active={activeTab} onSelect={(t) => { setActiveTab(t); setMobileMenuOpen(false); }} entitlements={entitlements} />
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex flex-col text-left">
-            <span className="font-black text-sm text-slate-700">{user.name}</span>
-            <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div> متصل الآن</span>
-          </div>
-          {(user as any).avatar ? (
-            <img src={(user as any).avatar} alt={user.name} className="w-10 h-10 rounded-2xl object-cover bg-slate-100 ring-2 ring-white shadow-md" />
-          ) : (
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md ring-2 ring-white">
-              {user.name?.trim().slice(0, 2).toUpperCase()}
-            </div>
-          )}
-          <button onClick={authLogout} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><LogOut size={20} /></button>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12">
-
-        {/* Nav Tabs */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-12 bg-white p-2 rounded-3xl border border-slate-100 w-fit mx-auto shadow-xl shadow-slate-200/50">
-          {[
-            { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
-            { id: 'timetable', label: 'الجدول الزمني', icon: Clock },
-            { id: 'resources', label: 'المكتبة', icon: Library },
-            { id: 'videos', label: 'المحاضرات', icon: Film }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as ActiveTab)}
-              className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl font-black text-sm transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20 scale-105' : 'text-slate-500 hover:bg-slate-50'}`}
-            >
-              <tab.icon size={18} /> {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Dashboard View */}
-        {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="lg:col-span-8 space-y-8">
-              {/* Welcome Banner */}
-              <div className="bg-slate-900 rounded-3xl p-8 lg:p-10 text-white relative overflow-hidden shadow-xl shadow-slate-900/30">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-primary/20 rounded-full blur-[100px] -mr-40 -mt-40"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -ml-32 -mb-32"></div>
-
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-blue-200 font-bold text-xs border border-white/10">
-                      <Sparkles size={14} className="text-yellow-400" /> برنامج التميز مفعل
-                    </div>
-                    <div className="h-10 opacity-40 hover:opacity-100 transition-opacity">
-                      <img src={IMAGES.LOGOS.WHITE} alt="White Logo" className="h-full w-auto" />
-                    </div>
-                  </div>
-                  <h2 className="text-3xl lg:text-5xl font-black mb-4 leading-tight">أهلاً {user!.name?.split(' ')[0]}! 🔥</h2>
-                  <p className="text-blue-100 text-base lg:text-lg opacity-80 mb-8 max-w-xl leading-relaxed">
-                    أنت الآن في رحلة التفوق. استعمل الأدوات الذكية لتنظيم يومك وضمان أفضل النتائج في مسارك الدراسي.
-                  </p>
-                  <div className="flex flex-wrap gap-4">
-                    <button onClick={() => setActiveTab('timetable')} className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-xl shadow-white/10"><Clock size={18} className="text-primary" /> ابدأ التخطيط</button>
-                    <div className="flex items-center gap-4 px-6 py-4 bg-white/5 rounded-2xl backdrop-blur-md border border-white/10">
-                      <div className="w-10 h-10 bg-orange-500/20 text-orange-400 rounded-full flex items-center justify-center"><Flame size={20} /></div>
-                      <span className="text-sm font-black text-blue-100">سلسلة الالتزام: 5 أيام</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 group hover:-translate-y-1 transition-all">
-                  <div className="flex justify-between items-center mb-8">
-                    <h3 className="font-black text-slate-900 flex items-center gap-3"><Activity className="text-primary" size={24} /> نشاط الأسبوع</h3>
-                    <span className="text-xs font-bold text-slate-400">آخر 7 أيام</span>
-                  </div>
-                  <div className="flex justify-between items-end h-32 gap-3">
-                    {[40, 70, 55, 90, 60, 85, 50].map((h, i) => (
-                      <div key={i} className="flex-1 bg-slate-50 rounded-t-2xl relative group/bar">
-                        <div className="absolute bottom-0 w-full bg-primary rounded-t-2xl transition-all duration-1000 group-hover/bar:bg-royal" style={{ height: `${h}%` }}></div>
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity font-bold">%{h}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <span>ث</span><span>ث</span><span>أ</span><span>خ</span><span>ج</span><span>س</span><span>ح</span>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col justify-between group hover:-translate-y-1 transition-all">
-                  <div className="flex justify-between items-start">
-                    <div className="w-16 h-16 bg-yellow-50 text-yellow-500 rounded-3xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><Trophy size={32} /></div>
-                    <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">ممتاز</span>
-                  </div>
-                  <div className="mt-6">
-                    <h4 className="text-3xl font-black text-slate-900 tracking-tight">92%</h4>
-                    <p className="text-slate-400 text-sm font-bold mt-1">معدل التزامك بالجدول الدراسي</p>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden">
-                    <div className="bg-yellow-400 h-full w-[92%] rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sidebar Dash */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
-                <div className="absolute -right-4 -top-4 w-24 h-24 bg-orange-50 rounded-full opacity-50 group-hover:scale-150 transition-transform"></div>
-                <h3 className="font-black text-slate-900 mb-8 relative z-10 flex items-center gap-2">الموعد القادم <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div></h3>
-                <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 relative z-10">
-                  <p className="text-[10px] font-black text-orange-500 uppercase mb-3 tracking-widest">غداً • 10:00 صباحاً</p>
-                  <h4 className="font-black text-slate-900 text-lg mb-2">جلسة توجيه شخصية</h4>
-                  <p className="text-slate-500 text-sm font-bold flex items-center gap-2"><User size={16} className="text-primary" /> مع الأستاذ ياسين</p>
-                  <button className="w-full mt-6 py-3 bg-white text-slate-900 border border-slate-200 rounded-xl font-black text-xs hover:bg-slate-900 hover:text-white transition-all shadow-sm">تأكيد الحضور</button>
-                </div>
-              </div>
-
-              <div className="bg-primary p-8 rounded-3xl text-white shadow-2xl shadow-blue-500/30 relative overflow-hidden transform hover:rotate-1 transition-transform">
-                <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mt-16 blur-2xl"></div>
-                <div className="relative z-10">
-                  <h3 className="font-black text-2xl mb-6 flex items-center gap-3">نصيحة اليوم <Target size={24} /></h3>
-                  <p className="text-blue-50 text-lg font-bold leading-relaxed italic">
-                    "الدراسة بذكاء تعني التركيز على 20% من الدروس التي تعطي 80% من النتائج. استعمل تقنية Pareto لضمان الفعالية!"
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center justify-between group cursor-pointer hover:bg-slate-900 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-50 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all"><MessageCircle size={22} /></div>
-                  <div>
-                    <h4 className="font-black text-slate-900 text-sm group-hover:text-white transition-colors">تحتاج مساعدة؟</h4>
-                    <p className="text-slate-400 text-xs font-bold group-hover:text-slate-50">تحدث مع مستشارك</p>
-                  </div>
-                </div>
-                <ChevronRight size={20} className="text-slate-300 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Timetable View */}
-        {
-          activeTab === 'timetable' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                <div>
-                  <h2 className="text-3xl font-black text-slate-900">منظم الوقت الذكي</h2>
-                  <p className="text-slate-400 font-bold mt-2">قم ببرمجة حصص المراجعة لضمان التوازن الأسبوعي</p>
-                </div>
-                <button onClick={() => setShowTaskModal(true)} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-blue-600 transition-all shadow-xl shadow-indigo-500/20 hover:-translate-y-1"><Plus size={24} /> إضافة حصة مراجعة</button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-                {DAYS.map(day => (
-                  <div key={day} className="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-lg shadow-slate-200/40 min-h-[450px] flex flex-col group/day hover:border-primary/20 transition-colors">
-                    <h3 className="font-black text-slate-900 text-center mb-6 pb-4 border-b border-slate-50 group-hover/day:text-primary transition-colors">{day}</h3>
-                    <div className="space-y-4 flex-grow">
-                      {timetable.filter(t => t.day === day).sort((a, b) => a.startTime.localeCompare(b.startTime)).map(task => {
-                        const color = SUBJECT_COLORS[task.subject] || SUBJECT_COLORS['default'];
-                        return (
-                          <div key={task.id} className={`p-4 ${color.bg} ${color.border} rounded-3xl border relative group/task animate-in zoom-in-95`}>
-                            <button onClick={() => removeTask(task.id)} className="absolute -top-2 -left-2 bg-white text-red-500 shadow-md rounded-full p-1 opacity-0 group-hover/task:opacity-100 transition-opacity hover:scale-110"><X size={14} /></button>
-                            <p className={`font-black text-sm ${color.text} mb-1`}>{task.subject}</p>
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                              <Clock size={12} />
-                              <span>{task.startTime} - {task.endTime}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {timetable.filter(t => t.day === day).length === 0 && (
-                        <div className="h-full flex flex-col items-center justify-center text-center py-20">
-                          <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-200"><Calendar size={20} /></div>
-                          <p className="text-[10px] text-slate-300 font-bold tracking-widest uppercase">يوم راحة</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        }
-
-        {/* Resources View */}
-        {
-          activeTab === 'resources' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="flex items-center gap-5 mb-12 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50">
-                <div className="p-5 bg-emerald-50 text-emerald-600 rounded-[2rem] shadow-inner"><Library size={40} /></div>
-                <div>
-                  <h2 className="text-3xl font-black text-slate-900">مستودع الموارد التعليمية</h2>
-                  <p className="text-slate-400 font-bold mt-1 text-lg">ملخصات حصرية ونماذج امتحانات منتقاة بعناية</p>
-                </div>
-              </div>
-
-              {resources.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[4rem] border-4 border-dashed border-slate-100">
-                  <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-8 text-slate-300"><Library size={48} /></div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-4">المستودع فارغ حالياً</h3>
-                  <p className="text-slate-400 font-bold max-w-sm text-center">سيتم إضافة الملخصات ونماذج الامتحانات قريباً، تابعونا.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {resources.map((res, i) => {
-                    const ResourceIcon = ICON_MAP[res.iconName] || Library;
-                    return (
-                      <div key={res.id} className="bg-white p-8 rounded-[3rem] border border-slate-100 hover:shadow-2xl shadow-slate-200/50 transition-all group relative overflow-hidden opacity-0 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'forwards' }}>
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[3rem] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                        <div className="flex justify-between items-start mb-8 relative z-10">
-                          <div className="w-16 h-16 bg-white text-primary rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-slate-200 group-hover:scale-110 transition-transform"><ResourceIcon size={32} /></div>
-                          <span className="text-[10px] font-black bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full uppercase tracking-widest border border-emerald-100">{res.subject}</span>
-                        </div>
-                        <h3 className="font-black text-slate-900 text-xl mb-3 group-hover:text-primary transition-colors">{res.title}</h3>
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-400 mb-8">
-                          <span className="flex items-center gap-1.5"><FileText size={14} /> {res.fileSize}</span>
-                          <span className="flex items-center gap-1.5"><DownloadCloud size={14} /> {res.downloadCount} تحميل</span>
-                        </div>
-                        <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-slate-900/10">
-                          تحميل الملف <Download size={20} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        }
-
-        {/* Videos View */}
-        {
-          activeTab === 'videos' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[4rem] border-4 border-dashed border-slate-100">
-                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-8 text-slate-300"><Film size={48} /></div>
-                <h3 className="text-2xl font-black text-slate-900 mb-4">قسم المحاضرات قيد التطوير</h3>
-                <p className="text-slate-400 font-bold max-w-sm text-center">ترقبوا إطلاق محاضرات الفيديو الحصرية قريباً ضمن مساحتكم الخاصة.</p>
-              </div>
-            </div>
-          )
-        }
-      </main >
-
-      {/* Floating Add Button for Mobile */}
-      <button onClick={() => setShowTaskModal(true)} className="lg:hidden fixed bottom-8 left-8 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl shadow-indigo-500/40 flex items-center justify-center z-50 animate-bounce-slow"><Plus size={32} /></button>
-
-      {/* Task Modal */}
-      {
-        showTaskModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white p-10 rounded-[3.5rem] shadow-2xl w-full max-w-md animate-in zoom-in-95 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-              <div className="flex justify-between items-center mb-10 relative z-10">
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900">إضافة حصة مراجعة</h3>
-                  <p className="text-slate-400 text-xs font-bold mt-1">نظم وقتك لتحقق التوازن</p>
-                </div>
-                <button onClick={() => setShowTaskModal(false)} className="p-3 hover:bg-slate-100 rounded-2xl transition-colors"><X size={24} /></button>
-              </div>
-              <form onSubmit={handleAddTask} className="space-y-6 relative z-10">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 mr-2 uppercase">المادة الدراسية</label>
-                  <select value={newTask.subject} onChange={e => setNewTask({ ...newTask, subject: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-bold appearance-none cursor-pointer">
-                    <option>رياضيات</option><option>فيزياء</option><option>علوم</option><option>فلسفة</option><option>لغات</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 mr-2 uppercase">اليوم</label>
-                  <select value={newTask.day} onChange={e => setNewTask({ ...newTask, day: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-bold appearance-none cursor-pointer">
-                    {DAYS.map(d => <option key={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-400 mr-2 uppercase">وقت البدء</label>
-                    <input type="time" value={newTask.startTime} onChange={e => setNewTask({ ...newTask, startTime: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-indigo-500 outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-400 mr-2 uppercase">وقت الانتهاء</label>
-                    <input type="time" value={newTask.endTime} onChange={e => setNewTask({ ...newTask, endTime: e.target.value })} className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-indigo-500 outline-none" />
-                  </div>
-                </div>
-                <button type="submit" className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl shadow-slate-900/10 hover:bg-indigo-600 transition-all hover:-translate-y-1">تأكيد الإضافة للجدول</button>
-              </form>
-            </div>
-          </div>
-        )
-      }
+      )}
     </div>
   );
 };

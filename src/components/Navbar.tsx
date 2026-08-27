@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
@@ -11,7 +11,15 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleDropdown = (label: string) => {
@@ -126,9 +134,14 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-[0_2px_20px_-12px_rgba(0,0,0,0.06)] z-50 border-b border-white/50 supports-[backdrop-filter]:bg-white/60">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${scrolled
+          ? 'bg-white/90 backdrop-blur-xl shadow-[0_4px_24px_-8px_rgba(15,23,42,0.1)] border-slate-100'
+          : 'bg-white/70 backdrop-blur-md shadow-none border-transparent'
+          } supports-[backdrop-filter]:bg-white/80`}
+      >
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-20 lg:h-24">
+          <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-[76px] lg:h-[88px]' : 'h-20 lg:h-24'}`}>
 
             {/* Logo */}
             <Link to="/" className="flex items-center transition-transform hover:scale-105 duration-300">
@@ -140,10 +153,11 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-8 lg:gap-12">
+            <nav className="hidden md:flex items-center gap-7 lg:gap-10">
               {NAV_ITEMS.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
+              <span className="w-px h-6 bg-slate-200" aria-hidden="true" />
               <LanguageSwitcher />
             </nav>
 

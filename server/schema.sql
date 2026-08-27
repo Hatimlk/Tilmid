@@ -45,8 +45,20 @@ CREATE TABLE IF NOT EXISTS students (
     email VARCHAR(255),
     grade VARCHAR(255),
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('active', 'suspended') DEFAULT 'active',
-    avatar_url VARCHAR(255)
+    -- pending_activation: created by admin but has never logged in yet.
+    -- completed: finished their Mouwakaba program (kept for records, no longer active).
+    -- archived: removed from active operations without deleting the row (prefer over DELETE).
+    -- Existing installs: ALTER TABLE students MODIFY COLUMN status ENUM('active','pending_activation','suspended','completed','archived') DEFAULT 'active';
+    status ENUM('active', 'pending_activation', 'suspended', 'completed', 'archived') DEFAULT 'active',
+    avatar_url VARCHAR(255),
+    -- Active Mouwakaba coaching pack, if any. NULL = no coaching pack (student
+    -- area only, e.g. a Tilmid/Talib-program student not enrolled in Mouwakaba).
+    -- Existing installs: ALTER TABLE students ADD COLUMN package ENUM('essentiel','boost','premium') DEFAULT NULL;
+    package ENUM('essentiel', 'boost', 'premium') DEFAULT NULL,
+    -- Free-text coach name. No coaches table yet (single-admin-team scale) —
+    -- kept as a plain label until a real Coach entity is introduced.
+    -- Existing installs: ALTER TABLE students ADD COLUMN coach_name VARCHAR(255) DEFAULT NULL;
+    coach_name VARCHAR(255) DEFAULT NULL
 );
 
 -- Appointments Table
@@ -56,9 +68,25 @@ CREATE TABLE IF NOT EXISTS appointments (
     title VARCHAR(255),
     date DATE,
     time VARCHAR(50),
-    status ENUM('confirmed', 'pending', 'cancelled') DEFAULT 'confirmed',
+    -- Existing installs: ALTER TABLE appointments MODIFY COLUMN status ENUM('confirmed','pending','cancelled','completed') DEFAULT 'confirmed';
+    status ENUM('confirmed', 'pending', 'cancelled', 'completed') DEFAULT 'confirmed',
     type ENUM('live', 'online') DEFAULT 'live',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Activity Log Table — powers the admin "Activité récente" widget with real
+-- events instead of a fabricated feed. Append-only; never expose password/token
+-- fields in `meta`.
+-- Existing installs: run the CREATE TABLE below once (safe/idempotent, IF NOT EXISTS).
+CREATE TABLE IF NOT EXISTS activity_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    actor_name VARCHAR(255) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_label VARCHAR(255) NOT NULL,
+    meta JSON DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_created_at (created_at)
 );
 
 -- Success Stories Table
@@ -114,6 +142,20 @@ CREATE TABLE IF NOT EXISTS coaching_requests (
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     grade VARCHAR(100),
+    status ENUM('new', 'contacted', 'enrolled', 'archived') DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Orientation Requests Table
+CREATE TABLE IF NOT EXISTS orientation_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    filiere VARCHAR(100),
+    city VARCHAR(100),
+    bac_year VARCHAR(20),
+    regional_grade VARCHAR(20),
+    pack VARCHAR(100),
     status ENUM('new', 'contacted', 'enrolled', 'archived') DEFAULT 'new',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

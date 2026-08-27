@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Instagram, Youtube, Mail, Phone, Facebook } from 'lucide-react';
+import { Instagram, Youtube, Mail, Phone, Facebook, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../constants/images';
 import { useTranslation } from 'react-i18next';
@@ -10,10 +10,10 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-white pt-24 border-t border-slate-100">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 xl:gap-20 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 xl:gap-16 mb-20">
 
           {/* Brand */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <Link to="/" className="flex items-center gap-2 group">
               <img
                 src={IMAGES.LOGOS.OFFICIAL}
@@ -21,12 +21,15 @@ export const Footer: React.FC = () => {
                 className="h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               />
             </Link>
-            <p className="text-slate-500 leading-relaxed text-lg font-medium max-w-sm">
+            <p className="text-slate-500 leading-relaxed text-base font-medium max-w-sm">
+              {t('footer.tagline')}
+            </p>
+            <p className="text-slate-400 leading-relaxed text-sm font-medium max-w-sm">
               {t('footer.description')}
             </p>
           </div>
 
-          {/* Links */}
+          {/* Tilmid */}
           <div>
             <h4 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-3">
               <span className="w-8 h-1 bg-primary rounded-full"></span>
@@ -35,13 +38,15 @@ export const Footer: React.FC = () => {
             <ul className="space-y-4">
               {[
                 { label: t('footer.aboutUs'), href: '/about' },
+                { label: t('nav.tawjih'), href: '/tawjih' },
                 { label: t('footer.coachingOffer'), href: '/coaching-offer' },
+                { label: t('footer.bacSimulator'), href: '/bac-simulator' },
                 { label: t('footer.studentArea'), href: '/student-area' }
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-slate-500 hover:text-primary transition-all duration-300 text-lg font-medium hover:translate-x-1 inline-block"
+                    className="text-slate-500 hover:text-primary transition-all duration-300 text-lg font-medium hover:translate-x-1 rtl:hover:-translate-x-1 inline-block"
                   >
                     {link.label}
                   </Link>
@@ -71,6 +76,14 @@ export const Footer: React.FC = () => {
                     <Mail size={18} />
                   </div>
                   <span className="truncate">contact@tilmide.ma</span>
+                </a>
+              </li>
+              <li>
+                <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors text-lg font-bold">
+                  <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <MessageCircle size={18} />
+                  </div>
+                  <span>WhatsApp</span>
                 </a>
               </li>
             </ul>

@@ -16,6 +16,8 @@
     "studentArea": "Espace Étudiant",
     "contactUs": "Contactez-nous",
     "socialMedia": "Réseaux Sociaux",
+    "bacSimulator": "Calculateur de moyenne",
+    "tagline": "Votre compagnon vers l'excellence académique et professionnelle.",
     "rights": "© {{year}} Tilmid. Tous droits réservés.",
     "privacyPolicy": "Politique de confidentialité",
     "admin": "Administration"
@@ -28,8 +30,8 @@
     "heroTitle2": "vers l'excellence",
     "heroTitle3": "académique et professionnelle",
     "heroDesc": "Découvrez des méthodes d'apprentissage modernes, obtenez une orientation précise, et rejoignez des milliers d'élèves qui ont atteint leurs objectifs avec nous.",
-    "startJourney": "Commencer votre voyage",
-    "discoverUs": "Découvrez-nous",
+    "startJourney": "Commencer mon parcours",
+    "discoverUs": "Découvrir nos programmes",
     "successRate": "Taux de réussite",
     "yearlyRate": "+98% par an",
     "joinUs": "Rejoignez-nous aujourd'hui",
@@ -50,20 +52,51 @@
     "heroesShare1": "Les héros de Tilmid",
     "heroesShare2": "partagent",
     "heroesShare3": "leur expérience",
-    "readySuccess": "Prêt à commencer votre voyage vers le succès avec nous ?",
+    "readySuccess": "Prêt à commencer votre parcours vers le succès avec nous ?",
     "bookConsultation": "Réservez votre première consultation aujourd'hui et découvrez comment nous pouvons améliorer votre parcours d'études.",
     "registerNow": "S'inscrire maintenant",
-    "contactWhatsapp": "Contacter via WhatsApp"
+    "contactWhatsapp": "Contacter via WhatsApp",
+    "heroSkills": ["Consultations pédagogiques", "Techniques de révision", "Gestion du temps", "Orientation", "Excellence", "Motivation"],
+    "studentsBadge": "+2K étudiants accompagnés",
+    "programsEyebrow": "Nos programmes",
+    "programsTitle": "Trois piliers pour construire ton parcours",
+    "programNumber1": "01",
+    "programCategory1": "Orientation",
+    "programNumber2": "02",
+    "programCategory2": "Accompagnement",
+    "programNumber3": "03",
+    "programCategory3": "Écoles",
+    "exploreCoaching": "Explorer l'accompagnement",
+    "exploreSchools": "Explorer les écoles",
+    "autoUpdated": "Mise à jour automatique",
+    "reelsEyebrow": "Conseils & motivation",
+    "successBadge": "Parcours réussi",
+    "trustLine": "Première consultation • Accompagnement personnalisé",
+    "statsEyebrow": "En chiffres",
+    "statsTitle": "Ils nous font confiance",
+    "stats": [
+      { "value": "+2K", "label": "Étudiants accompagnés" },
+      { "value": "98%", "label": "Taux de satisfaction" },
+      { "value": "+50", "label": "Écoles référencées" },
+      { "value": "+100K", "label": "Vues sur nos contenus" }
+    ],
+    "howItWorksEyebrow": "Comment ça marche",
+    "howItWorksTitle": "Votre parcours vers la réussite en 3 étapes",
+    "howItWorksSteps": [
+      { "title": "Découvrez votre profil", "desc": "Analyse de vos objectifs, intérêts et résultats scolaires." },
+      { "title": "Construisez votre parcours", "desc": "Recevez des recommandations adaptées à votre profil." },
+      { "title": "Progressez avec un accompagnement", "desc": "Suivez votre évolution avec nos méthodes et nos mentors." }
+    ]
   },
   "programs": {
     "tawjih": {
       "title": "Orientation Scolaire",
       "subtitle": "Nos objectifs principaux pour t'accompagner en tant qu'élève dans ton parcours d'orientation",
       "features": [
-        { "title": "Garantir le choix de la filière adaptée pour l'avenir", "description": "Nous orientons l'élève pour choisir la filière et le parcours en adéquation avec ses capacités et ambitions, afin d'assurer un parcours scolaire et professionnel réussi." },
-        { "title": "Simplification du processus d'inscription aux grandes écoles", "description": "Nous offrons un service complet couvrant toutes les procédures d'inscription et de suivi, allégeant la pression et la confusion que vivent les élèves et leurs familles." },
-        { "title": "Accompagnement personnalisé pour de meilleures opportunités", "description": "Chaque élève bénéficie de consultations individuelles garantissant les meilleurs choix éducatifs lui ouvrant de larges perspectives d'avenir." },
-        { "title": "Suivi rigoureux des listes principales et d'attente", "description": "Pour ne laisser échapper aucune opportunité, nous surveillons et guidons les élèves à chaque instant jusqu'à ce qu'ils sécurisent leur place dans l'école qu'ils méritent." }
+        { "title": "Choisir la filière adaptée", "description": "Nous aidons chaque élève à comprendre quelles filières correspondent à ses intérêts, son profil académique et ses objectifs d'avenir." },
+        { "title": "Simplifier les inscriptions", "description": "Nous centralisons les délais, les procédures, les documents et les conditions d'admission des principales écoles." },
+        { "title": "Bénéficier d'un accompagnement personnalisé", "description": "Des recommandations construites pour chaque élève, plutôt que des informations génériques." },
+        { "title": "Ne manquer aucune opportunité", "description": "Nous suivons les délais, les listes d'admission et les évolutions des listes d'attente." }
       ],
       "extraTopics": [
         { "title": "La différence entre écoles, instituts et universités", "query": "conseils" },
@@ -104,6 +137,10 @@
     "coaching": {
       "title": "Offre d'Accompagnement",
       "subtitle": "Un programme complet qui garantit ton excellence académique et surmonte tous les obstacles"
+    },
+    "higherSchools": {
+      "title": "Écoles Supérieures",
+      "subtitle": "Explore les écoles supérieures au Maroc, leurs filières et leurs conditions d'accès pour préparer sereinement tes candidatures"
     }
   },
   "programDetails": {
@@ -166,6 +203,143 @@
         "bus": { "t": "Management, Économie et Entrepreneuriat", "d": "Vous êtes un leader né. Vous avez une vision stratégique, vous vous souciez des résultats et de la croissance, et vous appréciez la compétition. Des spécialités comme le commerce et la gestion (ENCG), l'administration des affaires ou l'économie permettront à vos capacités de direction de s'épanouir." }
       }
     }
+  },
+  "orientationPage": {
+    "hero": {
+      "eyebrow": "Trouvez la voie qui vous correspond",
+      "badge": "Programme le plus demandé cette saison",
+      "description": "Découvrez le parcours académique qui correspond réellement à votre profil, vos ambitions et vos résultats. Tilmid vous accompagne de la réflexion jusqu'à l'inscription dans les écoles.",
+      "primaryCta": "Découvrir mon parcours",
+      "secondaryCta": "Parler à un conseiller"
+    },
+    "intro": {
+      "eyebrow": "Pourquoi l'orientation compte",
+      "title": "Choisir sa filière ne devrait pas être un pari",
+      "desc": "Une bonne orientation repose sur votre profil, vos objectifs, vos résultats et les opportunités qui s'offrent réellement à vous.",
+      "points": [
+        { "title": "Comprendre son profil", "desc": "Identifier vos points forts, vos centres d'intérêt et vos résultats académiques." },
+        { "title": "Comparer les bonnes filières", "desc": "Explorer les parcours et écoles réellement accessibles avec votre profil." },
+        { "title": "Construire un choix réaliste", "desc": "Passer d'une décision incertaine à une stratégie claire et réfléchie." }
+      ]
+    },
+    "advisor": {
+      "eyebrow": "Outil intelligent",
+      "steps": ["Profil scolaire", "Centres d'intérêt", "Objectifs", "Parcours recommandés"],
+      "note": "Environ 5 minutes • Gratuit"
+    },
+    "benefits": {
+      "eyebrow": "Ce que vous obtenez",
+      "title": "Un accompagnement conçu pour éviter les mauvais choix"
+    },
+    "process": {
+      "eyebrow": "Comment ça marche",
+      "title": "Votre orientation en 4 étapes simples",
+      "steps": [
+        { "title": "Parlez-nous de vous", "desc": "Profil scolaire, matières, ambitions et préférences." },
+        { "title": "Explorez vos options", "desc": "Découvrez les filières et écoles adaptées à votre profil." },
+        { "title": "Construisez votre stratégie", "desc": "Comparez les conditions d'accès, les dates et vos chances réalistes." },
+        { "title": "Passez à l'action", "desc": "Préparez vos inscriptions et suivez les échéances importantes." }
+      ]
+    },
+    "helpCard": {
+      "title": "Une question sur votre orientation ?",
+      "desc": "Notre équipe vous aide à comprendre vos options et à construire un parcours plus clair.",
+      "whatsappBtn": "Parler sur WhatsApp",
+      "consultBtn": "Réserver une consultation",
+      "availability": "Réponse généralement rapide"
+    },
+    "commitment": {
+      "title": "Notre engagement",
+      "desc": "Nous nous engageons à vous fournir des informations claires, actualisées et adaptées à votre situation académique.",
+      "points": ["Informations vérifiées", "Conseils personnalisés", "Suivi humain disponible"]
+    },
+    "guide": {
+      "eyebrow": "Cadeau exclusif",
+      "titlePart1": "Recevez gratuitement le guide",
+      "titlePart2": "\"Les secrets de l'orientation universitaire\"",
+      "desc": "Un guide pratique pour comprendre les filières, comparer les écoles et construire votre stratégie post-bac.",
+      "features": [
+        { "title": "Comparatif des écoles", "desc": "Conditions d'accès, concours et sélectivité." },
+        { "title": "Choisir selon son profil", "desc": "Méthodes pour identifier les parcours adaptés." },
+        { "title": "Calendrier des inscriptions", "desc": "Les principales périodes à ne pas manquer." },
+        { "title": "Comprendre les débouchés", "desc": "Analyse des métiers et des opportunités." }
+      ],
+      "ctaLabel": "Recevoir le guide gratuitement",
+      "emailPlaceholder": "Votre adresse email"
+    },
+    "testimonials": {
+      "eyebrow": "Expériences étudiants",
+      "title": "Ils ont trouvé une voie plus claire",
+      "badge": "Orientation clarifiée"
+    },
+    "faq": {
+      "eyebrow": "Questions fréquentes",
+      "title": "Questions fréquentes sur l'orientation",
+      "items": [
+        { "q": "À quel moment faut-il commencer son orientation ?", "a": "Le plus tôt est le mieux, idéalement dès la première ou la terminale, mais un accompagnement reste utile à tout moment de votre parcours." },
+        { "q": "L'accompagnement est-il adapté à toutes les filières ?", "a": "Oui, notre méthode s'adapte aux filières scientifiques, littéraires, économiques et techniques." },
+        { "q": "Est-ce que Tilmid aide aussi pour les concours ?", "a": "Oui, nous vous aidons à comprendre les conditions d'accès et à préparer votre dossier pour les concours des grandes écoles." },
+        { "q": "Puis-je être accompagné si je ne connais pas encore mon projet ?", "a": "Bien sûr. C'est justement le point de départ le plus fréquent : nous vous aidons à clarifier votre profil avant de choisir une direction." },
+        { "q": "Comment fonctionne le conseiller IA ?", "a": "Il analyse vos réponses sur votre profil, vos matières et vos ambitions pour vous suggérer les parcours les plus pertinents." },
+        { "q": "L'accompagnement concerne-t-il aussi les écoles privées ?", "a": "Oui, nous couvrons aussi bien les établissements publics que les écoles privées reconnues." }
+      ]
+    },
+    "finalCta": {
+      "eyebrow": "Votre avenir commence ici",
+      "title": "Vous hésitez encore sur votre orientation ?",
+      "desc": "Faites le point sur votre profil et découvrez les options qui correspondent réellement à votre projet.",
+      "primaryCta": "Commencer mon orientation",
+      "secondaryCta": "Parler à un conseiller"
+    }
+  },
+  "studentLogin": {
+    "panel": {
+      "badge": "Espace Étudiant",
+      "title1": "Votre espace pour avancer",
+      "title2": "vers vos objectifs",
+      "description": "Retrouvez vos ressources, vos outils et votre accompagnement Tilmid.",
+      "benefits": [
+        { "title": "Votre emploi du temps", "desc": "Organisez vos séances de révision et suivez votre semaine." },
+        { "title": "Votre bibliothèque", "desc": "Retrouvez les ressources et documents mis à votre disposition." },
+        { "title": "Votre accompagnement", "desc": "Restez en contact avec votre conseiller Tilmid." }
+      ]
+    },
+    "eyebrow": "Espace Étudiant",
+    "title": "Heureux de vous revoir !",
+    "subtitle": "Connectez-vous pour retrouver votre espace Tilmid et poursuivre votre parcours.",
+    "identifierLabel": "Identifiant",
+    "identifierPlaceholder": "Entrez votre identifiant",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "helpLink": "Besoin d'aide pour vous connecter ?",
+    "submit": "Se connecter",
+    "submitLoading": "Connexion...",
+    "submitSuccess": "Connexion réussie",
+    "capsLock": "Verr. Maj. est activée",
+    "errors": {
+      "emptyIdentifier": "Veuillez saisir votre identifiant.",
+      "emptyPassword": "Veuillez saisir votre mot de passe.",
+      "invalidTitle": "Identifiants incorrects",
+      "invalidDesc": "L'identifiant ou le mot de passe saisi est incorrect. Vérifiez vos informations et réessayez.",
+      "networkTitle": "Impossible de se connecter",
+      "networkDesc": "Une erreur réseau est survenue. Vérifiez votre connexion puis réessayez.",
+      "rateLimitTitle": "Trop de tentatives",
+      "rateLimitDesc": "Veuillez patienter quelques instants avant de réessayer.",
+      "retry": "Réessayer"
+    },
+    "noAccount": {
+      "title": "Vous n'avez pas encore vos identifiants ?",
+      "desc": "Vos accès sont transmis après l'activation de votre accompagnement.",
+      "cta": "Contacter Tilmid"
+    },
+    "support": {
+      "title": "Besoin d'aide ?",
+      "desc": "Si vous rencontrez un problème pour accéder à votre espace, notre équipe peut vous aider.",
+      "cta": "Contacter le support"
+    },
+    "trust": "Accès réservé aux étudiants Tilmid"
   },
   "reels": {
     "reel1": "Une dose d'espoir, vous allez être fiers de vous... N'abandonnez pas ✌️❤️🫡",

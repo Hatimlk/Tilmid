@@ -1,11 +1,16 @@
 
 import { api } from '../lib/api';
-import { Student, Appointment, SuccessStory, StudyResource, ContactMessage } from '../types';
+import { Student, Appointment, SuccessStory, StudyResource, ContactMessage, ActivityEntry } from '../types';
 
-// The backend stores/returns the students table's avatar_url column as-is;
-// the frontend Student type uses `avatar`. Normalize here so <img src={student.avatar}>
-// doesn't silently render a broken image everywhere a student record is read.
-const mapStudent = (s: any): Student => (s ? { ...s, avatar: s.avatar ?? s.avatar_url } : s);
+// The backend stores/returns the students table's avatar_url / coach_name / join_date
+// columns as-is; the frontend Student type uses `avatar` / `coachName` / `joinDate`.
+// Normalize here so every reader gets consistent field names without repeating this mapping.
+const mapStudent = (s: any): Student => (s ? {
+  ...s,
+  avatar: s.avatar ?? s.avatar_url,
+  coachName: s.coachName ?? s.coach_name ?? null,
+  joinDate: s.joinDate ?? s.join_date,
+} : s);
 
 export const dataManager = {
   // --- Initialization ---
@@ -78,6 +83,11 @@ export const dataManager = {
     return await api.get('/resources');
   },
 
+  // --- Activity log ---
+  getActivity: async (): Promise<ActivityEntry[]> => {
+    return await api.get('/activity');
+  },
+
   // --- Coaching Requests ---
   getCoachingRequests: async (): Promise<any[]> => {
     return await api.get('/coaching-requests');
@@ -85,6 +95,23 @@ export const dataManager = {
 
   saveCoachingRequest: async (request: { name: string; phone: string; grade: string }): Promise<void> => {
     await api.post('/coaching-requests', request);
+  },
+
+  // --- Orientation Requests ---
+  getOrientationRequests: async (): Promise<any[]> => {
+    return await api.get('/orientation-requests');
+  },
+
+  saveOrientationRequest: async (request: {
+    name: string;
+    phone: string;
+    filiere: string;
+    city: string;
+    bacYear: string;
+    regionalGrade: string;
+    pack: string;
+  }): Promise<void> => {
+    await api.post('/orientation-requests', request);
   },
 
   // --- Uploads ---

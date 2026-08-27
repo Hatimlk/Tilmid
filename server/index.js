@@ -69,6 +69,21 @@ function requireAdmin(req, res, next) {
     });
 }
 
+/* ---------------- ACTIVITY LOG ---------------- */
+// Best-effort: a logging failure must never break the underlying action.
+async function logActivity(actorId, action, entityType, entityLabel, meta) {
+    try {
+        const [users] = await db.query('SELECT username FROM users WHERE id = ?', [actorId]);
+        const actorName = users[0]?.username || 'Admin';
+        await db.query(
+            'INSERT INTO activity_log (actor_name, action, entity_type, entity_label, meta) VALUES (?, ?, ?, ?, ?)',
+            [actorName, action, entityType, entityLabel, meta ? JSON.stringify(meta) : null]
+        );
+    } catch (err) {
+        console.error('Activity log insert failed:', err.message);
+    }
+}
+
 // Test Route
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Server is running' });
@@ -175,7 +190,7 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
     try {
         if (req.user.role === 'student') {
             const [rows] = await db.query(
-                'SELECT id, name, username, email, grade, join_date, status, avatar_url FROM students WHERE id = ?',
+                'SELECT id, name, username, email, grade, join_date, status, avatar_url, package FROM students WHERE id = ?',
                 [req.user.id]
             );
             if (!rows[0] || rows[0].status !== 'active') return res.status(401).json({ message: 'Unauthorized' });
@@ -284,7 +299,7 @@ app.delete('/api/posts/:id', requireAdmin, async (req, res) => {
 app.get('/api/students', requireAdmin, async (req, res) => {
     try {
         const [students] = await db.query(
-            'SELECT id, name, username, email, grade, join_date, status, avatar_url FROM students ORDER BY join_date DESC'
+            'SELECT id, name, username, email, grade, join_date, status, avatar_url, package, coach_name FROM students ORDER BY join_date DESC'
         );
         res.json(students);
     } catch (err) {
@@ -293,31 +308,47 @@ app.get('/api/students', requireAdmin, async (req, res) => {
     }
 });
 
+const VALID_PACKAGES = ['essentiel', 'boost', 'premium'];
+const normalizePackage = (pkg) => (VALID_PACKAGES.includes(pkg) ? pkg : null);
+
 app.post('/api/students', requireAdmin, async (req, res) => {
-    const { id, name, username, email, grade, status, avatar, password } = req.body;
+    const { id, name, username, email, grade, status, avatar, password, coachName } = req.body;
+    const pkg = normalizePackage(req.body.package);
     const isUpdate = id && /^\d+$/.test(String(id));
 
     try {
         if (isUpdate) {
+            const [existingRows] = await db.query('SELECT status, package FROM students WHERE id = ?', [id]);
+            const existing = existingRows[0];
+
             if (password) {
                 const hash = await bcrypt.hash(password, 10);
                 await db.query(
-                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=? WHERE id=?',
-                    [name, username, email, grade, status, avatar, hash, id]
+                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=? WHERE id=?',
+                    [name, username, email, grade, status, avatar, hash, pkg, coachName || null, id]
                 );
             } else {
                 await db.query(
-                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=? WHERE id=?',
-                    [name, username, email, grade, status, avatar, id]
+                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, package=?, coach_name=? WHERE id=?',
+                    [name, username, email, grade, status, avatar, pkg, coachName || null, id]
                 );
             }
+
+            if (existing && existing.package !== pkg) {
+                await logActivity(req.user.id, 'package_changed', 'student', name, { from: existing.package, to: pkg });
+            }
+            if (existing && existing.status !== status) {
+                await logActivity(req.user.id, 'status_changed', 'student', name, { from: existing.status, to: status });
+            }
+
             res.json({ id: Number(id), message: 'Student updated' });
         } else {
             const hash = password ? await bcrypt.hash(password, 10) : null;
             const [result] = await db.query(
-                'INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [name, username, email, grade, status, avatar, hash]
+                'INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash, package, coach_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [name, username, email, grade, status, avatar, hash, pkg, coachName || null]
             );
+            await logActivity(req.user.id, 'student_created', 'student', name, { package: pkg });
             res.status(201).json({ id: result.insertId, message: 'Student created' });
         }
     } catch (err) {
@@ -339,7 +370,7 @@ app.delete('/api/students/:id', requireAdmin, async (req, res) => {
 /* ---------------- APPOINTMENTS ROUTES (admin only) ---------------- */
 app.get('/api/appointments', requireAdmin, async (req, res) => {
     try {
-        const [appointments] = await db.query('SELECT * FROM appointments ORDER BY created_at DESC');
+        const [appointments] = await db.query('SELECT * FROM appointments ORDER BY date DESC');
         res.json(appointments);
     } catch (err) {
         console.error(err);
@@ -347,14 +378,62 @@ app.get('/api/appointments', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/appointments', requireAdmin, async (req, res) => {
-    const { studentName, title, date, time, status, type } = req.body;
+app.delete('/api/appointments/:id', requireAdmin, async (req, res) => {
     try {
+        await db.query('DELETE FROM appointments WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Appointment deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/appointments', requireAdmin, async (req, res) => {
+    const { id } = req.body;
+    const isUpdate = id && /^\d+$/.test(String(id));
+
+    try {
+        if (isUpdate) {
+            const [existingRows] = await db.query('SELECT * FROM appointments WHERE id = ?', [id]);
+            const existing = existingRows[0];
+            if (!existing) return res.status(404).json({ message: 'Appointment not found' });
+
+            const studentName = req.body.studentName ?? existing.student_name;
+            const title = req.body.title ?? existing.title;
+            const date = req.body.date ?? existing.date;
+            const time = req.body.time ?? existing.time;
+            const status = req.body.status ?? existing.status;
+            const type = req.body.type ?? existing.type;
+
+            await db.query(
+                'UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=? WHERE id=?',
+                [studentName, title, date, time, status, type, id]
+            );
+            if (existing.status !== status) {
+                await logActivity(req.user.id, 'appointment_status_changed', 'appointment', title, { student: studentName, from: existing.status, to: status });
+            }
+            return res.json({ id: Number(id), message: 'Appointment updated' });
+        }
+
+        const { studentName, title, date, time, status = 'confirmed', type = 'live' } = req.body;
         const [result] = await db.query(
             'INSERT INTO appointments (student_name, title, date, time, status, type) VALUES (?, ?, ?, ?, ?, ?)',
             [studentName, title, date, time, status, type]
         );
-        res.status(201).json({ id: result.insertId, ...req.body });
+        await logActivity(req.user.id, 'appointment_created', 'appointment', title, { student: studentName, date, time });
+        res.status(201).json({ id: result.insertId, message: 'Appointment created' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/activity', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT id, actor_name, action, entity_type, entity_label, meta, created_at FROM activity_log ORDER BY created_at DESC LIMIT 30'
+        );
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -428,6 +507,31 @@ app.post('/api/coaching-requests', async (req, res) => {
         const [result] = await db.query(
             'INSERT INTO coaching_requests (name, phone, grade) VALUES (?, ?, ?)',
             [name, phone, grade]
+        );
+        res.status(201).json({ id: result.insertId, ...req.body });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- ORIENTATION REQUESTS ROUTES ---------------- */
+app.get('/api/orientation-requests', requireAdmin, async (req, res) => {
+    try {
+        const [requests] = await db.query('SELECT * FROM orientation_requests ORDER BY created_at DESC');
+        res.json(requests);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/orientation-requests', async (req, res) => {
+    const { name, phone, filiere, city, bacYear, regionalGrade, pack } = req.body;
+    try {
+        const [result] = await db.query(
+            'INSERT INTO orientation_requests (name, phone, filiere, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [name, phone, filiere, city, bacYear, regionalGrade, pack]
         );
         res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {

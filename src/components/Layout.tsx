@@ -15,6 +15,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isLoginRoute = location.pathname === '/login';
   const isStudentArea = location.pathname.startsWith('/student-area');
   const isOfferPage = location.pathname === '/coaching-offer';
   const isProgramPage = location.pathname.startsWith('/program/');
@@ -57,26 +58,26 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
-      {!isAdminRoute && <Navbar />}
-      
+      {!isAdminRoute && !isLoginRoute && <Navbar />}
+
       {/* Scroll Progress Bar (Top Sticky) */}
-      {!isAdminRoute && (
+      {!isAdminRoute && !isLoginRoute && (
         <div className="fixed top-0 left-0 w-full h-1 z-[60] pointer-events-none">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-primary to-royal transition-all duration-150 ease-out"
             style={{ width: `${scrollProgress}%` }}
           ></div>
         </div>
       )}
 
-      <main className={`flex-grow ${!isAdminRoute ? 'pt-24 lg:pt-28' : ''}`}>
+      <main className={`flex-grow ${!isAdminRoute && !isLoginRoute ? 'pt-24 lg:pt-28' : ''}`}>
         {children}
       </main>
+
+      {!isAdminRoute && !isStudentArea && !isLoginRoute && <Footer />}
       
-      {!isAdminRoute && !isStudentArea && <Footer />}
-      
-      {/* Mobile Table of Contents (TOC) Toggle */}
-      {(isProgramPage || isOfferPage) && !isAdminRoute && (
+      {/* Mobile Table of Contents (TOC) Toggle — not on /coaching-offer: that page ships its own French mobile CTA/nav */}
+      {isProgramPage && !isAdminRoute && (
         <div className="md:hidden fixed bottom-24 right-6 z-40 animate-in fade-in slide-in-from-right duration-500">
            <button 
              onClick={() => setIsTOCOpen(true)}
@@ -115,8 +116,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       )}
       
-      {/* Mobile Sticky CTA Bar */}
-      {!isAdminRoute && (isOfferPage || isProgramPage) && (
+      {/* Mobile Sticky CTA Bar — not on /coaching-offer: that page ships its own French sticky CTA */}
+      {!isAdminRoute && isProgramPage && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-blue-50 p-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,149,255,0.15)] animate-in slide-in-from-bottom duration-500">
            <div className="flex flex-col">
               <span className="text-[10px] font-black text-primary uppercase tracking-widest">فرصة النجاح</span>
@@ -136,6 +137,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Floating Action Buttons */}
+      {!isLoginRoute && (
       <div className={`fixed ${isOfferPage || isProgramPage ? 'bottom-24 md:bottom-10' : 'bottom-10'} right-6 z-40 flex flex-col gap-5 items-center transition-all`}>
         
         {/* Scroll To Top */}
@@ -169,6 +171,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };

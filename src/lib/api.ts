@@ -1,5 +1,21 @@
 // Automatically use production URL when built, otherwise localhost
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://tilmide.ma/api' : 'http://localhost:5000/api');
+
+export interface ApiError extends Error {
+  status?: number;
+}
+
+// Attaches the HTTP status to the thrown Error (in addition to the existing
+// .message text) so callers can distinguish e.g. invalid credentials (400)
+// from rate-limiting (429) without parsing response bodies. Purely additive —
+// .message keeps its previous shape, so existing catch blocks are unaffected.
+const throwApiError = async (res: Response): Promise<never> => {
+  const text = await res.text();
+  const err: ApiError = new Error(text);
+  err.status = res.status;
+  throw err;
+};
+
 export const api = {
     get: async (endpoint: string) => {
         const token = localStorage.getItem('token');
@@ -12,7 +28,7 @@ export const api = {
             method: 'GET',
             headers,
         });
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) return throwApiError(res);
         return res.json();
     },
 
@@ -28,7 +44,7 @@ export const api = {
             headers,
             body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) return throwApiError(res);
         return res.json();
     },
 
@@ -43,7 +59,7 @@ export const api = {
             method: 'DELETE',
             headers,
         });
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) return throwApiError(res);
         return res.json();
     },
 };
