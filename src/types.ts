@@ -21,9 +21,20 @@ export interface StudyResource {
   title: string;
   subject: string;
   type: 'summary' | 'exam' | 'formula';
+  url: string;
   fileSize: string;
   downloadCount: number;
   iconName: string;
+}
+
+export interface CourseModule {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  position: number;
+  videoUrl: string | null;
+  videoSource: 'link' | 'upload' | null;
 }
 
 export interface TimetableTask {
@@ -101,6 +112,83 @@ export interface Appointment {
   time: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   type: string;
+  /** Links the appointment to a real student record — needed for coaching sessions. */
+  studentId?: number | null;
+  /** 'coaching' for an individual coaching session; absent/null for a generic rendez-vous. */
+  category?: 'coaching' | null;
+  /** Admin's post-session notes (coaching sessions only). */
+  notes?: string | null;
+}
+
+export interface FeedbackEntry {
+  id: number;
+  studentId: number;
+  studentName?: string;
+  studentUsername?: string;
+  appointmentId?: number | null;
+  message: string;
+  authorName?: string | null;
+  createdAt: string;
+}
+
+export interface PlanOverviewRow {
+  studentId: number;
+  name: string;
+  username: string;
+  objective: string;
+  actions: { id: string; text: string; done: boolean }[];
+  updatedAt: string | null;
+}
+
+export interface CheckInOverviewRow {
+  id: number;
+  studentId: number;
+  studentName: string;
+  studentUsername: string;
+  adherence: number | null;
+  daysRespected: number | null;
+  obstacle: string | null;
+  concentration: number | null;
+  success: string | null;
+  needsAdjustment: boolean;
+  createdAt: string;
+}
+
+export interface ProgressOverviewRow {
+  studentId: number;
+  name: string;
+  username: string;
+  package: MouwakabaPackage | null;
+  planActionsTotal: number;
+  planActionsDone: number;
+  goalsTotal: number;
+  goalsAtteints: number;
+  revisionsLast7d: number;
+  habitCount: number;
+  habitConsistencyPct: number | null;
+}
+
+export interface CollectiveSession {
+  id: number;
+  title: string;
+  description: string | null;
+  date: string;
+  time: string;
+  capacity: number | null;
+  meetingLink: string | null;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  registeredCount: number;
+  myRegistration?: boolean;
+}
+
+export interface CollectiveSessionRegistration {
+  id: number;
+  sessionId: number;
+  studentId: number;
+  studentName: string;
+  studentUsername: string;
+  attended: boolean | null;
+  registeredAt: string;
 }
 
 export interface ActivityEntry {

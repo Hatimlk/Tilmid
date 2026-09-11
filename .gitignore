@@ -21,6 +21,8 @@ server/.env
 server/uploads/*
 !server/uploads/.gitkeep
 server-php/.env
+server-php/uploads/*
+!server-php/uploads/.htaccess
 
 # Editor directories and files
 .vscode/*

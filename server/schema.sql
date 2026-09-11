@@ -71,7 +71,12 @@ CREATE TABLE IF NOT EXISTS appointments (
     -- Existing installs: ALTER TABLE appointments MODIFY COLUMN status ENUM('confirmed','pending','cancelled','completed') DEFAULT 'confirmed';
     status ENUM('confirmed', 'pending', 'cancelled', 'completed') DEFAULT 'confirmed',
     type ENUM('live', 'online') DEFAULT 'live',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- Existing installs: see migrate.php for the ALTER TABLE statements that add these three columns.
+    student_id INT DEFAULT NULL,
+    category VARCHAR(50) DEFAULT NULL, -- 'coaching' for an individual coaching session, NULL for a generic rendez-vous
+    notes TEXT DEFAULT NULL,           -- admin's post-session notes (coaching sessions)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL
 );
 
 -- Activity Log Table — powers the admin "Activité récente" widget with real
@@ -158,6 +163,149 @@ CREATE TABLE IF NOT EXISTS orientation_requests (
     pack VARCHAR(100),
     status ENUM('new', 'contacted', 'enrolled', 'archived') DEFAULT 'new',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Self-guided plan Table — one row per student (Mon Plan). `actions` is a JSON
+-- array of {id,text,done}; `habits` is a JSON array of strings. Written by the
+-- student, read by admin (StudentDetail "Plan" tab) for real-time visibility.
+CREATE TABLE IF NOT EXISTS self_guided_plans (
+    student_id INT PRIMARY KEY,
+    objective VARCHAR(500) DEFAULT '',
+    start_date VARCHAR(50) DEFAULT '',
+    obstacles TEXT,
+    actions JSON DEFAULT NULL,
+    habits JSON DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Goals Table (Objectifs, in Mes outils)
+CREATE TABLE IF NOT EXISTS goals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(50),
+    target_date VARCHAR(50),
+    progress INT DEFAULT 0,
+    status VARCHAR(30) DEFAULT 'a_demarrer',
+    next_action VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Revision sessions Table (Suivi des révisions, in Mes outils)
+CREATE TABLE IF NOT EXISTS revision_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    chapter VARCHAR(255),
+    duration_min INT DEFAULT 0,
+    technique VARCHAR(100),
+    understanding INT DEFAULT 3,
+    session_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Habits Table (Habit tracker, in Mes outils). `days` is a JSON array of 7 booleans (Mon->Sun).
+CREATE TABLE IF NOT EXISTS habits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    days JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Error log Table (Mon Error Log, in Mes outils)
+CREATE TABLE IF NOT EXISTS error_log_entries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    topic VARCHAR(255),
+    mistake TEXT NOT NULL,
+    reason TEXT,
+    correct_method TEXT,
+    review_date VARCHAR(50),
+    status VARCHAR(30) DEFAULT 'a_revoir',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Check-ins Table (self-log, Boost/Premium)
+CREATE TABLE IF NOT EXISTS checkins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    adherence INT,
+    days_respected INT,
+    obstacle VARCHAR(500),
+    concentration INT,
+    success TEXT,
+    needs_adjustment BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Course modules Table — the 5 fixed Mouwakaba modules shown in "Mes contenus".
+-- Rows are seeded once (by slug) and never created/deleted from the app; the
+-- admin only attaches a video to each (external link OR an uploaded file).
+CREATE TABLE IF NOT EXISTS course_modules (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(50) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    position INT DEFAULT 0,
+    -- video_url holds either the external link (YouTube/Vimeo/...) or the
+    -- /api/uploads/videos/... path of an uploaded file, depending on video_source.
+    video_url VARCHAR(500) DEFAULT NULL,
+    video_source ENUM('link', 'upload') DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO course_modules (slug, title, description, position) VALUES
+    ('diagnostic-objectifs', 'Faire le point & définir ses objectifs', 'Diagnostic de votre situation actuelle et définition de vos objectifs.', 1),
+    ('planning-efficace', 'Construire un planning efficace', 'Organisation et création d''un programme hebdomadaire.', 2),
+    ('procrastination', 'Vaincre la procrastination', 'Lutte contre la procrastination et les distractions.', 3),
+    ('revisions-efficaces', 'Réviser plus efficacement', 'Techniques de révision et d''apprentissage.', 4),
+    ('preparation-examens', 'Préparer les examens & gérer la pression', 'Préparation aux examens et gestion de la pression.', 5);
+
+-- Feedback Table — short messages a coach/admin sends a student after a
+-- session or Check-in (Feedback tab/page). appointment_id is an optional
+-- link back to the coaching session the feedback is about.
+CREATE TABLE IF NOT EXISTS feedback (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    appointment_id INT DEFAULT NULL,
+    message TEXT NOT NULL,
+    author_name VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
+);
+
+-- Collective sessions Table (Sessions collectives) — group sessions any
+-- Mouwakaba student can register for, independent of individual coaching.
+CREATE TABLE IF NOT EXISTS collective_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    date DATE NOT NULL,
+    time VARCHAR(50) NOT NULL,
+    capacity INT DEFAULT NULL,
+    meeting_link VARCHAR(500) DEFAULT NULL,
+    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Registrations for the above — join table, one row per student per session.
+CREATE TABLE IF NOT EXISTS collective_session_registrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    student_id INT NOT NULL,
+    attended BOOLEAN DEFAULT NULL,
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES collective_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    UNIQUE KEY uniq_session_student (session_id, student_id)
 );
 
 -- Login Attempts Table (basic rate limiting for /api/auth/login and /api/students/login)

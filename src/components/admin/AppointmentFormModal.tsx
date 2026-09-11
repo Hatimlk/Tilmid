@@ -10,7 +10,7 @@ export const AppointmentFormModal: React.FC<{
   onClose: () => void;
   onSaved: () => void;
 }> = ({ open, students, appointment, onClose, onSaved }) => {
-  const [form, setForm] = useState<Partial<Appointment>>({ status: 'confirmed', type: 'live', date: '', time: '10:00', studentName: '', title: '' });
+  const [form, setForm] = useState<Partial<Appointment>>({ status: 'confirmed', type: 'live', date: '', time: '10:00', studentName: '', title: '', category: null, studentId: null, notes: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -18,7 +18,7 @@ export const AppointmentFormModal: React.FC<{
 
   useEffect(() => {
     if (open) {
-      setForm(appointment ? { ...appointment } : { status: 'confirmed', type: 'live', date: new Date().toISOString().split('T')[0], time: '10:00', studentName: '', title: '' });
+      setForm(appointment ? { ...appointment } : { status: 'confirmed', type: 'live', date: new Date().toISOString().split('T')[0], time: '10:00', studentName: '', title: '', category: null, studentId: null, notes: '' });
       setError('');
     }
   }, [open, appointment]);
@@ -66,10 +66,26 @@ export const AppointmentFormModal: React.FC<{
 
           <div>
             <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Étudiant</label>
-            <select required value={form.studentName || ''} onChange={(e) => setForm({ ...form, studentName: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white">
+            <select
+              required
+              value={form.studentName || ''}
+              onChange={(e) => {
+                const s = students.find((st) => st.name === e.target.value);
+                setForm({ ...form, studentName: e.target.value, studentId: s ? Number(s.id) : null });
+              }}
+              className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white"
+            >
               <option value="">Choisir un étudiant...</option>
               {students.map((s) => <option key={s.id} value={s.name}>{s.name} ({s.grade})</option>)}
             </select>
+          </div>
+
+          <div>
+            <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Type</label>
+            <div className="flex bg-slate-100 rounded-xl p-1">
+              <button type="button" onClick={() => setForm({ ...form, category: null })} className={`flex-1 h-9 rounded-lg text-[12.5px] font-bold transition-colors ${!form.category ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Rendez-vous</button>
+              <button type="button" onClick={() => setForm({ ...form, category: 'coaching' })} className={`flex-1 h-9 rounded-lg text-[12.5px] font-bold transition-colors ${form.category === 'coaching' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Séance de coaching</button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -82,6 +98,13 @@ export const AppointmentFormModal: React.FC<{
               <input required type="time" value={form.time || ''} onChange={(e) => setForm({ ...form, time: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[13.5px]" />
             </div>
           </div>
+
+          {form.category === 'coaching' && (
+            <div>
+              <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Notes (privées, visibles par l'équipe uniquement)</label>
+              <textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[13.5px] resize-none" placeholder="Points abordés, prochaines étapes..." />
+            </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 h-12 rounded-xl border border-slate-200 font-bold text-[13.5px] text-slate-600 hover:bg-slate-50">Annuler</button>

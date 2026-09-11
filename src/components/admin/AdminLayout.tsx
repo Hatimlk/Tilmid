@@ -7,12 +7,16 @@ import { AdminTopbar } from './AdminTopbar';
 import { CommandPalette } from './CommandPalette';
 import { StudentFormModal } from './StudentFormModal';
 import { AppointmentFormModal } from './AppointmentFormModal';
-import { Student, Appointment } from '../../types';
+import { FeedbackFormModal } from './FeedbackFormModal';
+import { CollectiveSessionFormModal } from './CollectiveSessionFormModal';
+import { Student, Appointment, CollectiveSession } from '../../types';
 import SEO from '../SEO';
 
 export interface AdminOutletContext {
   openStudentModal: (student?: Student | null) => void;
   openAppointmentModal: (appointment?: Appointment | null) => void;
+  openFeedbackModal: (studentId?: number | string | null) => void;
+  openCollectiveSessionModal: (session?: CollectiveSession | null) => void;
 }
 
 export const useAdminOutletContext = () => useOutletContext<AdminOutletContext>();
@@ -20,12 +24,14 @@ export const useAdminOutletContext = () => useOutletContext<AdminOutletContext>(
 const AdminShell: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { students, refreshStudents, refreshAppointments } = useAdminData();
+  const { students, refreshStudents, refreshAppointments, refreshCoachingSessions, refreshFeedback, refreshCollectiveSessions } = useAdminData();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [studentModal, setStudentModal] = useState<{ open: boolean; student: Student | null }>({ open: false, student: null });
   const [appointmentModal, setAppointmentModal] = useState<{ open: boolean; appointment: Appointment | null }>({ open: false, appointment: null });
+  const [feedbackModal, setFeedbackModal] = useState<{ open: boolean; studentId: number | string | null }>({ open: false, studentId: null });
+  const [collectiveSessionModal, setCollectiveSessionModal] = useState<{ open: boolean; session: CollectiveSession | null }>({ open: false, session: null });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,6 +51,8 @@ const AdminShell: React.FC = () => {
 
   const openStudentModal = (student?: Student | null) => setStudentModal({ open: true, student: student || null });
   const openAppointmentModal = (appointment?: Appointment | null) => setAppointmentModal({ open: true, appointment: appointment || null });
+  const openFeedbackModal = (studentId?: number | string | null) => setFeedbackModal({ open: true, studentId: studentId ?? null });
+  const openCollectiveSessionModal = (session?: CollectiveSession | null) => setCollectiveSessionModal({ open: true, session: session || null });
 
   return (
     <div className="min-h-screen flex bg-[#F5F7FA] font-sans" dir="ltr">
@@ -68,7 +76,7 @@ const AdminShell: React.FC = () => {
 
         <main className="flex-1 px-4 py-6 lg:px-8 lg:py-7">
           <div className="max-w-[1500px] mx-auto">
-            <Outlet context={{ openStudentModal, openAppointmentModal } satisfies AdminOutletContext} />
+            <Outlet context={{ openStudentModal, openAppointmentModal, openFeedbackModal, openCollectiveSessionModal } satisfies AdminOutletContext} />
           </div>
         </main>
       </div>
@@ -86,7 +94,20 @@ const AdminShell: React.FC = () => {
         students={students.data}
         appointment={appointmentModal.appointment}
         onClose={() => setAppointmentModal({ open: false, appointment: null })}
-        onSaved={refreshAppointments}
+        onSaved={() => { refreshAppointments(); refreshCoachingSessions(); }}
+      />
+      <FeedbackFormModal
+        open={feedbackModal.open}
+        students={students.data}
+        studentId={feedbackModal.studentId}
+        onClose={() => setFeedbackModal({ open: false, studentId: null })}
+        onSaved={refreshFeedback}
+      />
+      <CollectiveSessionFormModal
+        open={collectiveSessionModal.open}
+        session={collectiveSessionModal.session}
+        onClose={() => setCollectiveSessionModal({ open: false, session: null })}
+        onSaved={refreshCollectiveSessions}
       />
     </div>
   );

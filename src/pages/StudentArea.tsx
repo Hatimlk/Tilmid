@@ -5,7 +5,7 @@ import {
   Lock, Eye, EyeOff, Loader2, CheckCircle2, WifiOff, Keyboard, ShieldCheck, ArrowLeft
 } from 'lucide-react';
 import { dataManager } from '../utils/dataManager';
-import { Student, StudyResource, TimetableTask } from '../types';
+import { Student, StudyResource } from '../types';
 import { IMAGES } from '../constants/images';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ import { ApiError } from '../lib/api';
 import { getEntitlements } from '../utils/entitlements';
 import { StudentTab, StudentSidebar, StudentMobileNav } from '../components/student/navigation';
 import { StudentHeader } from '../components/student/StudentHeader';
+import { useTimetable } from '../hooks/useStudentData';
 import { DashboardHome } from './student/DashboardHome';
 import { MonParcours } from './student/MonParcours';
 import { MonPlan } from './student/MonPlan';
@@ -285,8 +286,8 @@ export const StudentArea: React.FC = () => {
   const user = isStudent ? (authUser as unknown as Student) : null;
   const entitlements = getEntitlements(user?.package);
 
-  // Timetable state — real, on-device (no backend model exists for it yet)
-  const [timetable, setTimetable] = useState<TimetableTask[]>([]);
+  // Timetable — synced with the backend, visible to admin in near real time
+  const { items: timetable, add: addTimetableItem, remove: removeTimetableItem } = useTimetable(user?.username || '');
   // Resources — real data from the backend
   const [resources, setResources] = useState<StudyResource[]>([]);
 
@@ -296,8 +297,6 @@ export const StudentArea: React.FC = () => {
       try {
         const res = await dataManager.getResources();
         setResources(res);
-        const storedTable = localStorage.getItem(`timetable_${user.username}`);
-        if (storedTable) setTimetable(JSON.parse(storedTable));
       } catch (e) {
         console.error("Error loading student data", e);
       }
@@ -322,22 +321,6 @@ export const StudentArea: React.FC = () => {
       else setLoginErrorKind('network');
       setLoginPending(false);
     }
-  };
-
-  const addTimetableTask = (task: TimetableTask) => {
-    setTimetable((prev) => {
-      const updated = [...prev, task];
-      localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const removeTimetableTask = (id: string) => {
-    setTimetable((prev) => {
-      const updated = prev.filter((t) => t.id !== id);
-      localStorage.setItem(`timetable_${user!.username}`, JSON.stringify(updated));
-      return updated;
-    });
   };
 
   if (authLoading) return null;
@@ -367,7 +350,7 @@ export const StudentArea: React.FC = () => {
             {activeTab === 'dashboard' && <DashboardHome student={user} entitlements={entitlements} timetable={timetable} onNavigate={setActiveTab} />}
             {activeTab === 'parcours' && <MonParcours student={user} entitlements={entitlements} />}
             {activeTab === 'plan' && <MonPlan student={user} entitlements={entitlements} onNavigate={setActiveTab} />}
-            {activeTab === 'planning' && <Planning timetable={timetable} onAdd={addTimetableTask} onRemove={removeTimetableTask} />}
+            {activeTab === 'planning' && <Planning timetable={timetable} onAdd={addTimetableItem} onRemove={removeTimetableItem} />}
             {activeTab === 'progression' && <Progression student={user} timetable={timetable} />}
             {activeTab === 'contenus' && <MesContenus entitlements={entitlements} />}
             {activeTab === 'bibliotheque' && <Bibliotheque entitlements={entitlements} resources={resources} onNavigate={setActiveTab} />}

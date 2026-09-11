@@ -4,6 +4,7 @@ import { StudyResource } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
 import { PageHeader, Card, LockedState, EmptyState } from '../../components/student/primitives';
 import { StudentTab } from '../../components/student/navigation';
+import { resolveFileUrl } from '../../lib/api';
 
 const TOOL_CARDS = [
   { icon: CalendarDays, title: 'Programme hebdomadaire', desc: 'Organisez votre semaine selon vos priorités et disponibilités.', tab: 'planning' as StudentTab },
@@ -82,7 +83,7 @@ export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: Stu
                 <span>{r.fileSize}</span>
                 <span className="flex items-center gap-1"><DownloadCloud size={12} /> {r.downloadCount}</span>
               </p>
-              <span className="text-[11px] font-bold text-primary">PDF · Consulter</span>
+              <a href={resolveFileUrl(r.url)} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-primary hover:underline">PDF · Consulter</a>
             </Card>
           ))}
         </div>

@@ -125,4 +125,181 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS orientation_requests (
 )");
 $log[] = 'orientation_requests table ensured';
 
+// 10. Student module tables — Mon Plan, Mes outils (habitudes, error log,
+// révisions, objectifs), Check-ins, Planning. Previously local-only
+// (browser localStorage), now synced so the admin can see a student's real
+// work in near real time (see AdminStudentDetail.tsx).
+$pdo->exec("CREATE TABLE IF NOT EXISTS self_guided_plans (
+    student_id INT PRIMARY KEY,
+    objective VARCHAR(500) DEFAULT '',
+    start_date VARCHAR(50) DEFAULT '',
+    obstacles TEXT,
+    actions JSON DEFAULT NULL,
+    habits JSON DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'self_guided_plans table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS goals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(50),
+    target_date VARCHAR(50),
+    progress INT DEFAULT 0,
+    status VARCHAR(30) DEFAULT 'a_demarrer',
+    next_action VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'goals table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS revision_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    chapter VARCHAR(255),
+    duration_min INT DEFAULT 0,
+    technique VARCHAR(100),
+    understanding INT DEFAULT 3,
+    session_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'revision_sessions table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS habits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    days JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'habits table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS error_log_entries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    topic VARCHAR(255),
+    mistake TEXT NOT NULL,
+    reason TEXT,
+    correct_method TEXT,
+    review_date VARCHAR(50),
+    status VARCHAR(30) DEFAULT 'a_revoir',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'error_log_entries table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS checkins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    adherence INT,
+    days_respected INT,
+    obstacle VARCHAR(500),
+    concentration INT,
+    success TEXT,
+    needs_adjustment BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'checkins table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS timetable_tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    subject VARCHAR(100),
+    day VARCHAR(20),
+    start_time VARCHAR(10),
+    end_time VARCHAR(10),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'timetable_tasks table ensured';
+
+// 11. course_modules table — the 5 fixed "Mes contenus" modules, seeded once
+// by slug so the admin can attach a video (link or upload) to each.
+$pdo->exec("CREATE TABLE IF NOT EXISTS course_modules (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(50) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    position INT DEFAULT 0,
+    video_url VARCHAR(500) DEFAULT NULL,
+    video_source ENUM('link', 'upload') DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)");
+$log[] = 'course_modules table ensured';
+
+$pdo->exec("INSERT IGNORE INTO course_modules (slug, title, description, position) VALUES
+    ('diagnostic-objectifs', 'Faire le point & définir ses objectifs', 'Diagnostic de votre situation actuelle et définition de vos objectifs.', 1),
+    ('planning-efficace', 'Construire un planning efficace', 'Organisation et création d''un programme hebdomadaire.', 2),
+    ('procrastination', 'Vaincre la procrastination', 'Lutte contre la procrastination et les distractions.', 3),
+    ('revisions-efficaces', 'Réviser plus efficacement', 'Techniques de révision et d''apprentissage.', 4),
+    ('preparation-examens', 'Préparer les examens & gérer la pression', 'Préparation aux examens et gestion de la pression.', 5)");
+$log[] = 'course_modules seeded';
+
+// 12. appointments: add student_id / category / notes for coaching-session tracking
+$apptCols = $pdo->query("SHOW COLUMNS FROM appointments")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('student_id', $apptCols, true)) {
+    $pdo->exec("ALTER TABLE appointments ADD COLUMN student_id INT DEFAULT NULL");
+    $pdo->exec("ALTER TABLE appointments ADD CONSTRAINT fk_appointments_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL");
+    $log[] = 'added appointments.student_id column + FK';
+} else {
+    $log[] = 'appointments.student_id already present';
+}
+if (!in_array('category', $apptCols, true)) {
+    $pdo->exec("ALTER TABLE appointments ADD COLUMN category VARCHAR(50) DEFAULT NULL");
+    $log[] = 'added appointments.category column';
+} else {
+    $log[] = 'appointments.category already present';
+}
+if (!in_array('notes', $apptCols, true)) {
+    $pdo->exec("ALTER TABLE appointments ADD COLUMN notes TEXT DEFAULT NULL");
+    $log[] = 'added appointments.notes column';
+} else {
+    $log[] = 'appointments.notes already present';
+}
+
+// 13. feedback table (Feedback tab/page — coach messages to a student)
+$pdo->exec("CREATE TABLE IF NOT EXISTS feedback (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    appointment_id INT DEFAULT NULL,
+    message TEXT NOT NULL,
+    author_name VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
+)");
+$log[] = 'feedback table ensured';
+
+// 14. collective sessions + registrations (Sessions collectives)
+$pdo->exec("CREATE TABLE IF NOT EXISTS collective_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    date DATE NOT NULL,
+    time VARCHAR(50) NOT NULL,
+    capacity INT DEFAULT NULL,
+    meeting_link VARCHAR(500) DEFAULT NULL,
+    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+$log[] = 'collective_sessions table ensured';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS collective_session_registrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    student_id INT NOT NULL,
+    attended BOOLEAN DEFAULT NULL,
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES collective_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    UNIQUE KEY uniq_session_student (session_id, student_id)
+)");
+$log[] = 'collective_session_registrations table ensured';
+
 echo json_encode(['message' => 'Migration complete', 'log' => $log, 'next_step' => 'Delete this file from the server now.']);

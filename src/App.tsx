@@ -1,9 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import {
-  Target, Presentation, CheckSquare, MessageSquare, TrendingUp,
-  CalendarRange, PlayCircle, Library, Wrench, Bell, BarChart3, GraduationCap,
-  KeyRound, Settings,
-} from 'lucide-react';
+import { Wrench, Bell, BarChart3, GraduationCap, KeyRound, Settings } from 'lucide-react';
 import { Layout } from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { Home } from './pages/Home';
@@ -28,7 +24,15 @@ import { AdminAppointments } from './pages/admin/Appointments';
 import { AdminMessages } from './pages/admin/Messages';
 import { AdminStories } from './pages/admin/Stories';
 import { AdminActivity } from './pages/admin/Activity';
+import { AdminContent } from './pages/admin/Content';
+import { AdminLibrary } from './pages/admin/Library';
 import { AdminComingSoonPage } from './pages/admin/ComingSoonPage';
+import { AdminPlans } from './pages/admin/Plans';
+import { AdminCoaching } from './pages/admin/Coaching';
+import { AdminCheckIns } from './pages/admin/CheckIns';
+import { AdminFeedback } from './pages/admin/Feedback';
+import { AdminProgress } from './pages/admin/Progress';
+import { AdminCollectiveSessions } from './pages/admin/CollectiveSessions';
 
 function App() {
   return (
@@ -54,14 +58,14 @@ function App() {
             <Route path="students" element={<AdminStudents />} />
             <Route path="students/:id" element={<AdminStudentDetail />} />
             <Route path="packages" element={<AdminPackages />} />
-            <Route path="plans" element={<AdminComingSoonPage icon={Target} title="Plans d'accompagnement" breadcrumb="Administration / Mouwakaba" description="La gestion centralisée des plans d'accompagnement (objectifs, actions, habitudes) sera disponible ici." />} />
-            <Route path="coaching" element={<AdminComingSoonPage icon={Presentation} title="Coaching" breadcrumb="Administration / Mouwakaba" description="La gestion des séances de coaching, coachs et comptes rendus sera disponible ici." />} />
-            <Route path="check-ins" element={<AdminComingSoonPage icon={CheckSquare} title="Check-ins" breadcrumb="Administration / Mouwakaba" description="La revue des Check-ins étudiants et l'envoi de feedback seront disponibles ici." />} />
-            <Route path="feedback" element={<AdminComingSoonPage icon={MessageSquare} title="Feedback" breadcrumb="Administration / Mouwakaba" description="L'historique du feedback envoyé aux étudiants sera disponible ici." />} />
-            <Route path="progress" element={<AdminComingSoonPage icon={TrendingUp} title="Progression" breadcrumb="Administration / Mouwakaba" description="Le suivi détaillé de la progression des étudiants sera disponible ici." />} />
-            <Route path="collective-sessions" element={<AdminComingSoonPage icon={CalendarRange} title="Sessions collectives" breadcrumb="Administration / Planning" description="La planification des sessions collectives Essentiel sera disponible ici." />} />
-            <Route path="content" element={<AdminComingSoonPage icon={PlayCircle} title="Modules & vidéos" breadcrumb="Administration / Contenu" description="La gestion des modules et vidéos affichés dans l'espace étudiant sera disponible ici." />} />
-            <Route path="library" element={<AdminComingSoonPage icon={Library} title="Bibliothèque" breadcrumb="Administration / Contenu" description="La gestion des ressources (PDF, guides, modèles) sera disponible ici." />} />
+            <Route path="plans" element={<AdminPlans />} />
+            <Route path="coaching" element={<AdminCoaching />} />
+            <Route path="check-ins" element={<AdminCheckIns />} />
+            <Route path="feedback" element={<AdminFeedback />} />
+            <Route path="progress" element={<AdminProgress />} />
+            <Route path="collective-sessions" element={<AdminCollectiveSessions />} />
+            <Route path="content" element={<AdminContent />} />
+            <Route path="library" element={<AdminLibrary />} />
             <Route path="tools" element={<AdminComingSoonPage icon={Wrench} title="Outils" breadcrumb="Administration / Contenu" description="La configuration des outils pédagogiques Mouwakaba sera disponible ici." />} />
             <Route path="notifications" element={<AdminComingSoonPage icon={Bell} title="Notifications" breadcrumb="Administration / Communication" description="L'envoi de notifications ciblées aux étudiants sera disponible ici." />} />
             <Route path="messages" element={<AdminMessages />} />

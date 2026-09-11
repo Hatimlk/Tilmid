@@ -59,6 +59,45 @@ function requireAdmin(string $secret_key): array {
     return $user;
 }
 
+// Student module routes (plan, goals, revisions, habits, error log, checkins,
+// timetable) are readable by the owning student OR an admin (?studentId=),
+// but writable only by the owning student — admin access there is read-only,
+// matching the "aperçu lecture seule" the StudentDetail tabs promise.
+function requireStudentOrAdmin(string $secret_key): array {
+    $user = requireAuth($secret_key);
+    $role = $user['role'] ?? '';
+    if ($role !== 'student' && $role !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['message' => 'Forbidden']);
+        exit;
+    }
+    return $user;
+}
+
+function requireStudent(string $secret_key): array {
+    $user = requireAuth($secret_key);
+    if (($user['role'] ?? '') !== 'student') {
+        http_response_code(403);
+        echo json_encode(['message' => 'Forbidden']);
+        exit;
+    }
+    return $user;
+}
+
+// Resolves which student's data a GET should return: the caller's own id for
+// a student, or the ?studentId= query param for an admin. Exits with a 400
+// itself when an admin omits studentId.
+function resolveStudentId(array $user): int {
+    if (($user['role'] ?? '') === 'student') return (int)$user['id'];
+    $studentId = isset($_GET['studentId']) ? (int)$_GET['studentId'] : 0;
+    if (!$studentId) {
+        http_response_code(400);
+        echo json_encode(['message' => 'studentId query param required']);
+        exit;
+    }
+    return $studentId;
+}
+
 /* ---------------- ACTIVITY LOG ---------------- */
 // Best-effort: a logging failure (e.g. migration not run yet) must never break
 // the underlying student/appointment action, so failures are swallowed.
@@ -452,10 +491,13 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
         $time = $input['time'] ?? $existing['time'];
         $status = $input['status'] ?? $existing['status'];
         $type = $input['type'] ?? $existing['type'];
+        $studentId = array_key_exists('studentId', $input) ? $input['studentId'] : $existing['student_id'];
+        $category = array_key_exists('category', $input) ? $input['category'] : $existing['category'];
+        $notes = array_key_exists('notes', $input) ? $input['notes'] : $existing['notes'];
 
         try {
-            $stmt = $pdo->prepare("UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=? WHERE id=?");
-            $stmt->execute([$studentName, $title, $date, $time, $status, $type, $id]);
+            $stmt = $pdo->prepare("UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=?, student_id=?, category=?, notes=? WHERE id=?");
+            $stmt->execute([$studentName, $title, $date, $time, $status, $type, $studentId ?: null, $category ?: null, $notes, $id]);
             if ($existing['status'] !== $status) {
                 logActivity($pdo, $admin, 'appointment_status_changed', 'appointment', $title, ['student' => $studentName, 'from' => $existing['status'], 'to' => $status]);
             }
@@ -474,13 +516,17 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
     $time = $input['time'] ?? '';
     $status = $input['status'] ?? 'confirmed';
     $type = $input['type'] ?? 'live';
+    $studentId = $input['studentId'] ?? null;
+    $category = $input['category'] ?? null;
+    $notes = $input['notes'] ?? null;
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO appointments (student_name, title, date, time, status, type) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$studentName, $title, $date, $time, $status, $type]);
+        $stmt = $pdo->prepare("INSERT INTO appointments (student_name, title, date, time, status, type, student_id, category, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$studentName, $title, $date, $time, $status, $type, $studentId ?: null, $category ?: null, $notes]);
+        $newId = $pdo->lastInsertId();
         logActivity($pdo, $admin, 'appointment_created', 'appointment', $title, ['student' => $studentName, 'date' => $date, 'time' => $time]);
         http_response_code(201);
-        echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Appointment created']);
+        echo json_encode(['id' => $newId, 'message' => 'Appointment created']);
     } catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Database error']);
@@ -592,6 +638,680 @@ if (strpos($request_uri, '/api/orientation-requests') !== false) {
         }
         exit;
     }
+}
+
+// 14. SELF-GUIDED PLAN (Mon Plan) — one row per student
+if ($request_uri === '/api/plan' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM self_guided_plans WHERE student_id = ?");
+    $stmt->execute([$studentId]);
+    $row = $stmt->fetch();
+    if ($row) {
+        $row['actions'] = json_decode($row['actions'] ?? '[]', true);
+        $row['habits'] = json_decode($row['habits'] ?? '[]', true);
+    }
+    echo json_encode($row ?: null);
+    exit;
+}
+
+if ($request_uri === '/api/plan' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $objective = $input['objective'] ?? '';
+    $startDate = $input['startDate'] ?? '';
+    $obstacles = $input['obstacles'] ?? '';
+    $actions = json_encode($input['actions'] ?? []);
+    $habits = json_encode($input['habits'] ?? []);
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO self_guided_plans (student_id, objective, start_date, obstacles, actions, habits)
+             VALUES (?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE objective=VALUES(objective), start_date=VALUES(start_date),
+               obstacles=VALUES(obstacles), actions=VALUES(actions), habits=VALUES(habits)");
+        $stmt->execute([$user['id'], $objective, $startDate, $obstacles, $actions, $habits]);
+        echo json_encode(['message' => 'Plan saved']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save plan failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+// 15. GOALS (Objectifs, in Mes outils)
+if ($request_uri === '/api/goals' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM goals WHERE student_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$studentId]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/goals' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $id = $input['id'] ?? null;
+    $title = $input['title'] ?? '';
+    $category = $input['category'] ?? null;
+    $targetDate = $input['targetDate'] ?? null;
+    $progress = $input['progress'] ?? 0;
+    $status = $input['status'] ?? 'a_demarrer';
+    $nextAction = $input['nextAction'] ?? null;
+
+    try {
+        if ($id) {
+            $stmt = $pdo->prepare("UPDATE goals SET title=?, category=?, target_date=?, progress=?, status=?, next_action=? WHERE id=? AND student_id=?");
+            $stmt->execute([$title, $category, $targetDate, $progress, $status, $nextAction, $id, $user['id']]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Goal updated']);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO goals (student_id, title, category, target_date, progress, status, next_action) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$user['id'], $title, $category, $targetDate, $progress, $status, $nextAction]);
+            http_response_code(201);
+            echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Goal created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save goal failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/goals/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM goals WHERE id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Goal deleted']);
+    exit;
+}
+
+// 16. REVISION SESSIONS (Suivi des révisions)
+if ($request_uri === '/api/revisions' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM revision_sessions WHERE student_id = ? ORDER BY session_date DESC");
+    $stmt->execute([$studentId]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/revisions' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $subject = $input['subject'] ?? '';
+    $chapter = $input['chapter'] ?? null;
+    $durationMin = $input['durationMin'] ?? 0;
+    $technique = $input['technique'] ?? null;
+    $understanding = $input['understanding'] ?? 3;
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO revision_sessions (student_id, subject, chapter, duration_min, technique, understanding) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$user['id'], $subject, $chapter, $durationMin, $technique, $understanding]);
+        http_response_code(201);
+        echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Revision session created']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save revision failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/revisions/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM revision_sessions WHERE id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Revision session deleted']);
+    exit;
+}
+
+// 17. HABITS (Habit tracker)
+if ($request_uri === '/api/habits' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM habits WHERE student_id = ? ORDER BY created_at ASC");
+    $stmt->execute([$studentId]);
+    $rows = $stmt->fetchAll();
+    foreach ($rows as &$row) { $row['days'] = json_decode($row['days'] ?? '[]', true); }
+    echo json_encode($rows);
+    exit;
+}
+
+if ($request_uri === '/api/habits' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $id = $input['id'] ?? null;
+    $name = $input['name'] ?? '';
+    $days = json_encode($input['days'] ?? [false, false, false, false, false, false, false]);
+
+    try {
+        if ($id) {
+            $stmt = $pdo->prepare("UPDATE habits SET name=?, days=? WHERE id=? AND student_id=?");
+            $stmt->execute([$name, $days, $id, $user['id']]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Habit updated']);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO habits (student_id, name, days) VALUES (?, ?, ?)");
+            $stmt->execute([$user['id'], $name, $days]);
+            http_response_code(201);
+            echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Habit created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save habit failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/habits/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM habits WHERE id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Habit deleted']);
+    exit;
+}
+
+// 18. ERROR LOG (Mon Error Log)
+if ($request_uri === '/api/error-log' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM error_log_entries WHERE student_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$studentId]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/error-log' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $id = $input['id'] ?? null;
+    $subject = $input['subject'] ?? '';
+    $topic = $input['topic'] ?? null;
+    $mistake = $input['mistake'] ?? '';
+    $reason = $input['reason'] ?? null;
+    $correctMethod = $input['correctMethod'] ?? null;
+    $reviewDate = $input['reviewDate'] ?? null;
+    $status = $input['status'] ?? 'a_revoir';
+
+    try {
+        if ($id) {
+            $stmt = $pdo->prepare("UPDATE error_log_entries SET subject=?, topic=?, mistake=?, reason=?, correct_method=?, review_date=?, status=? WHERE id=? AND student_id=?");
+            $stmt->execute([$subject, $topic, $mistake, $reason, $correctMethod, $reviewDate, $status, $id, $user['id']]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Error log entry updated']);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO error_log_entries (student_id, subject, topic, mistake, reason, correct_method, review_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$user['id'], $subject, $topic, $mistake, $reason, $correctMethod, $reviewDate, $status]);
+            http_response_code(201);
+            echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Error log entry created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save error log entry failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/error-log/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM error_log_entries WHERE id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Error log entry deleted']);
+    exit;
+}
+
+// 19. CHECK-INS
+if ($request_uri === '/api/checkins' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM checkins WHERE student_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$studentId]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/checkins' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $adherence = $input['adherence'] ?? null;
+    $daysRespected = $input['daysRespected'] ?? null;
+    $obstacle = $input['obstacle'] ?? null;
+    $concentration = $input['concentration'] ?? null;
+    $success = $input['success'] ?? null;
+    $needsAdjustment = !empty($input['needsAdjustment']) ? 1 : 0;
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO checkins (student_id, adherence, days_respected, obstacle, concentration, success, needs_adjustment) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$user['id'], $adherence, $daysRespected, $obstacle, $concentration, $success, $needsAdjustment]);
+        $newId = $pdo->lastInsertId();
+        logActivity($pdo, $user, 'checkin_submitted', 'checkin', 'Check-in', ['adherence' => $adherence, 'daysRespected' => $daysRespected]);
+        http_response_code(201);
+        echo json_encode(['id' => $newId, 'message' => 'Check-in created']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save check-in failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+// 20. TIMETABLE (Mon planning)
+if ($request_uri === '/api/timetable' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM timetable_tasks WHERE student_id = ? ORDER BY created_at ASC");
+    $stmt->execute([$studentId]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/timetable' && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $subject = $input['subject'] ?? '';
+    $day = $input['day'] ?? '';
+    $startTime = $input['startTime'] ?? '';
+    $endTime = $input['endTime'] ?? '';
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO timetable_tasks (student_id, subject, day, start_time, end_time) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$user['id'], $subject, $day, $startTime, $endTime]);
+        http_response_code(201);
+        echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Timetable task created']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save timetable task failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/timetable/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM timetable_tasks WHERE id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Timetable task deleted']);
+    exit;
+}
+
+// 21. UPLOAD (admin only) — ?kind=document (PDF/DOC/DOCX, default) or ?kind=video
+// (MP4/WEBM/MOV). Files land under server-php/uploads/{documents,videos}/ and
+// are served back as static files by Apache (see server-php/.htaccess), never
+// re-entering this router.
+if ($request_uri === '/api/upload' && $method == 'POST') {
+    requireAdmin($secret_key);
+
+    if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Aucun fichier reçu ou erreur d\'upload']);
+        exit;
+    }
+
+    $kind = ($_GET['kind'] ?? 'document') === 'video' ? 'video' : 'document';
+    $allowedExtensions = $kind === 'video'
+        ? ['mp4', 'webm', 'mov']
+        : ['pdf', 'doc', 'docx'];
+    $maxBytes = $kind === 'video' ? 500 * 1024 * 1024 : 20 * 1024 * 1024;
+
+    $originalName = $_FILES['file']['name'];
+    $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+    if (!in_array($ext, $allowedExtensions, true)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Type de fichier non autorisé']);
+        exit;
+    }
+    if ($_FILES['file']['size'] > $maxBytes) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Fichier trop volumineux']);
+        exit;
+    }
+
+    $subdir = $kind === 'video' ? 'videos' : 'documents';
+    $uploadDir = __DIR__ . '/uploads/' . $subdir . '/';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Impossible de créer le dossier de destination']);
+        exit;
+    }
+
+    $filename = $kind . '-' . time() . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
+
+    if (!move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $filename)) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Échec de l\'upload']);
+        exit;
+    }
+
+    http_response_code(201);
+    echo json_encode([
+        'message' => 'File uploaded',
+        'url' => '/api/uploads/' . $subdir . '/' . $filename,
+        'size' => $_FILES['file']['size'],
+    ]);
+    exit;
+}
+
+// 22. COURSE MODULES ("Mes contenus" — fixed 5 modules, admin attaches a video)
+if ($request_uri === '/api/course-modules' && $method == 'GET') {
+    requireAuth($secret_key); // any logged-in user (student or admin)
+    $stmt = $pdo->query("SELECT * FROM course_modules ORDER BY position ASC");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if (preg_match('#^/api/course-modules/(\d+)$#', $request_uri, $matches) && $method == 'POST') {
+    requireAdmin($secret_key);
+    $id = $matches[1];
+    $videoUrl = $input['videoUrl'] ?? null;
+    $videoSource = in_array($input['videoSource'] ?? null, ['link', 'upload'], true) ? $input['videoSource'] : null;
+    // An empty videoUrl clears the attached video entirely.
+    if ($videoUrl === '') { $videoUrl = null; $videoSource = null; }
+
+    try {
+        $stmt = $pdo->prepare("UPDATE course_modules SET video_url = ?, video_source = ? WHERE id = ?");
+        $stmt->execute([$videoUrl, $videoSource, $id]);
+        echo json_encode(['id' => (int)$id, 'message' => 'Module updated']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Update course module failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+// 23. RESOURCES — write side (admin only; GET is public to any authenticated user, see section 11 above)
+if ($request_uri === '/api/resources' && $method == 'POST') {
+    requireAdmin($secret_key);
+    $title = $input['title'] ?? '';
+    $type = $input['type'] ?? 'summary';
+    $url = $input['url'] ?? '';
+    $subject = $input['subject'] ?? '';
+    $fileSize = $input['fileSize'] ?? null;
+    $iconName = $input['iconName'] ?? null;
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO resources (title, type, url, subject, file_size, icon_name) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $type, $url, $subject, $fileSize, $iconName]);
+        http_response_code(201);
+        echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Resource created']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save resource failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/resources/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM resources WHERE id = ?");
+    $stmt->execute([$matches[1]]);
+    echo json_encode(['message' => 'Resource deleted']);
+    exit;
+}
+
+// 24. COACHING SESSIONS — appointments filtered to category='coaching'.
+// Student sees only their own; admin sees all (or one student via ?studentId=).
+if ($request_uri === '/api/coaching-sessions' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    if (($user['role'] ?? '') === 'student') {
+        $stmt = $pdo->prepare("SELECT a.* FROM appointments a WHERE a.category = 'coaching' AND a.student_id = ? ORDER BY a.date DESC");
+        $stmt->execute([$user['id']]);
+    } elseif (isset($_GET['studentId']) && $_GET['studentId'] !== '') {
+        $stmt = $pdo->prepare("SELECT a.*, s.name AS student_full_name FROM appointments a LEFT JOIN students s ON a.student_id = s.id WHERE a.category = 'coaching' AND a.student_id = ? ORDER BY a.date DESC");
+        $stmt->execute([(int)$_GET['studentId']]);
+    } else {
+        $stmt = $pdo->query("SELECT a.*, s.name AS student_full_name FROM appointments a LEFT JOIN students s ON a.student_id = s.id WHERE a.category = 'coaching' ORDER BY a.date DESC");
+    }
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+// 25. ADMIN CROSS-STUDENT OVERVIEWS (Plans, Check-ins, Progression)
+if ($request_uri === '/api/admin/plans' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query("SELECT s.id AS student_id, s.name, s.username, p.objective, p.start_date, p.obstacles, p.actions, p.habits, p.updated_at
+        FROM students s LEFT JOIN self_guided_plans p ON p.student_id = s.id
+        WHERE s.status = 'active' ORDER BY s.name ASC");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/admin/checkins' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query("SELECT c.*, s.name, s.username FROM checkins c JOIN students s ON c.student_id = s.id ORDER BY c.created_at DESC LIMIT 200");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/admin/progress-overview' && $method == 'GET') {
+    requireAdmin($secret_key);
+
+    $students = $pdo->query("SELECT id, name, username, package FROM students WHERE status = 'active'")->fetchAll();
+
+    $plans = [];
+    foreach ($pdo->query("SELECT student_id, actions FROM self_guided_plans") as $row) {
+        $actions = json_decode($row['actions'] ?? '[]', true) ?: [];
+        $plans[$row['student_id']] = ['total' => count($actions), 'done' => count(array_filter($actions, fn($a) => !empty($a['done'])))];
+    }
+
+    $goals = [];
+    foreach ($pdo->query("SELECT student_id, COUNT(*) AS total, SUM(status = 'atteint') AS atteints FROM goals GROUP BY student_id") as $row) {
+        $goals[$row['student_id']] = ['total' => (int)$row['total'], 'atteints' => (int)$row['atteints']];
+    }
+
+    $revisions = [];
+    foreach ($pdo->query("SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE session_date > (NOW() - INTERVAL 7 DAY) GROUP BY student_id") as $row) {
+        $revisions[$row['student_id']] = (int)$row['recent'];
+    }
+
+    $habits = [];
+    foreach ($pdo->query("SELECT student_id, days FROM habits") as $row) {
+        $daysDone = count(array_filter(json_decode($row['days'] ?? '[]', true) ?: []));
+        if (!isset($habits[$row['student_id']])) $habits[$row['student_id']] = ['count' => 0, 'daysDone' => 0];
+        $habits[$row['student_id']]['count']++;
+        $habits[$row['student_id']]['daysDone'] += $daysDone;
+    }
+
+    $overview = array_map(function ($s) use ($plans, $goals, $revisions, $habits) {
+        $id = $s['id'];
+        $plan = $plans[$id] ?? ['total' => 0, 'done' => 0];
+        $goal = $goals[$id] ?? ['total' => 0, 'atteints' => 0];
+        $habit = $habits[$id] ?? ['count' => 0, 'daysDone' => 0];
+        return [
+            'studentId' => (int)$id,
+            'name' => $s['name'],
+            'username' => $s['username'],
+            'package' => $s['package'],
+            'planActionsTotal' => $plan['total'],
+            'planActionsDone' => $plan['done'],
+            'goalsTotal' => $goal['total'],
+            'goalsAtteints' => $goal['atteints'],
+            'revisionsLast7d' => $revisions[$id] ?? 0,
+            'habitCount' => $habit['count'],
+            'habitConsistencyPct' => $habit['count'] > 0 ? round(($habit['daysDone'] / ($habit['count'] * 7)) * 100) : null,
+        ];
+    }, $students);
+
+    echo json_encode($overview);
+    exit;
+}
+
+// 26. FEEDBACK — coach/admin messages to a student
+if ($request_uri === '/api/feedback' && $method == 'GET') {
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT * FROM feedback WHERE student_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$studentId]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/feedback' && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $studentId = $input['studentId'] ?? null;
+    $message = trim($input['message'] ?? '');
+    $appointmentId = $input['appointmentId'] ?? null;
+
+    if (!$studentId || $message === '') {
+        http_response_code(400);
+        echo json_encode(['message' => 'studentId and message are required']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("SELECT name FROM students WHERE id = ?");
+    $stmt->execute([$studentId]);
+    $studentName = $stmt->fetch()['name'] ?? null;
+    if (!$studentName) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Student not found']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+    $stmt->execute([$admin['id']]);
+    $authorName = $stmt->fetch()['username'] ?? 'Admin';
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO feedback (student_id, appointment_id, message, author_name) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$studentId, $appointmentId ?: null, $message, $authorName]);
+        $newId = $pdo->lastInsertId();
+        logActivity($pdo, $admin, 'feedback_sent', 'feedback', $studentName, ['message' => mb_substr($message, 0, 120)]);
+        http_response_code(201);
+        echo json_encode(['id' => $newId, 'message' => 'Feedback sent']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save feedback failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if ($request_uri === '/api/admin/feedback' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query("SELECT f.*, s.name, s.username FROM feedback f JOIN students s ON f.student_id = s.id ORDER BY f.created_at DESC LIMIT 200");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+// 27. COLLECTIVE SESSIONS (Sessions collectives)
+if ($request_uri === '/api/collective-sessions' && $method == 'GET') {
+    $user = requireAuth($secret_key);
+    if (($user['role'] ?? '') === 'student') {
+        $stmt = $pdo->prepare("SELECT cs.*,
+                (SELECT COUNT(*) FROM collective_session_registrations r WHERE r.session_id = cs.id) AS registered_count,
+                EXISTS(SELECT 1 FROM collective_session_registrations r WHERE r.session_id = cs.id AND r.student_id = ?) AS my_registration
+            FROM collective_sessions cs WHERE cs.status != 'cancelled' ORDER BY cs.date ASC");
+        $stmt->execute([$user['id']]);
+    } else {
+        $stmt = $pdo->query("SELECT cs.*,
+                (SELECT COUNT(*) FROM collective_session_registrations r WHERE r.session_id = cs.id) AS registered_count
+            FROM collective_sessions cs ORDER BY cs.date ASC");
+    }
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/collective-sessions' && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $id = $input['id'] ?? null;
+    $title = $input['title'] ?? '';
+    $description = $input['description'] ?? null;
+    $date = $input['date'] ?? '';
+    $time = $input['time'] ?? '';
+    $capacity = $input['capacity'] ?? null;
+    $meetingLink = $input['meetingLink'] ?? null;
+    $status = $input['status'] ?? 'scheduled';
+
+    try {
+        if ($id) {
+            $stmt = $pdo->prepare("UPDATE collective_sessions SET title=?, description=?, date=?, time=?, capacity=?, meeting_link=?, status=? WHERE id=?");
+            $stmt->execute([$title, $description, $date, $time, $capacity ?: null, $meetingLink, $status, $id]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Session updated']);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO collective_sessions (title, description, date, time, capacity, meeting_link, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$title, $description, $date, $time, $capacity ?: null, $meetingLink, $status]);
+            $newId = $pdo->lastInsertId();
+            logActivity($pdo, $admin, 'collective_session_created', 'collective_session', $title, ['date' => $date, 'time' => $time]);
+            http_response_code(201);
+            echo json_encode(['id' => $newId, 'message' => 'Session created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save collective session failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/collective-sessions/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM collective_sessions WHERE id = ?");
+    $stmt->execute([$matches[1]]);
+    echo json_encode(['message' => 'Session deleted']);
+    exit;
+}
+
+if (preg_match('#^/api/collective-sessions/(\d+)/registrations$#', $request_uri, $matches) && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->prepare("SELECT r.*, s.name, s.username FROM collective_session_registrations r JOIN students s ON r.student_id = s.id WHERE r.session_id = ? ORDER BY r.registered_at ASC");
+    $stmt->execute([$matches[1]]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if (preg_match('#^/api/collective-sessions/(\d+)/register$#', $request_uri, $matches) && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $sessionId = (int)$matches[1];
+
+    $stmt = $pdo->prepare("SELECT capacity, (SELECT COUNT(*) FROM collective_session_registrations WHERE session_id = ?) AS registered FROM collective_sessions WHERE id = ?");
+    $stmt->execute([$sessionId, $sessionId]);
+    $session = $stmt->fetch();
+    if (!$session) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Session not found']);
+        exit;
+    }
+    if ($session['capacity'] !== null && (int)$session['registered'] >= (int)$session['capacity']) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Session complète']);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO collective_session_registrations (session_id, student_id) VALUES (?, ?)");
+        $stmt->execute([$sessionId, $user['id']]);
+        http_response_code(201);
+        echo json_encode(['message' => 'Registered']);
+    } catch (PDOException $e) {
+        if ($e->getCode() === '23000') {
+            echo json_encode(['message' => 'Already registered']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['message' => 'Database error']);
+            error_log('Register for collective session failed: ' . $e->getMessage());
+        }
+    }
+    exit;
+}
+
+if (preg_match('#^/api/collective-sessions/(\d+)/register$#', $request_uri, $matches) && $method == 'DELETE') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM collective_session_registrations WHERE session_id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Unregistered']);
+    exit;
+}
+
+if (preg_match('#^/api/collective-sessions/(\d+)/attendance$#', $request_uri, $matches) && $method == 'POST') {
+    requireAdmin($secret_key);
+    $studentId = $input['studentId'] ?? null;
+    $attended = array_key_exists('attended', $input) ? (bool)$input['attended'] : null;
+    if (!$studentId) {
+        http_response_code(400);
+        echo json_encode(['message' => 'studentId required']);
+        exit;
+    }
+    $stmt = $pdo->prepare("UPDATE collective_session_registrations SET attended = ? WHERE session_id = ? AND student_id = ?");
+    $stmt->execute([$attended, $matches[1], $studentId]);
+    echo json_encode(['message' => 'Attendance updated']);
+    exit;
 }
 
 // 404

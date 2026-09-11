@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { TrendingUp } from 'lucide-react';
 import { Student, TimetableTask } from '../../types';
 import { PageHeader, Card, ProgressBar, EmptyState } from '../../components/student/primitives';
 import { useSelfGuidedPlan, useGoals, useRevisionTracker, useHabitTracker } from '../../hooks/useStudentData';
+import { computeProgressDimensions } from '../../utils/progress';
 
 export const Progression: React.FC<{ student: Student; timetable: TimetableTask[] }> = ({ student, timetable }) => {
   const plan = useSelfGuidedPlan(student.username);
@@ -10,34 +11,12 @@ export const Progression: React.FC<{ student: Student; timetable: TimetableTask[
   const revisions = useRevisionTracker(student.username);
   const habits = useHabitTracker(student.username);
 
-  const planActionsDone = plan.record.actions.filter((a) => a.done).length;
-  const planActionsTotal = plan.record.actions.length;
-  const planProgress = planActionsTotal > 0 ? (planActionsDone / planActionsTotal) * 100 : 0;
-
-  const goalsAtteints = goals.items.filter((g) => g.status === 'atteint').length;
-
-  const now = new Date();
-  const daysThisWeek = new Set(
-    revisions.items
-      .filter((r) => (now.getTime() - new Date(r.date).getTime()) / 86400000 < 7)
-      .map((r) => new Date(r.date).toDateString())
-  ).size;
-
-  const habitConsistency = useMemo(() => {
-    if (habits.items.length === 0) return null;
-    const totalCells = habits.items.length * 7;
-    const checked = habits.items.reduce((sum, h) => sum + h.days.filter(Boolean).length, 0);
-    return Math.round((checked / totalCells) * 100);
-  }, [habits.items]);
-
-  const dimensions = [
-    { label: 'Régularité', value: Math.min(100, (daysThisWeek / 7) * 100), detail: `${daysThisWeek} / 7 jours cette semaine` },
-    { label: 'Application du plan', value: planProgress, detail: `${planActionsDone} / ${planActionsTotal || 0} actions` },
-    { label: 'Habitudes', value: habitConsistency, detail: habitConsistency !== null ? `${habitConsistency}% de constance` : null },
-    { label: 'Objectifs', value: goals.items.length > 0 ? (goalsAtteints / goals.items.length) * 100 : null, detail: goals.items.length > 0 ? `${goalsAtteints} / ${goals.items.length} atteints` : null },
-  ];
-
-  const anyData = revisions.items.length > 0 || planActionsTotal > 0 || habits.items.length > 0 || goals.items.length > 0;
+  const { dimensions, planActionsDone, planActionsTotal, planProgress, daysThisWeek, anyData } = computeProgressDimensions({
+    planActions: plan.record.actions,
+    goals: goals.items,
+    revisions: revisions.items,
+    habits: habits.items,
+  });
 
   return (
     <div>
