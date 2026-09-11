@@ -7,6 +7,8 @@ interface SEOProps {
     image?: string;
     url?: string;
     type?: string;
+    /** Extra JSON-LD blocks (FAQPage, BreadcrumbList, Service...) for this page, in addition to the Organization schema below. */
+    jsonLd?: Record<string, any>[];
 }
 
 const SEO = ({
@@ -16,7 +18,8 @@ const SEO = ({
     image = '/og-image.jpg',
     url = 'https://tilmide.ma',
     type = 'website',
-    noindex = false
+    noindex = false,
+    jsonLd = []
 }: SEOProps & { noindex?: boolean }) => {
     const siteTitle = 'تلميذ - Tilmid';
     const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
@@ -80,6 +83,12 @@ const SEO = ({
                     }
                 })}
             </script>
+
+            {jsonLd.map((schema, i) => (
+                <script key={i} type="application/ld+json">
+                    {JSON.stringify({ '@context': 'https://schema.org', ...schema })}
+                </script>
+            ))}
         </Helmet>
     );
 };

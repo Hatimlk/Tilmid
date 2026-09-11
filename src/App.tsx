@@ -7,6 +7,7 @@ import { ProgramDetails } from './pages/ProgramDetails';
 import { OrientationRegistration } from './pages/OrientationRegistration';
 import { StudentArea } from './pages/StudentArea';
 import { CoachingOffer } from './pages/CoachingOffer';
+import { CoachingRegistration } from './pages/CoachingRegistration';
 import { HigherSchools } from './pages/HigherSchools';
 import { SchoolDetail } from './pages/SchoolDetail';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/student-area" element={<StudentArea />} />
           <Route path="/coaching-offer" element={<CoachingOffer />} />
+          <Route path="/coaching-offer/inscription" element={<CoachingRegistration />} />
           <Route path="/higher-schools" element={<HigherSchools />} />
           <Route path="/higher-schools/:slug" element={<SchoolDetail />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

@@ -4,6 +4,7 @@ import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
 import { ORIENTATION_PACKS, OrientationPackDef } from '../constants/orientationPacks';
+import { IMAGES } from '../constants/images';
 import { ProgramData, SuccessStory } from '../types';
 import { dataManager } from '../utils/dataManager';
 import {
@@ -29,9 +30,11 @@ import {
   Quote,
   FileCheck2,
   ChevronDown,
+  ChevronRight,
   Compass as CompassIcon,
   FlaskConical,
-  TrendingUp
+  TrendingUp,
+  BadgeCheck,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 
@@ -209,9 +212,9 @@ const TawjihAIAdvisor: React.FC = () => {
   };
 
   return (
-    <div className="relative group p-1 rounded-[3rem] bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 transition-all duration-700 hover:shadow-[0_0_80px_-20px_rgba(0,149,255,0.3)] h-full" id="ai-advisor">
-      <div className="bg-slate-900 rounded-[2.75rem] shadow-2xl overflow-hidden relative min-h-[480px] h-full flex flex-col border border-white/5">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,149,255,0.08)_0%,transparent_70%)] animate-pulse"></div>
+    <div className="relative rounded-[1.75rem] bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] shadow-2xl overflow-hidden h-full border border-white/5 scroll-mt-24" id="ai-advisor" tabIndex={-1}>
+      <div className="absolute top-0 inset-x-0 h-1 bg-blue-500"></div>
+      <div className="relative min-h-[480px] h-full flex flex-col">
 
         {step === 'intro' && (
           <div className="relative z-10 flex-grow flex flex-col items-center text-center gap-8 p-8 md:p-10">
@@ -220,28 +223,25 @@ const TawjihAIAdvisor: React.FC = () => {
               {t('orientationPage.advisor.eyebrow')}
             </span>
 
-            <div className="relative">
-              <div className="absolute inset-0 bg-blue-500/20 rounded-[1.6rem] blur-xl animate-glow-pulse"></div>
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-royal rounded-[1.4rem] flex items-center justify-center relative shadow-xl overflow-hidden">
-                <BrainCircuit size={32} className="text-white relative z-10" />
-              </div>
+            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center ring-1 ring-white/10">
+              <BrainCircuit size={30} className="text-blue-400" strokeWidth={1.8} />
             </div>
 
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-white mb-3 tracking-tight leading-tight">{t('programDetails.advisor.title')}</h2>
-              <p className="text-blue-200 text-sm md:text-base font-medium opacity-80 leading-relaxed max-w-sm mx-auto">
+              <p className="text-slate-300 text-sm md:text-base font-medium leading-relaxed max-w-sm mx-auto">
                 {t('programDetails.advisor.desc')}
               </p>
             </div>
 
             <button
               onClick={() => setStep('quiz')}
-              className="w-full px-9 py-4 bg-white text-slate-900 rounded-2xl font-bold text-base shadow-xl hover:bg-primary hover:text-white hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+              className="w-full px-9 py-4 bg-white text-slate-900 rounded-xl font-bold text-base hover:bg-blue-500 hover:text-white transition-colors active:scale-95 flex items-center justify-center gap-3"
             >
               <span>{t('programDetails.advisor.startBtn')}</span>
               <ArrowLeft size={20} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
             </button>
-            <p className="-mt-4 text-blue-300/70 text-xs font-bold uppercase tracking-widest">{t('orientationPage.advisor.note')}</p>
+            <p className="-mt-4 text-slate-400 text-xs font-bold uppercase tracking-widest">{t('orientationPage.advisor.note')}</p>
           </div>
         )}
 
@@ -249,21 +249,21 @@ const TawjihAIAdvisor: React.FC = () => {
           <div className="relative z-10 flex-grow flex flex-col p-8 md:p-10">
             <div className="flex justify-between items-center mb-8">
               <span className="text-blue-400 font-black text-xs uppercase tracking-widest">{t('programDetails.advisor.stepTracker', { current: currentQuestion + 1, total: questions.length })}</span>
-              <div className="w-24 h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}></div>
               </div>
             </div>
             <h3 className="text-xl md:text-2xl font-black text-white mb-8 text-start leading-tight">{questions[currentQuestion].text}</h3>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {questions[currentQuestion].options.map((o: any, i: number) => (
                 <button
                   key={i}
                   onClick={() => handleAnswer(o.type)}
-                  className="p-5 bg-slate-800/50 hover:bg-white text-gray-200 hover:text-slate-900 text-start transition-all rounded-2xl font-black text-base border border-slate-700 shadow-lg group/opt flex items-center justify-between"
+                  className="p-5 bg-white/5 hover:bg-white text-slate-200 hover:text-slate-900 text-start transition-colors rounded-xl font-bold text-base border border-white/10 group/opt flex items-center justify-between"
                 >
                   <span>{o.label}</span>
-                  <div className="w-8 h-8 rounded-full border-2 border-slate-600 group-hover/opt:border-primary flex items-center justify-center transition-colors shrink-0">
-                    <Check size={16} className="opacity-0 group-hover/opt:opacity-100" />
+                  <div className="w-8 h-8 rounded-full border-2 border-white/20 group-hover/opt:border-blue-500 flex items-center justify-center transition-colors shrink-0">
+                    <Check size={16} className="opacity-0 group-hover/opt:opacity-100 text-blue-600" />
                   </div>
                 </button>
               ))}
@@ -273,25 +273,22 @@ const TawjihAIAdvisor: React.FC = () => {
 
         {step === 'analyzing' && (
           <div className="flex-grow flex flex-col items-center justify-center text-white p-10">
-            <div className="relative">
-              <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-20 animate-pulse"></div>
-              <Cpu size={64} className="animate-spin mb-8 text-blue-400 relative z-10" />
-            </div>
+            <Cpu size={56} className="animate-spin mb-8 text-blue-400" />
             <h3 className="font-black text-2xl mb-4 text-center">{t('programDetails.advisor.analyzingTitle')}</h3>
-            <p className="text-blue-100 opacity-60 font-bold text-center">{t('programDetails.advisor.analyzingDesc')}</p>
+            <p className="text-slate-400 font-medium text-center">{t('programDetails.advisor.analyzingDesc')}</p>
           </div>
         )}
 
         {step === 'result' && (
-          <div className="relative z-10 p-8 md:p-10 text-center text-white animate-in zoom-in duration-500 flex flex-col items-center flex-grow justify-center">
-            <div className="inline-flex items-center gap-2 px-5 py-2 bg-green-500/10 text-green-400 rounded-full text-xs font-black mb-6 border border-green-500/20">
-              <CheckCircle size={16} /> {t('programDetails.advisor.resultSuccess')}
+          <div className="relative z-10 p-8 md:p-10 text-center text-white flex flex-col items-center flex-grow justify-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 text-blue-400 rounded-full text-xs font-black mb-6 border border-blue-500/20">
+              <CheckCircle size={15} /> {t('programDetails.advisor.resultSuccess')}
             </div>
-            <h2 className="text-2xl md:text-3xl font-black mb-4 leading-tight">{t('programDetails.advisor.resultPrefix')} <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400 drop-shadow-sm">{getResult().t}</span></h2>
-            <p className="text-sm md:text-base text-blue-100 mb-8 max-w-sm mx-auto font-bold opacity-80 leading-relaxed">{getResult().d}</p>
+            <h2 className="text-2xl md:text-3xl font-black mb-4 leading-tight">{t('programDetails.advisor.resultPrefix')} <br /> <span className="text-blue-400">{getResult().t}</span></h2>
+            <p className="text-sm md:text-base text-slate-300 mb-8 max-w-sm mx-auto font-medium leading-relaxed">{getResult().d}</p>
 
             <div className="flex flex-col gap-3 w-full">
-              <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-8 py-3.5 bg-white text-slate-900 rounded-2xl font-black hover:bg-primary hover:text-white transition-all text-center flex items-center justify-center">{t('programDetails.advisor.chatBtn')}</a>
+              <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-8 py-3.5 bg-white text-slate-900 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-colors text-center flex items-center justify-center">{t('programDetails.advisor.chatBtn')}</a>
               <button onClick={() => {
                 setStep('intro');
                 setCurrentQuestion(0);
@@ -319,10 +316,10 @@ const OrientationWhyAdvisor: React.FC = () => {
   const pointIcons = [Fingerprint, Map, Target];
 
   return (
-    <section className="max-w-6xl mx-auto px-4 my-24" id="features">
+    <section className="max-w-6xl mx-auto px-4 py-20 scroll-mt-24" id="pourquoi">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
         <Reveal className="flex flex-col justify-center">
-          <SectionEyebrow tone="text-emerald-600" toneBg="bg-emerald-50">{t('orientationPage.intro.eyebrow')}</SectionEyebrow>
+          <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">{t('orientationPage.intro.eyebrow')}</SectionEyebrow>
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight mt-5 mb-4">{t('orientationPage.intro.title')}</h2>
           <p className="text-slate-500 text-base md:text-lg font-medium leading-relaxed mb-10">{t('orientationPage.intro.desc')}</p>
 
@@ -331,7 +328,7 @@ const OrientationWhyAdvisor: React.FC = () => {
               const Icon = pointIcons[i] || Target;
               return (
                 <Reveal key={p.title} delay={i * 100} className="flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                     <Icon size={20} strokeWidth={2.2} />
                   </div>
                   <div>
@@ -353,42 +350,71 @@ const OrientationWhyAdvisor: React.FC = () => {
 };
 
 /* -------------------------------------------------------------------------- */
+/* What you get — the 4 concrete Tilmid orientation features                 */
+/* -------------------------------------------------------------------------- */
+
+const OrientationBenefits: React.FC = () => {
+  const { t } = useTranslation();
+  const features = TAWJIH_DATA.features;
+  const icons = [Compass, FileCheck2, User, Target];
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 py-20">
+      <Reveal className="max-w-2xl mb-12 space-y-4">
+        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">{t('orientationPage.benefits.eyebrow')}</SectionEyebrow>
+        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">{t('orientationPage.benefits.title')}</h2>
+      </Reveal>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {features.map((feature, i) => {
+          const Icon = icons[i] || Target;
+          return (
+            <Reveal key={feature.title} delay={i * 80}>
+              <div className="bg-slate-50/70 rounded-2xl border border-slate-100 p-6 h-full hover:border-blue-200 hover:bg-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5">
+                  <Icon size={20} strokeWidth={2.2} />
+                </div>
+                <h3 className="text-[15px] font-black text-slate-900 mb-2 tracking-tight leading-snug">{t(feature.title)}</h3>
+                <p className="text-slate-500 text-[13px] font-medium leading-relaxed">{t(feature.description)}</p>
+              </div>
+            </Reveal>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* How it works — 4 step process                                             */
 /* -------------------------------------------------------------------------- */
 
 const OrientationProcess: React.FC = () => {
   const { t } = useTranslation();
   const steps = (t('orientationPage.process.steps', { returnObjects: true }) as unknown as { title: string; desc: string }[]) || [];
-  const stepIcons = [User, Compass, Map, FileCheck2];
 
   return (
-    <section className="max-w-6xl mx-auto px-4 my-24">
+    <section className="max-w-6xl mx-auto px-4 py-20 scroll-mt-24" id="etapes">
       <Reveal className="text-center max-w-2xl mx-auto mb-14 space-y-4">
-        <SectionEyebrow tone="text-emerald-600" toneBg="bg-emerald-50">{t('orientationPage.process.eyebrow')}</SectionEyebrow>
+        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">{t('orientationPage.process.eyebrow')}</SectionEyebrow>
         <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{t('orientationPage.process.title')}</h2>
       </Reveal>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4 relative">
-        {steps.map((step, i) => {
-          const Icon = stepIcons[i] || Target;
-          return (
-            <Reveal key={step.title} delay={i * 100} className="relative">
-              {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 start-full w-full h-px bg-gradient-to-r from-emerald-200 to-transparent rtl:bg-gradient-to-l -z-0" style={{ width: '2rem' }}></div>
-              )}
-              <div className="bg-white rounded-[1.75rem] border border-slate-100 p-6 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_18px_40px_rgba(15,23,42,0.09)] hover:-translate-y-1 transition-all duration-500 relative z-10">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <Icon size={22} strokeWidth={2.2} />
-                  </div>
-                  <span className="text-4xl font-black text-slate-100 tabular-nums leading-none">0{i + 1}</span>
-                </div>
-                <h3 className="text-lg font-black text-slate-900 mb-2 tracking-tight">{step.title}</h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed">{step.desc}</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-0 relative">
+        {steps.map((step, i) => (
+          <Reveal key={step.title} delay={i * 100} className="relative flex md:block">
+            {i < steps.length - 1 && (
+              <div className="hidden md:block absolute top-6 start-[calc(50%+28px)] end-[calc(-50%+28px)] h-px bg-slate-200"></div>
+            )}
+            <div className="bg-white md:bg-transparent rounded-2xl md:rounded-none border md:border-0 border-slate-100 p-6 md:p-0 md:px-3 h-full relative z-10 text-start md:text-center">
+              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-[15px] mb-5 mx-0 md:mx-auto shrink-0 relative z-10 ring-4 ring-white">
+                0{i + 1}
               </div>
-            </Reveal>
-          );
-        })}
+              <h3 className="text-base font-black text-slate-900 mb-2 tracking-tight">{step.title}</h3>
+              <p className="text-slate-500 text-[13.5px] font-medium leading-relaxed">{step.desc}</p>
+            </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
@@ -415,9 +441,9 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
 
   return (
     <Reveal delay={index * 80} className="h-full">
-      <div className={`group relative h-full flex flex-col rounded-[2rem] bg-white transition-all duration-500 ${isFeatured ? 'border-2 border-emerald-500 shadow-[0_20px_50px_-15px_rgba(16,185,129,0.35)] md:-translate-y-2' : 'border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_18px_40px_rgba(15,23,42,0.09)] hover:-translate-y-1'}`}>
+      <div className={`group relative h-full flex flex-col rounded-[2rem] bg-white transition-all duration-500 ${isFeatured ? 'border-2 border-blue-500 shadow-[0_20px_50px_-15px_rgba(59,130,246,0.35)] md:-translate-y-2' : 'border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_18px_40px_rgba(15,23,42,0.09)] hover:-translate-y-1'}`}>
         {pack.badge && (
-          <div className="absolute -top-3.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 whitespace-nowrap flex items-center gap-1.5">
+          <div className="absolute -top-3.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-blue-500 text-white shadow-lg shadow-blue-500/30 whitespace-nowrap flex items-center gap-1.5">
             <Star size={11} className="fill-current" />
             {pack.badge}
           </div>
@@ -425,7 +451,7 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
 
         <div className="p-7 pb-5">
           <div className="flex items-center justify-between mb-5">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isFeatured ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isFeatured ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'}`}>
               <Icon size={22} strokeWidth={2.2} />
             </div>
             <div className="text-end">
@@ -436,8 +462,8 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
 
           <h3 className="text-lg font-black text-slate-900 tracking-tight mb-2">{pack.name}</h3>
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
-            <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full ${pack.tier === 'complet' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{TIER_LABEL[pack.tier]}</span>
-            <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">{pack.audience}</span>
+            <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full ${pack.tier === 'complet' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{TIER_LABEL[pack.tier]}</span>
+            <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">{pack.audience}</span>
           </div>
           {pack.idealFor && <p className="text-slate-500 text-[13px] leading-relaxed font-medium">{pack.idealFor}</p>}
         </div>
@@ -446,7 +472,7 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
           <ul className="space-y-2.5 mb-4">
             {visibleFeatures.map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-[13px] font-semibold text-slate-700 leading-relaxed">
-                <CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle size={15} className="text-blue-600 shrink-0 mt-0.5" />
                 <span>{f}</span>
               </li>
             ))}
@@ -455,7 +481,7 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
           {hasMore && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="flex items-center gap-1.5 text-[12px] font-black text-emerald-600 hover:text-emerald-700 mb-5 transition-colors"
+              className="flex items-center gap-1.5 text-[12px] font-black text-blue-600 hover:text-blue-700 mb-5 transition-colors"
             >
               <span>{expanded ? 'Voir moins' : `Voir les ${pack.features.length} avantages`}</span>
               <ChevronDown size={14} className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
@@ -467,7 +493,7 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
           <button
             type="button"
             onClick={() => onChoose(pack.name)}
-            className={`mt-auto w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isFeatured ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/25' : 'bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-100'}`}
+            className={`mt-auto w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isFeatured ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/25' : 'bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-100'}`}
           >
             <span>Choisir ce pack</span>
             <ArrowLeft size={16} className="transform ltr:rotate-180 group-hover:-translate-x-1 rtl:group-hover:translate-x-1 transition-transform" />
@@ -486,7 +512,7 @@ const OrientationInfoBanner: React.FC<{ pack: OrientationPackDef; onChoose: (nam
     <Reveal>
       <div className="relative rounded-[2rem] bg-white border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.05)] p-7 md:p-9 flex flex-col md:flex-row md:items-center gap-7">
         <div className="flex items-center gap-4 md:w-64 shrink-0">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <Icon size={26} strokeWidth={2.2} />
           </div>
           <div>
@@ -498,7 +524,7 @@ const OrientationInfoBanner: React.FC<{ pack: OrientationPackDef; onChoose: (nam
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 flex-grow">
           {highlights.map((f) => (
             <li key={f} className="flex items-start gap-2 text-[13px] font-semibold text-slate-700 leading-snug">
-              <CheckCircle size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+              <CheckCircle size={14} className="text-blue-600 shrink-0 mt-0.5" />
               <span>{f}</span>
             </li>
           ))}
@@ -537,9 +563,9 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
   const ecoPacks = ORIENTATION_PACKS.filter((p) => p.track === 'eco');
 
   return (
-    <section className="max-w-6xl mx-auto px-4 my-24">
+    <section className="max-w-6xl mx-auto px-4 py-20 scroll-mt-24" id="formules">
       <Reveal className="text-center max-w-2xl mx-auto mb-10 space-y-4">
-        <SectionEyebrow tone="text-emerald-600" toneBg="bg-emerald-50">Toutes les formules</SectionEyebrow>
+        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">Toutes les formules</SectionEyebrow>
         <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">Cinq packs, une seule mission</h2>
         <p className="text-slate-500 text-lg font-medium leading-relaxed max-w-xl mx-auto">Comparez les formules et choisissez celle qui correspond à votre filière et à votre niveau d'autonomie.</p>
       </Reveal>
@@ -551,7 +577,7 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
               key={tab.key}
               type="button"
               onClick={() => setTrack(tab.key)}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${track === tab.key ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${track === tab.key ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               {tab.label}
             </button>
@@ -565,7 +591,7 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
         {track !== 'eco' && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                 <FlaskConical size={18} />
               </div>
               <h3 className="text-lg font-black text-slate-900 tracking-tight">Filière Scientifique &amp; Technique</h3>
@@ -582,7 +608,7 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
         {track !== 'science' && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                 <TrendingUp size={18} />
               </div>
               <h3 className="text-lg font-black text-slate-900 tracking-tight">Filière Économie &amp; Commerce</h3>
@@ -602,7 +628,62 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
 
 
 /* -------------------------------------------------------------------------- */
-/* Orientation hero — distinct light-mode layout w/ a compass visual          */
+/* Breadcrumb — accessible, feeds BreadcrumbList structured data              */
+/* -------------------------------------------------------------------------- */
+
+const OrientationBreadcrumb: React.FC<{ current: string }> = ({ current }) => {
+  const { t } = useTranslation();
+  return (
+    <nav aria-label="Fil d'Ariane" className="border-b border-slate-100 bg-white">
+      <div className="container mx-auto px-4 lg:px-8">
+        <ol className="flex items-center gap-1.5 py-3 text-[12.5px] font-bold text-slate-400 overflow-x-auto whitespace-nowrap">
+          <li className="flex items-center gap-1.5">
+            <Link to="/" className="hover:text-blue-600 transition-colors">{t('nav.home')}</Link>
+            <ChevronRight size={13} className="rtl:rotate-180 text-slate-300" />
+          </li>
+          <li className="text-slate-700" aria-current="page">{current}</li>
+        </ol>
+      </div>
+    </nav>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Jump nav — in-page table of contents, signals a structured document        */
+/* -------------------------------------------------------------------------- */
+
+const JUMP_LINK_IDS = ['pourquoi', 'ai-advisor', 'etapes', 'formules', 'faq'] as const;
+const JUMP_LINK_KEYS: Record<typeof JUMP_LINK_IDS[number], string> = {
+  pourquoi: 'orientationPage.jumpNav.pourquoi',
+  'ai-advisor': 'orientationPage.jumpNav.advisor',
+  etapes: 'orientationPage.jumpNav.etapes',
+  formules: 'orientationPage.jumpNav.formules',
+  faq: 'orientationPage.jumpNav.faq',
+};
+
+const OrientationJumpNav: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="border-y border-slate-100 bg-slate-50/60 hidden md:block">
+      <div className="container mx-auto px-4 lg:px-8">
+        <nav aria-label="Sections de la page" className="flex items-center gap-1 py-2.5 overflow-x-auto">
+          {JUMP_LINK_IDS.map((id) => (
+            <button
+              key={id}
+              onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="px-3.5 py-2 rounded-lg text-[13px] font-bold text-slate-500 hover:text-blue-700 hover:bg-white hover:shadow-sm transition-all whitespace-nowrap"
+            >
+              {t(JUMP_LINK_KEYS[id])}
+            </button>
+          ))}
+        </nav>
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Orientation hero — editorial two-column layout with real photography       */
 /* -------------------------------------------------------------------------- */
 
 const OrientationHero: React.FC<{
@@ -612,68 +693,173 @@ const OrientationHero: React.FC<{
   primaryCta: string;
   secondaryCta: string;
 }> = ({ title, desc, badge, primaryCta, secondaryCta }) => {
-  const badgeIcons = [School, Target, BrainCircuit];
+  const { t } = useTranslation();
+  const stats = [
+    { value: '+3500', label: t('programDetails.stats.beneficiaries') },
+    { value: '98%', label: t('programDetails.stats.satisfaction') },
+    { value: '+10', label: t('programDetails.stats.experience') },
+  ];
 
   return (
-    <div className="relative pt-16 pb-20 lg:pt-24 lg:pb-24 overflow-hidden bg-gradient-to-b from-emerald-50/70 via-white to-white">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-15%] end-[-10%] w-[500px] h-[500px] bg-emerald-200/40 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-[-15%] start-[-10%] w-[400px] h-[400px] bg-teal-200/40 rounded-full blur-[90px]"></div>
-        <div
-          className="absolute inset-0 opacity-[0.35] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,black,transparent)]"
-          style={{ backgroundImage: 'radial-gradient(rgba(16,185,129,0.15) 1px, transparent 1px)', backgroundSize: '28px 28px' }}
-        ></div>
-      </div>
-
-      <div className="container mx-auto px-4 lg:px-8 relative z-10">
-        <Reveal className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-[13px] font-bold ring-1 ring-emerald-200">
-            <Compass size={14} />
-            <span className="tracking-wide">{badge}</span>
-          </div>
-
-          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-8 bg-emerald-600 rounded-[1.4rem] shadow-xl shadow-emerald-600/20 flex items-center justify-center relative">
-            <div className="absolute inset-x-2 top-1 h-1/3 bg-white/20 rounded-full blur-sm"></div>
-            <Compass size={30} className="text-white relative z-10" strokeWidth={1.8} />
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight leading-[1.08] text-slate-900">
-            {title}
-          </h1>
-
-          <p className="text-[18px] leading-[1.6] text-slate-600 font-medium max-w-[600px] mx-auto mb-10">
-            {desc}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <button
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto h-[52px] px-9 bg-emerald-600 text-white rounded-2xl font-bold text-base md:text-lg hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/20 hover:-translate-y-0.5 flex items-center justify-center gap-3 group"
-            >
-              <span>{primaryCta}</span>
-              <ArrowLeft size={19} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-            </button>
-            <a
-              href="https://wa.me/212703749901"
-              target="_blank"
-              rel="noreferrer"
-              className="w-full sm:w-auto h-[52px] px-9 bg-white text-emerald-700 border-2 border-emerald-100 rounded-2xl font-bold text-base md:text-lg hover:bg-emerald-50 transition-all flex items-center justify-center gap-3"
-            >
-              <MessageCircle size={19} />
-              <span>{secondaryCta}</span>
-            </a>
-          </div>
-
-          <div className="flex items-center justify-center gap-3">
-            {badgeIcons.map((Icon, i) => (
-              <div key={i} className="w-11 h-11 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center">
-                <Icon size={20} className="text-emerald-600" />
+    <section className="relative bg-white overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-8 pt-14 pb-16 lg:pt-20 lg:pb-20">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+          <div className="lg:col-span-7">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 mb-6 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-[12.5px] font-bold ring-1 ring-blue-100">
+                <Compass size={13} />
+                <span className="tracking-wide">{badge}</span>
               </div>
-            ))}
+
+              <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold mb-6 tracking-tight leading-[1.1] text-slate-900">
+                {title}
+              </h1>
+
+              <p className="text-[17px] leading-[1.7] text-slate-600 font-medium max-w-[560px] mb-9">
+                {desc}
+              </p>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-11">
+                <button
+                  onClick={() => document.getElementById('pourquoi')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="w-full sm:w-auto h-[52px] px-8 bg-blue-600 text-white rounded-xl font-bold text-[15px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2.5 group"
+                >
+                  <span>{primaryCta}</span>
+                  <ArrowLeft size={18} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                </button>
+                <a
+                  href="https://wa.me/212703749901"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full sm:w-auto h-[52px] px-8 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-[15px] hover:border-blue-200 hover:text-blue-700 hover:bg-blue-50/50 transition-colors flex items-center justify-center gap-2.5"
+                >
+                  <MessageCircle size={17} />
+                  <span>{secondaryCta}</span>
+                </a>
+              </div>
+
+              <dl className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-7 border-t border-slate-100">
+                {stats.map((stat) => (
+                  <div key={stat.label}>
+                    <dt className="sr-only">{stat.label}</dt>
+                    <dd className="text-2xl font-black text-slate-900 tabular-nums leading-none">{stat.value}</dd>
+                    <span className="block text-[11.5px] font-bold text-slate-400 mt-1.5">{stat.label}</span>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
           </div>
-        </Reveal>
+
+          <div className="lg:col-span-5">
+            <Reveal delay={120}>
+              <div className="relative rounded-[1.75rem] overflow-hidden bg-slate-100 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.25)] ring-1 ring-slate-100 aspect-[4/5] lg:aspect-[3/4]">
+                <img
+                  src={IMAGES.HERO.HOME_MAIN}
+                  alt="Élève accompagné dans son orientation scolaire par un conseiller Tilmid"
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-slate-900/85 via-slate-900/30 to-transparent">
+                  <p className="text-white font-bold text-[13px] flex items-center gap-2">
+                    <BadgeCheck size={16} className="text-blue-400 shrink-0" />
+                    {t('orientationPage.testimonials.badge')}
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Commitment — trust strip using previously-unused i18n content              */
+/* -------------------------------------------------------------------------- */
+
+const OrientationCommitment: React.FC = () => {
+  const { t } = useTranslation();
+  const points = (t('orientationPage.commitment.points', { returnObjects: true }) as unknown as string[]) || [];
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 py-14">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 bg-slate-50/70 rounded-[1.75rem] border border-slate-100 p-8 md:p-10">
+        <Reveal className="lg:w-80 shrink-0">
+          <div className="flex items-center gap-3 mb-2">
+            <ShieldCheck size={20} className="text-blue-600 shrink-0" />
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('orientationPage.commitment.title')}</h2>
+          </div>
+          <p className="text-slate-500 text-[14px] font-medium leading-relaxed">{t('orientationPage.commitment.desc')}</p>
+        </Reveal>
+
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {points.map((point, i) => (
+            <Reveal key={point} delay={i * 80} className="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+              <CheckCircle size={17} className="text-blue-600 shrink-0 mt-0.5" />
+              <span className="text-[13.5px] font-bold text-slate-700 leading-snug">{point}</span>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* FAQ — accessible accordion, feeds FAQPage structured data for SEO          */
+/* -------------------------------------------------------------------------- */
+
+const OrientationFAQ: React.FC = () => {
+  const { t } = useTranslation();
+  const items = (t('orientationPage.faq.items', { returnObjects: true }) as unknown as { q: string; a: string }[]) || [];
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  return (
+    <section className="max-w-3xl mx-auto px-4 py-20 scroll-mt-24" id="faq">
+      <Reveal className="text-center mb-12 space-y-4">
+        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">{t('orientationPage.faq.eyebrow')}</SectionEyebrow>
+        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">{t('orientationPage.faq.title')}</h2>
+      </Reveal>
+
+      <div className="space-y-3">
+        {items.map((item, i) => {
+          const isOpen = openIndex === i;
+          const panelId = `tawjih-faq-panel-${i}`;
+          const buttonId = `tawjih-faq-button-${i}`;
+          return (
+            <Reveal key={item.q} delay={i * 40}>
+              <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                <h3>
+                  <button
+                    id={buttonId}
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    onClick={() => setOpenIndex(isOpen ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 p-5 text-start min-h-[44px]"
+                  >
+                    <span className="text-[15px] font-black text-slate-900">{item.q}</span>
+                    <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 ${isOpen ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                      <ChevronDown size={16} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </span>
+                  </button>
+                </h3>
+                <div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={buttonId}
+                  className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="text-slate-500 font-medium leading-relaxed text-[14px] px-5 pb-5 border-t border-slate-50 pt-4">{item.a}</p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          );
+        })}
+      </div>
+    </section>
   );
 };
 
@@ -692,27 +878,27 @@ const OrientationTestimonials: React.FC = () => {
   if (stories.length === 0) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 my-24">
+    <section className="max-w-6xl mx-auto px-4 py-20">
       <Reveal className="text-center max-w-2xl mx-auto mb-14 space-y-4">
-        <SectionEyebrow tone="text-emerald-600" toneBg="bg-emerald-50">{t('orientationPage.testimonials.eyebrow')}</SectionEyebrow>
+        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">{t('orientationPage.testimonials.eyebrow')}</SectionEyebrow>
         <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{t('orientationPage.testimonials.title')}</h2>
       </Reveal>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stories.slice(0, 3).map((story, i) => (
           <Reveal key={story.id} delay={i * 100}>
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_18px_40px_rgba(15,23,42,0.09)] hover:-translate-y-1 transition-all duration-500 h-full flex flex-col">
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-blue-200 transition-colors duration-300 h-full flex flex-col">
               <div className="flex items-center gap-4 mb-5">
                 <img src={story.image} alt={story.name} className="w-14 h-14 rounded-full object-cover ring-4 ring-white shadow-md" />
                 <div className="text-start">
                   <h4 className="font-black text-slate-900 text-base">{story.name}</h4>
-                  <span className="text-emerald-600 text-xs font-bold uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-full">{story.role}</span>
+                  <span className="text-blue-600 text-xs font-bold uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded-full">{story.role}</span>
                 </div>
                 <Quote size={22} className="ms-auto text-slate-200 shrink-0" fill="currentColor" />
               </div>
               <p className="text-slate-600 font-medium leading-relaxed text-[15px] text-start flex-grow">"{story.content}"</p>
               <div className="mt-6 pt-5 border-t border-slate-50 flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-black">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-600 text-[11px] font-black">
                   <CheckCircle size={13} />
                   {t('orientationPage.testimonials.badge')}
                 </span>
@@ -735,12 +921,11 @@ const OrientationTestimonials: React.FC = () => {
 const OrientationFinalCTA: React.FC = () => {
   const { t } = useTranslation();
   return (
-    <section className="max-w-5xl mx-auto px-4 my-24">
+    <section className="max-w-5xl mx-auto px-4 py-20">
       <Reveal>
-        <div className="relative rounded-[3rem] overflow-hidden bg-gradient-to-br from-[#08142F] via-[#0D1B3D] to-[#064e3b] border border-white/5 shadow-2xl p-10 md:p-16 text-center">
-          <div className="absolute top-0 start-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="relative rounded-[1.75rem] overflow-hidden bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] border border-white/5 p-10 md:p-14 text-center">
           <div className="relative z-10 max-w-2xl mx-auto">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/20 mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-blue-500/10 text-blue-300 ring-1 ring-blue-400/20 mb-6">
               <CompassIcon size={12} />
               {t('orientationPage.finalCta.eyebrow')}
             </span>
@@ -750,7 +935,7 @@ const OrientationFinalCTA: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
                 onClick={() => document.getElementById('ai-advisor')?.scrollIntoView({ behavior: 'smooth' })}
-                className="w-full sm:w-auto px-9 py-4 bg-emerald-500 text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="w-full sm:w-auto px-9 py-4 bg-blue-500 text-white rounded-xl font-black text-base md:text-lg hover:bg-blue-400 transition-colors active:scale-95 flex items-center justify-center gap-3"
               >
                 <span>{t('orientationPage.finalCta.primaryCta')}</span>
                 <ArrowLeft size={20} className="transform ltr:rotate-180" />
@@ -759,7 +944,7 @@ const OrientationFinalCTA: React.FC = () => {
                 href="https://wa.me/212703749901"
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-9 py-4 bg-white/5 text-white border border-white/15 rounded-2xl font-black text-base md:text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+                className="w-full sm:w-auto px-9 py-4 bg-white/5 text-white border border-white/15 rounded-xl font-black text-base md:text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-3"
               >
                 <MessageCircle size={20} />
                 <span>{t('orientationPage.finalCta.secondaryCta')}</span>
@@ -811,16 +996,16 @@ export const ProgramDetails: React.FC = () => {
       data = TAWJIH_DATA;
       ProgramIcon = Compass;
       theme = {
-        primary: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        gradient: 'from-[#087F66] via-[#0DAA79] to-[#13B981]',
-        lightBg: 'bg-emerald-50',
-        border: 'border-emerald-100',
-        accent: 'text-teal-500',
-        blob1: 'bg-teal-200',
-        blob2: 'bg-emerald-300',
-        button: 'bg-emerald-600 hover:bg-emerald-700',
-        iconBg: 'bg-emerald-900/10'
+        primary: 'text-blue-600',
+        bg: 'bg-blue-600',
+        gradient: 'from-[#0B3D91] via-[#1D5FD6] to-[#22A9E0]',
+        lightBg: 'bg-blue-50',
+        border: 'border-blue-100',
+        accent: 'text-cyan-500',
+        blob1: 'bg-cyan-200',
+        blob2: 'bg-blue-300',
+        button: 'bg-blue-600 hover:bg-blue-700',
+        iconBg: 'bg-blue-900/10'
       };
       break;
     case 'tilmid':
@@ -886,22 +1071,63 @@ export const ProgramDetails: React.FC = () => {
   const commitmentTitle = t('programDetails.guarantee.title');
   const commitmentDesc = t('programDetails.guarantee.desc');
 
+  const faqItems = isTawjih
+    ? (t('orientationPage.faq.items', { returnObjects: true }) as unknown as { q: string; a: string }[]) || []
+    : [];
+
+  const tawjihJsonLd = isTawjih
+    ? [
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: t('nav.home'), item: 'https://tilmide.ma/' },
+            { '@type': 'ListItem', position: 2, name: t(data.title), item: 'https://tilmide.ma/tawjih' },
+          ],
+        },
+        {
+          '@type': 'Service',
+          serviceType: t(data.title),
+          name: `${t(data.title)} - Tilmid`,
+          description: t(data.subtitle),
+          provider: { '@type': 'Organization', name: 'Tilmid', url: 'https://tilmide.ma' },
+          areaServed: { '@type': 'Country', name: 'Morocco' },
+        },
+        ...(faqItems.length > 0
+          ? [{
+              '@type': 'FAQPage',
+              mainEntity: faqItems.map((item) => ({
+                '@type': 'Question',
+                name: item.q,
+                acceptedAnswer: { '@type': 'Answer', text: item.a },
+              })),
+            }]
+          : []),
+      ]
+    : undefined;
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30">
       <SEO
         title={`${t(data.title)} - Tilmid`}
         description={t(data.subtitle)}
+        url={isTawjih ? '/tawjih' : undefined}
+        jsonLd={tawjihJsonLd}
       />
+
+      {isTawjih && <OrientationBreadcrumb current={t(data.title)} />}
 
       {/* Hero Section */}
       {isTawjih ? (
-        <OrientationHero
-          title={t(data.title)}
-          desc={heroDesc}
-          badge={badgeLabel}
-          primaryCta={primaryCtaLabel}
-          secondaryCta={t('orientationPage.hero.secondaryCta')}
-        />
+        <>
+          <OrientationHero
+            title={t(data.title)}
+            desc={heroDesc}
+            badge={badgeLabel}
+            primaryCta={primaryCtaLabel}
+            secondaryCta={t('orientationPage.hero.secondaryCta')}
+          />
+          <OrientationJumpNav />
+        </>
       ) : (
         <div className={`relative pt-16 pb-32 lg:pt-24 lg:pb-64 overflow-hidden text-white bg-gradient-to-br ${theme.gradient} transition-all duration-1000`}>
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -994,8 +1220,11 @@ export const ProgramDetails: React.FC = () => {
         )}
 
         {isTawjih && <OrientationWhyAdvisor />}
+        {isTawjih && <OrientationBenefits />}
         {isTawjih && <OrientationProcess />}
         {isTawjih && <OrientationPacks onChoose={goToOrientationForm} />}
+        {isTawjih && <OrientationCommitment />}
+        {isTawjih && <OrientationFAQ />}
 
         {!isTawjih && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24" id="features">

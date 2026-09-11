@@ -9,20 +9,21 @@ import {
   MessageCircle,
   Sparkles,
   Clock,
-  Loader2,
   X,
   Check,
   ArrowDown,
   ChevronDown,
+  ChevronRight,
   TrendingUp,
   Target,
   ClipboardList,
   BookOpen,
   Minus,
   Compass,
-  Star
+  Star,
+  BadgeCheck
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import img0604 from '../assets/Testimonial/IMG_0604.jpg';
 import img0605 from '../assets/Testimonial/IMG_0605.jpg';
 import img0606 from '../assets/Testimonial/IMG_0606.jpg';
@@ -33,6 +34,8 @@ import img2756 from '../assets/Testimonial/IMG_2756.jpg';
 import img2944 from '../assets/Testimonial/IMG_2944.jpg';
 import img2945 from '../assets/Testimonial/IMG_2945.jpg';
 import img2947 from '../assets/Testimonial/IMG_2947.jpg';
+import { PackTier, PackDef, PACKS, NOT_INCLUDED, PREMIUM_JOURNEY } from '../constants/mouwakabaPacks';
+import { IMAGES } from '../constants/images';
 import SEO from '../components/SEO';
 
 const TESTIMONIALS = [
@@ -119,71 +122,133 @@ const SupportLevel: React.FC<{ level: 1 | 2 | 3; label: string }> = ({ level, la
 );
 
 /* -------------------------------------------------------------------------- */
-/* Hero                                                                        */
+/* Breadcrumb — accessible, feeds BreadcrumbList structured data              */
+/* -------------------------------------------------------------------------- */
+
+const MouwakabaBreadcrumb: React.FC = () => (
+  <nav aria-label="Fil d'Ariane" className="border-b border-slate-100 bg-white">
+    <div className="container mx-auto px-4 lg:px-8">
+      <ol className="flex items-center gap-1.5 py-3 text-[12.5px] font-bold text-slate-400 overflow-x-auto whitespace-nowrap">
+        <li className="flex items-center gap-1.5">
+          <Link to="/" className="hover:text-primary transition-colors">Accueil</Link>
+          <ChevronRight size={13} className="rtl:rotate-180 text-slate-300" />
+        </li>
+        <li className="text-slate-700" aria-current="page">Offre d'accompagnement</li>
+      </ol>
+    </div>
+  </nav>
+);
+
+/* -------------------------------------------------------------------------- */
+/* Jump nav — in-page table of contents, signals a structured document        */
+/* -------------------------------------------------------------------------- */
+
+const JUMP_LINKS = [
+  { id: 'objectifs', label: 'Objectifs' },
+  { id: 'pricing', label: 'Formules' },
+  { id: 'comparatif', label: 'Comparatif' },
+  { id: 'faq', label: 'Questions' },
+];
+
+const MouwakabaJumpNav: React.FC = () => (
+  <div className="border-y border-slate-100 bg-slate-50/60 hidden md:block">
+    <div className="container mx-auto px-4 lg:px-8">
+      <nav aria-label="Sections de la page" className="flex items-center gap-1 py-2.5 overflow-x-auto">
+        {JUMP_LINKS.map((link) => (
+          <button
+            key={link.id}
+            onClick={() => document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="px-3.5 py-2 rounded-lg text-[13px] font-bold text-slate-500 hover:text-primary hover:bg-white hover:shadow-sm transition-all whitespace-nowrap"
+          >
+            {link.label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  </div>
+);
+
+/* -------------------------------------------------------------------------- */
+/* Hero — editorial two-column layout with real photography                  */
 /* -------------------------------------------------------------------------- */
 
 const MouwakabaHero: React.FC<{ onPrimaryCta: () => void }> = ({ onPrimaryCta }) => {
-  const badgeIcons = [ClipboardList, Zap, UserCheck];
+  const stats = [
+    { value: '+3500', label: 'Élèves bénéficiaires' },
+    { value: '98%', label: 'Taux de satisfaction' },
+    { value: '+10', label: "Années d'expérience" },
+  ];
 
   return (
-    <div className="relative pt-16 pb-20 lg:pt-24 lg:pb-24 overflow-hidden bg-gradient-to-b from-blue-50/70 via-white to-white">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-15%] end-[-10%] w-[500px] h-[500px] bg-blue-200/40 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-[-15%] start-[-10%] w-[400px] h-[400px] bg-cyan-200/40 rounded-full blur-[90px]"></div>
-        <div
-          className="absolute inset-0 opacity-[0.35] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,black,transparent)]"
-          style={{ backgroundImage: 'radial-gradient(rgba(22,139,255,0.15) 1px, transparent 1px)', backgroundSize: '28px 28px' }}
-        ></div>
-      </div>
-
-      <div className="container mx-auto px-4 lg:px-8 relative z-10">
-        <Reveal className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-blue-100 text-primary text-[13px] font-bold ring-1 ring-blue-200">
-            <Sparkles size={14} />
-            <span className="tracking-wide">Programme d'accompagnement scolaire</span>
-          </div>
-
-          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-8 bg-primary rounded-[1.4rem] shadow-xl shadow-primary/20 flex items-center justify-center relative">
-            <div className="absolute inset-x-2 top-1 h-1/3 bg-white/20 rounded-full blur-sm"></div>
-            <Target size={30} className="text-white relative z-10" strokeWidth={1.8} />
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight leading-[1.08] text-slate-900">
-            Maximisez votre potentiel avec l'accompagnement Mouwakaba
-          </h1>
-
-          <p className="text-[18px] leading-[1.6] text-slate-600 font-medium max-w-[600px] mx-auto mb-10">
-            Un programme d'accompagnement pratique conçu pour vous aider à mieux vous organiser, améliorer vos méthodes d'apprentissage et avancer vers vos objectifs scolaires avec une méthode claire et structurée.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <button
-              onClick={onPrimaryCta}
-              className="w-full sm:w-auto h-[52px] px-9 bg-primary text-white rounded-2xl font-bold text-base md:text-lg hover:bg-[#0875E8] transition-all shadow-xl shadow-primary/20 hover:-translate-y-0.5 flex items-center justify-center gap-3 group"
-            >
-              <span>Je commence maintenant</span>
-              <ArrowLeft size={19} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto h-[52px] px-9 bg-white text-primary border-2 border-blue-100 rounded-2xl font-bold text-base md:text-lg hover:bg-blue-50 transition-all flex items-center justify-center gap-3"
-            >
-              <span>Découvrir les formules</span>
-              <ArrowDown size={18} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-center gap-3">
-            {badgeIcons.map((Icon, i) => (
-              <div key={i} className="w-11 h-11 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center">
-                <Icon size={20} className="text-primary" />
+    <section className="relative bg-white overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-8 pt-14 pb-16 lg:pt-20 lg:pb-20">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+          <div className="lg:col-span-7">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 mb-6 px-3.5 py-1.5 rounded-full bg-blue-50 text-primary text-[12.5px] font-bold ring-1 ring-blue-100">
+                <Sparkles size={13} />
+                <span className="tracking-wide">Programme d'accompagnement scolaire</span>
               </div>
-            ))}
+
+              <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold mb-6 tracking-tight leading-[1.1] text-slate-900">
+                Maximisez votre potentiel avec l'accompagnement Mouwakaba
+              </h1>
+
+              <p className="text-[17px] leading-[1.7] text-slate-600 font-medium max-w-[560px] mb-9">
+                Un programme d'accompagnement pratique conçu pour vous aider à mieux vous organiser, améliorer vos méthodes d'apprentissage et avancer vers vos objectifs scolaires avec une méthode claire et structurée.
+              </p>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-11">
+                <button
+                  onClick={onPrimaryCta}
+                  className="w-full sm:w-auto h-[52px] px-8 bg-primary text-white rounded-xl font-bold text-[15px] hover:bg-[#0875E8] transition-colors flex items-center justify-center gap-2.5 group"
+                >
+                  <span>Je commence maintenant</span>
+                  <ArrowLeft size={18} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="w-full sm:w-auto h-[52px] px-8 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-[15px] hover:border-primary/30 hover:text-primary hover:bg-blue-50/50 transition-colors flex items-center justify-center gap-2.5"
+                >
+                  <span>Découvrir les formules</span>
+                  <ArrowDown size={17} />
+                </button>
+              </div>
+
+              <dl className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-7 border-t border-slate-100">
+                {stats.map((stat) => (
+                  <div key={stat.label}>
+                    <dt className="sr-only">{stat.label}</dt>
+                    <dd className="text-2xl font-black text-slate-900 tabular-nums leading-none">{stat.value}</dd>
+                    <span className="block text-[11.5px] font-bold text-slate-400 mt-1.5">{stat.label}</span>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
           </div>
-        </Reveal>
+
+          <div className="lg:col-span-5">
+            <Reveal delay={120}>
+              <div className="relative rounded-[1.75rem] overflow-hidden bg-slate-100 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.25)] ring-1 ring-slate-100 aspect-[4/5] lg:aspect-[3/4]">
+                <img
+                  src={IMAGES.HERO.HOME_MAIN}
+                  alt="Coach Tilmid accompagnant un étudiant dans sa méthode de travail"
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-slate-900/85 via-slate-900/30 to-transparent">
+                  <p className="text-white font-bold text-[13px] flex items-center gap-2">
+                    <BadgeCheck size={16} className="text-blue-400 shrink-0" />
+                    +3500 étudiants accompagnés
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -246,7 +311,7 @@ const OBJECTIVES = [
 ];
 
 const ProgramObjectives: React.FC = () => (
-  <section>
+  <section id="objectifs" className="scroll-mt-24">
     <SectionHeader
       eyebrow="Votre progression"
       title="Nous vous aidons à atteindre vos objectifs sans pression inutile"
@@ -310,104 +375,6 @@ const ProgramBenefits: React.FC = () => (
 /* -------------------------------------------------------------------------- */
 /* Pricing — pack data                                                        */
 /* -------------------------------------------------------------------------- */
-
-type PackTier = 'essentiel' | 'boost' | 'premium';
-
-interface PackDef {
-  tier: PackTier;
-  label: string;
-  badge?: string;
-  price: string;
-  audience: string;
-  smallLabel: string;
-  supportLevel: 1 | 2 | 3;
-  highlights: string[];
-  duration: string;
-  personalSupport: string;
-  result: string;
-  ctaLabel: string;
-  microcopy: string;
-}
-
-const PACKS: PackDef[] = [
-  {
-    tier: 'essentiel',
-    label: 'Essentiel',
-    price: '299 DH',
-    audience: "Pour l'étudiant capable d'appliquer les méthodes de manière autonome, mais qui a besoin d'une structure claire, d'outils pratiques et de techniques modernes de révision.",
-    smallLabel: 'Autonomie guidée',
-    supportLevel: 1,
-    highlights: [
-      'Accès plateforme privée : sept. 2026 → juin 2027',
-      'Bibliothèque de 10 vidéos essentielles',
-      'Les 5 axes clés de la méthode Mouwakaba',
-      'Outils pratiques prêts à l’emploi',
-      'Groupe WhatsApp privé',
-      'Session collective de 60 minutes',
-    ],
-    duration: 'Accès plateforme 10 mois',
-    personalSupport: 'Accompagnement collectif',
-    result: 'Une méthode claire et des outils pratiques pour éviter le travail désorganisé et construire un système de révision que vous pouvez appliquer de manière autonome.',
-    ctaLabel: 'Choisir Essentiel',
-    microcopy: 'Idéal pour construire votre propre système de travail.',
-  },
-  {
-    tier: 'boost',
-    label: 'Boost',
-    badge: 'Le plus choisi',
-    price: '599 DH',
-    audience: "Pour l'étudiant qui a besoin d'un diagnostic personnel et d'un plan clair pour avancer vers son objectif scolaire ou professionnel avec des étapes organisées.",
-    smallLabel: 'Accompagnement personnalisé',
-    supportLevel: 2,
-    highlights: [
-      'Tout le Pack Essentiel',
-      'Diagnostic personnalisé avant la séance',
-      '1 séance de coaching individuel (45 min)',
-      'Plan d’action personnalisé sur 30 jours',
-      'Résumé écrit après la séance',
-      '1 Check-in à 14 jours + feedback',
-    ],
-    duration: 'Plan personnalisé sur 30 jours',
-    personalSupport: '1 séance individuelle + 1 Check-in',
-    result: 'Vous repartez avec un diagnostic clair et un plan personnalisé sur 30 jours. Vous savez précisément quoi faire et comment mesurer votre progression.',
-    ctaLabel: 'Choisir Boost',
-    microcopy: 'Diagnostic personnel + plan d’action de 30 jours.',
-  },
-  {
-    tier: 'premium',
-    label: 'Premium',
-    badge: 'Accompagnement complet',
-    price: '999 DH',
-    audience: "Pour l'étudiant qui a besoin d'un accompagnement individuel plus approfondi, d'un suivi de l'application et d'ajustements réguliers afin de construire un système stable et devenir progressivement plus autonome.",
-    smallLabel: 'Suivi approfondi',
-    supportLevel: 3,
-    highlights: [
-      'Tout Essentiel + Boost',
-      'Accompagnement personnalisé sur 90 jours',
-      '3 séances individuelles de coaching (45 min)',
-      'Questionnaire de diagnostic détaillé',
-      'Check-in toutes les 2 semaines + feedback',
-      'Rapport final de progression',
-    ],
-    duration: '90 jours d’accompagnement',
-    personalSupport: '3 séances individuelles + Check-ins bimensuels',
-    result: 'Trois étapes individuelles pour planifier, suivre l’application, traiter les obstacles et ajuster la stratégie afin de construire progressivement une méthode de travail autonome et durable.',
-    ctaLabel: 'Choisir Premium',
-    microcopy: '90 jours d’accompagnement et de suivi personnalisé.',
-  },
-];
-
-const NOT_INCLUDED = [
-  'Messages privés individuels',
-  'Correction des exercices et matières scolaires',
-  'Accompagnement individuel quotidien',
-];
-
-const PREMIUM_JOURNEY = [
-  { title: 'Diagnostic & construction du système', items: ['Analyse de la situation', "Définition de l'objectif", 'Construction du système personnel'] },
-  { title: 'Suivi & ajustements', items: ["Évaluation de l'application", 'Identification des obstacles', 'Ajustement du plan'] },
-  { title: 'Progression & autonomie', items: ['Mesure des résultats', "Préparation de l'étape suivante", "Construction de l'autonomie"] },
-];
 
 /* -------------------------------------------------------------------------- */
 /* Pack card                                                                  */
@@ -708,7 +675,7 @@ const PackComparison: React.FC = () => {
   const [openTier, setOpenTier] = useState<PackTier | null>(null);
 
   return (
-    <section>
+    <section id="comparatif" className="scroll-mt-24">
       <SectionHeader eyebrow="Comparaison" title="Comparez les formules Mouwakaba" className="mb-12" />
 
       {/* Desktop table */}
@@ -833,7 +800,7 @@ const MouwakabaProcess: React.FC = () => (
               <div className="w-12 h-12 rounded-2xl bg-blue-50 text-primary flex items-center justify-center">
                 <step.icon size={22} strokeWidth={2.2} />
               </div>
-              <span className="text-4xl font-black text-slate-100 tabular-nums leading-none">0{i + 1}</span>
+              <span className="w-7 h-7 rounded-full bg-slate-900 text-white text-[12px] font-black flex items-center justify-center shrink-0">{i + 1}</span>
             </div>
             <h3 className="text-lg font-black text-slate-900 mb-2 tracking-tight">{step.title}</h3>
             <p className="text-slate-500 text-sm font-medium leading-relaxed">{step.desc}</p>
@@ -907,7 +874,7 @@ const MouwakabaFAQ: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="max-w-3xl mx-auto">
+    <section id="faq" className="max-w-3xl mx-auto scroll-mt-24">
       <SectionHeader eyebrow="Questions fréquentes" title="Tout savoir sur Mouwakaba" className="mb-12" />
 
       <div className="space-y-4">
@@ -995,157 +962,6 @@ const FinalCTA = React.forwardRef<HTMLDivElement, {}>((_, ref) => (
 FinalCTA.displayName = 'FinalCTA';
 
 /* -------------------------------------------------------------------------- */
-/* Registration                                                              */
-/* -------------------------------------------------------------------------- */
-
-const GRADE_OPTIONS = ['Tronc Commun', '1ère Bac', '2ème Bac', 'Étudiant(e)'];
-
-const RegistrationCard = React.forwardRef<HTMLDivElement, { selectedPack: string | null; onSelectPack: (label: string) => void }>(
-  ({ selectedPack, onSelectPack }, ref) => {
-    const [formData, setFormData] = useState({ name: '', phone: '', grade: GRADE_OPTIONS[2] });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [error, setError] = useState('');
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setError('');
-      if (!formData.name || !formData.phone) {
-        setError('Merci de remplir toutes les informations requises.');
-        return;
-      }
-      setIsSubmitting(true);
-      try {
-        const { dataManager } = await import('../utils/dataManager');
-        const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjkIdjHjdglElwR73th4W2F24FOAonO2Lk958jQ-dxKLfTX4BeKPEsDewAGh-vE2t3/exec';
-
-        await fetch(GOOGLE_SHEET_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: formData.name, phone: formData.phone, grade: formData.grade, pack: selectedPack || 'Non précisé' }),
-        });
-
-        await dataManager.saveCoachingRequest({ name: formData.name, phone: formData.phone, grade: formData.grade });
-
-        setIsSubmitting(false);
-        setIsSuccess(true);
-        setFormData({ name: '', phone: '', grade: GRADE_OPTIONS[2] });
-      } catch (err) {
-        console.error(err);
-        setIsSubmitting(false);
-        setError('Une erreur est survenue lors de l’envoi. Veuillez réessayer plus tard.');
-      }
-    };
-
-    return (
-      <section id="registration-card" ref={ref} className="scroll-mt-24 max-w-xl mx-auto">
-        <Reveal>
-          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-[0_20px_50px_-15px_rgba(15,23,42,0.12)] p-8 md:p-10">
-            {isSuccess ? (
-              <div className="text-center py-6">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-5">
-                  <CheckCircle size={32} />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">Inscription envoyée !</h3>
-                <p className="text-slate-500 font-medium">Merci, notre équipe vous contactera très bientôt pour finaliser votre inscription.</p>
-              </div>
-            ) : (
-              <>
-                <div className="text-center mb-7">
-                  <Eyebrow>Réservation</Eyebrow>
-                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-4 mb-2 tracking-tight">Finalisez votre inscription</h2>
-                  <p className="text-slate-500 text-sm font-medium">Laissez-nous vos coordonnées, nous vous recontactons rapidement.</p>
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wide mb-2 text-center">Formule choisie</p>
-                  <div className="flex items-center justify-center gap-2 flex-wrap">
-                    {PACKS.map((p) => (
-                      <button
-                        key={p.label}
-                        type="button"
-                        onClick={() => onSelectPack(p.label)}
-                        className={`px-4 py-2 min-h-[44px] rounded-full text-sm font-bold border transition-all ${selectedPack === p.label
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40'
-                          }`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label htmlFor="name" className="block text-[13px] font-bold text-slate-600 mb-1.5">Nom complet</label>
-                    <input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Votre nom complet"
-                      className="w-full h-[48px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-[13px] font-bold text-slate-600 mb-1.5">Téléphone</label>
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="06 XX XX XX XX"
-                      dir="ltr"
-                      className="w-full h-[48px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="grade" className="block text-[13px] font-bold text-slate-600 mb-1.5">Niveau scolaire</label>
-                    <select
-                      id="grade"
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleInputChange}
-                      className="w-full h-[48px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 font-medium bg-white"
-                    >
-                      {GRADE_OPTIONS.map((g) => (
-                        <option key={g} value={g}>{g}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {error && (
-                    <p className="text-red-500 text-sm font-semibold text-center">{error}</p>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full min-h-[52px] bg-primary text-white rounded-2xl font-black text-base flex items-center justify-center gap-2 hover:bg-[#0875E8] transition-all disabled:opacity-70"
-                  >
-                    {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                    <span>Confirmer mon inscription</span>
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-        </Reveal>
-      </section>
-    );
-  }
-);
-RegistrationCard.displayName = 'RegistrationCard';
-
-/* -------------------------------------------------------------------------- */
 /* Mobile sticky CTA                                                         */
 /* -------------------------------------------------------------------------- */
 
@@ -1184,24 +1000,58 @@ const MobileStickyCta: React.FC<{ pricingRef: React.RefObject<HTMLDivElement>; f
 /* -------------------------------------------------------------------------- */
 
 export const CoachingOffer: React.FC = () => {
-  const [selectedPack, setSelectedPack] = useState<string | null>(null);
+  const navigate = useNavigate();
   const pricingRef = useRef<HTMLDivElement>(null);
   const finalCtaRef = useRef<HTMLDivElement>(null);
-  const registrationRef = useRef<HTMLDivElement>(null);
 
   const goToRegistration = (packLabel?: string) => {
-    if (packLabel) setSelectedPack(packLabel);
-    registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    navigate('/coaching-offer/inscription', { state: { pack: packLabel } });
   };
+
+  const jsonLd = [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://tilmide.ma/' },
+        { '@type': 'ListItem', position: 2, name: "Offre d'accompagnement", item: 'https://tilmide.ma/coaching-offer' },
+      ],
+    },
+    {
+      '@type': 'Service',
+      serviceType: "Accompagnement scolaire Mouwakaba",
+      name: "Offre d'accompagnement Mouwakaba - Tilmid",
+      description: "Programme d'accompagnement Mouwakaba : méthode, outils et coaching pour progresser avec structure. Formules Essentiel, Boost et Premium.",
+      provider: { '@type': 'Organization', name: 'Tilmid', url: 'https://tilmide.ma' },
+      areaServed: { '@type': 'Country', name: 'Morocco' },
+      offers: PACKS.map((p) => ({
+        '@type': 'Offer',
+        name: p.label,
+        price: p.price.replace(/\D/g, ''),
+        priceCurrency: 'MAD',
+      })),
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: FAQ_ITEMS.map((item) => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: { '@type': 'Answer', text: item.a },
+      })),
+    },
+  ];
 
   return (
     <div dir="ltr" className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title="Offre d'accompagnement Mouwakaba"
         description="Le programme d'accompagnement Mouwakaba de Tilmid : méthode, outils et coaching pour progresser avec structure. Trois formules, Essentiel, Boost et Premium, adaptées à chaque étudiant."
+        url="/coaching-offer"
+        jsonLd={jsonLd}
       />
 
+      <MouwakabaBreadcrumb />
       <MouwakabaHero onPrimaryCta={() => goToRegistration()} />
+      <MouwakabaJumpNav />
 
       <div className="container mx-auto px-4 lg:px-8 mt-16 lg:mt-24 relative z-20 space-y-24 lg:space-y-28">
         <SuccessStories />
@@ -1210,7 +1060,6 @@ export const CoachingOffer: React.FC = () => {
         <MouwakabaPricing ref={pricingRef} onChoose={goToRegistration} />
         <PackComparison />
         <PackRecommendation />
-        <RegistrationCard ref={registrationRef} selectedPack={selectedPack} onSelectPack={setSelectedPack} />
         <MouwakabaProcess />
         <AdvisorCTA />
         <MouwakabaFAQ />

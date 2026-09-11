@@ -284,6 +284,13 @@
         { "q": "L'accompagnement concerne-t-il aussi les écoles privées ?", "a": "Oui, nous couvrons aussi bien les établissements publics que les écoles privées reconnues." }
       ]
     },
+    "jumpNav": {
+      "pourquoi": "Pourquoi bien s'orienter",
+      "advisor": "Outil de diagnostic",
+      "etapes": "Étapes",
+      "formules": "Formules",
+      "faq": "Questions"
+    },
     "finalCta": {
       "eyebrow": "Votre avenir commence ici",
       "title": "Vous hésitez encore sur votre orientation ?",
