@@ -11,7 +11,20 @@ export default {
         secondary: '#00d2ff',
         royal: '#040fd9',
         dark: '#1f2937',
-        light: '#f3f4f6'
+        light: '#f3f4f6',
+        success: '#16a34a',
+        warning: '#d97706',
+        danger: '#dc2626',
+      },
+      borderRadius: {
+        // Design-system radius scale (brief: sm/md/lg/xl = 8/12/16/24px), namespaced
+        // as `ds-*` rather than overriding Tailwind's default sm/md/lg/xl — those
+        // defaults are already used 300+ times across existing pages and redefining
+        // them would silently reshape every card/button on the site.
+        'ds-sm': '8px',
+        'ds-md': '12px',
+        'ds-lg': '16px',
+        'ds-xl': '24px',
       },
       fontFamily: {
         sans: ['Tajawal', 'sans-serif'],

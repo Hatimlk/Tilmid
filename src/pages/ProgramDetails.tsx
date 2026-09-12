@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
@@ -35,8 +35,12 @@ import {
   FlaskConical,
   TrendingUp,
   BadgeCheck,
+  Building2,
+  Info,
+  MapPin,
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { SCHOOLS, toSlug } from '../constants/schools';
 
 /* -------------------------------------------------------------------------- */
 /* Shared bits                                                                */
@@ -173,14 +177,26 @@ const FeatureStep: React.FC<{
 /* AI Orientation Advisor                                                     */
 /* -------------------------------------------------------------------------- */
 
+/** Result type -> real fields from the school directory. Not every result maps
+ * cleanly (the directory has no dedicated arts/media schools) — in that case
+ * the result screen says so rather than inventing a match. */
+const RESULT_FIELD_MAP: Record<string, string[]> = {
+  eng: ['Ingénierie', 'Informatique & Digital', 'Sciences'],
+  med: ['Médecine & Santé'],
+  art: ['Architecture'],
+  bus: ['Commerce & Management', 'Économie & Statistique'],
+};
+
 const TawjihAIAdvisor: React.FC = () => {
   const { t } = useTranslation();
-  const [step, setStep] = useState<'intro' | 'quiz' | 'analyzing' | 'result'>('intro');
+  const [step, setStep] = useState<'intro' | 'level' | 'quiz' | 'analyzing' | 'result'>('intro');
+  const [level, setLevel] = useState<string>('');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [resultType, setResultType] = useState<string>('');
 
   const translatedQuestions = t('programDetails.advisor.questions', { returnObjects: true }) as any[];
+  const levelOptions = (t('programDetails.advisor.levelOptions', { returnObjects: true }) as unknown as string[]) || [];
   const questionTypes = ["eng", "med", "art", "bus"];
   const questions = translatedQuestions.map((q, i) => ({
     id: i + 1,
@@ -211,6 +227,14 @@ const TawjihAIAdvisor: React.FC = () => {
     return map[resultType] || map.eng;
   };
 
+  const matchedSchools = useMemo(() => {
+    const fields = RESULT_FIELD_MAP[resultType] || [];
+    if (!fields.length) return [];
+    return SCHOOLS.filter((s) => s.fields.some((f) => fields.includes(f))).slice(0, 3);
+  }, [resultType]);
+
+  const primaryMatchedField = RESULT_FIELD_MAP[resultType]?.[0];
+
   return (
     <div className="relative rounded-[1.75rem] bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] shadow-2xl overflow-hidden h-full border border-white/5 scroll-mt-24" id="ai-advisor" tabIndex={-1}>
       <div className="absolute top-0 inset-x-0 h-1 bg-blue-500"></div>
@@ -235,13 +259,31 @@ const TawjihAIAdvisor: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setStep('quiz')}
+              onClick={() => setStep('level')}
               className="w-full px-9 py-4 bg-white text-slate-900 rounded-xl font-bold text-base hover:bg-blue-500 hover:text-white transition-colors active:scale-95 flex items-center justify-center gap-3"
             >
               <span>{t('programDetails.advisor.startBtn')}</span>
               <ArrowLeft size={20} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
             </button>
             <p className="-mt-4 text-slate-400 text-xs font-bold uppercase tracking-widest">{t('orientationPage.advisor.note')}</p>
+          </div>
+        )}
+
+        {step === 'level' && (
+          <div className="relative z-10 flex-grow flex flex-col p-8 md:p-10">
+            <h3 className="text-xl md:text-2xl font-black text-white mb-2 text-start leading-tight">{t('programDetails.advisor.levelTitle')}</h3>
+            <p className="text-slate-400 text-sm font-medium mb-8 text-start">{t('programDetails.advisor.levelSubtitle')}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {levelOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => { setLevel(option); setStep('quiz'); }}
+                  className="p-4 bg-white/5 hover:bg-white text-slate-200 hover:text-slate-900 text-center transition-colors rounded-xl font-bold text-sm border border-white/10"
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -284,13 +326,56 @@ const TawjihAIAdvisor: React.FC = () => {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 text-blue-400 rounded-full text-xs font-black mb-6 border border-blue-500/20">
               <CheckCircle size={15} /> {t('programDetails.advisor.resultSuccess')}
             </div>
+            {level && (
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">{t('programDetails.advisor.yourLevel', { level })}</p>
+            )}
             <h2 className="text-2xl md:text-3xl font-black mb-4 leading-tight">{t('programDetails.advisor.resultPrefix')} <br /> <span className="text-blue-400">{getResult().t}</span></h2>
-            <p className="text-sm md:text-base text-slate-300 mb-8 max-w-sm mx-auto font-medium leading-relaxed">{getResult().d}</p>
+            <p className="text-sm md:text-base text-slate-300 mb-6 max-w-sm mx-auto font-medium leading-relaxed">{getResult().d}</p>
+
+            <div className="w-full max-w-sm text-start bg-white/5 rounded-2xl border border-white/10 p-5 mb-6">
+              <h4 className="text-[13px] font-black text-white uppercase tracking-wide mb-3">{t('programDetails.advisor.schoolsTitle')}</h4>
+              {matchedSchools.length > 0 ? (
+                <div className="space-y-2 mb-4">
+                  {matchedSchools.map((school) => (
+                    <Link
+                      key={school.id}
+                      to={`/higher-schools/${school.slug}`}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group/school"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-blue-500/15 text-blue-300 flex items-center justify-center shrink-0">
+                        <Building2 size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold text-white truncate">{school.acronym || school.name}</p>
+                        <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1"><MapPin size={10} />{school.city}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-400 text-[13px] font-medium leading-relaxed mb-4">{t('programDetails.advisor.schoolsEmpty')}</p>
+              )}
+              {primaryMatchedField && (
+                <Link
+                  to={`/higher-schools?field=${toSlug(primaryMatchedField)}`}
+                  className="text-[12.5px] font-black text-blue-300 hover:text-blue-200 flex items-center gap-1.5"
+                >
+                  {t('programDetails.advisor.exploreSchoolsBtn')}
+                  <ArrowLeft size={13} className="transform ltr:rotate-180" />
+                </Link>
+              )}
+            </div>
+
+            <p className="flex items-start gap-2 text-[11.5px] text-slate-500 font-medium leading-relaxed max-w-sm mx-auto mb-8 text-start">
+              <Info size={14} className="shrink-0 mt-0.5" />
+              {t('programDetails.advisor.disclaimer')}
+            </p>
 
             <div className="flex flex-col gap-3 w-full">
               <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-8 py-3.5 bg-white text-slate-900 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-colors text-center flex items-center justify-center">{t('programDetails.advisor.chatBtn')}</a>
               <button onClick={() => {
                 setStep('intro');
+                setLevel('');
                 setCurrentQuestion(0);
                 setAnswers([]);
                 setResultType('');

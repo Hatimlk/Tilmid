@@ -10,6 +10,8 @@
  * wherever they're shown, rather than being guessed.
  */
 
+export const toSlug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
 export type SchoolType = 'public' | 'private';
 
 export interface School {
@@ -139,4 +141,41 @@ export const getSuggestions = (query: string, limit = 5): SearchSuggestions => {
     fields: FIELDS.filter((f) => normalize(f).includes(q)).slice(0, limit),
     cities: CITIES.filter((c) => normalize(c).includes(q)).slice(0, limit),
   };
+};
+
+/**
+ * Profile-vs-school compatibility score. Purely a transparent overlap between
+ * what the visitor tells us they want and this school's real, known attributes
+ * — never a prediction of admission chances or a fabricated "selectivity" figure.
+ */
+export interface SchoolProfile {
+  field?: string;
+  city?: string;
+  accessLevel?: string;
+  type?: SchoolType;
+}
+
+export interface MatchCheck {
+  label: string;
+  met: boolean;
+}
+
+export interface MatchResult {
+  pct: number;
+  checks: MatchCheck[];
+}
+
+/** Brief: "the score should only be displayed when enough profile data exists." */
+export const MIN_MATCH_DIMENSIONS = 2;
+
+export const computeMatch = (school: School, profile: SchoolProfile): MatchResult | null => {
+  const checks: MatchCheck[] = [];
+  if (profile.field) checks.push({ label: `Filière : ${profile.field}`, met: school.fields.includes(profile.field) });
+  if (profile.city) checks.push({ label: `Ville : ${profile.city}`, met: school.city === profile.city });
+  if (profile.accessLevel) checks.push({ label: `Niveau : ${profile.accessLevel}`, met: school.accessLevels.includes(profile.accessLevel) });
+  if (profile.type) checks.push({ label: profile.type === 'public' ? 'École publique' : 'École privée', met: school.type === profile.type });
+
+  if (checks.length < MIN_MATCH_DIMENSIONS) return null;
+  const met = checks.filter((c) => c.met).length;
+  return { pct: Math.round((met / checks.length) * 100), checks };
 };

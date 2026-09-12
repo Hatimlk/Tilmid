@@ -5,8 +5,10 @@ import {
   ChevronDown, Info
 } from 'lucide-react';
 import SEO from '../components/SEO';
-import { SCHOOLS, School } from '../constants/schools';
+import { SCHOOLS, School, computeMatch } from '../constants/schools';
 import { useFavorites, useCompareList } from '../hooks/useSchoolCollections';
+import { useSchoolProfile } from '../hooks/useSchoolProfile';
+import { MatchScoreBadge } from '../components/MatchScoreBadge';
 
 const useReveal = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -74,12 +76,14 @@ export const SchoolDetail: React.FC = () => {
   const school = SCHOOLS.find((s) => s.slug === slug);
   const favorites = useFavorites();
   const compare = useCompareList();
+  const { profile } = useSchoolProfile();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
   if (!school) return <Navigate to="/higher-schools" replace />;
 
+  const match = computeMatch(school, profile);
   const related = SCHOOLS.filter((s) => s.id !== school.id && (s.city === school.city || s.fields.some((f) => school.fields.includes(f)))).slice(0, 3);
   const isFav = favorites.has(school.id);
   const isCompared = compare.has(school.id);
@@ -102,12 +106,13 @@ export const SchoolDetail: React.FC = () => {
           <Reveal className="flex flex-col sm:flex-row items-start gap-6">
             <SchoolLogo school={school} />
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
                 <TypeBadge type={school.type} />
                 <span className="flex items-center gap-1 text-slate-500 text-[13px] font-semibold">
                   <MapPin size={14} className="text-slate-400" />
                   {school.city}
                 </span>
+                {match && <MatchScoreBadge match={match} />}
               </div>
               <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight mb-1">{school.name}</h1>
               {school.acronym && <p className="text-primary font-bold text-sm">{school.acronym}</p>}

@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowLeft, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp,
   Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, Target, Check,
-  BadgeCheck, ChevronLeft, ChevronRight, Building2
+  BadgeCheck, ChevronLeft, ChevronRight, Building2, Calculator, Users
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useTranslation } from 'react-i18next';
@@ -327,6 +327,23 @@ const StatItem: React.FC<{ value: string; label: string }> = ({ value, label }) 
 /* How it works                                                               */
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/* Quick-intent chips — immediate, real destinations under the hero CTA       */
+/* -------------------------------------------------------------------------- */
+
+const IntentChip: React.FC<{ to?: string; href?: string; icon: any; label: string }> = ({ to, href, icon: Icon, label }) => {
+  const classes = "inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/90 backdrop-blur-sm text-[13px] font-bold text-slate-700 ring-1 ring-slate-200 shadow-sm hover:ring-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all";
+  const content = (
+    <>
+      <Icon size={15} className="text-primary shrink-0" />
+      {label}
+    </>
+  );
+  return to
+    ? <Link to={to} className={classes}>{content}</Link>
+    : <a href={href} target="_blank" rel="noreferrer" className={classes}>{content}</a>;
+};
+
 const StepCard: React.FC<{ number: string; icon: any; title: string; desc: string }> = ({ number, icon: Icon, title, desc }) => (
   <div className="relative flex-1 bg-white rounded-[2rem] p-8 border border-slate-100 shadow-[0_12px_32px_-20px_rgba(15,23,42,0.1)] hover:-translate-y-2 hover:shadow-[0_24px_48px_-20px_rgba(15,23,42,0.16)] transition-all duration-500">
     <div className="flex items-center justify-between mb-6">
@@ -390,7 +407,7 @@ export const Home: React.FC = () => {
       />
 
       {/* ============================== HERO ============================== */}
-      <section className="relative pt-20 pb-32 lg:pt-20 lg:pb-52 overflow-hidden bg-[#f8fafc]">
+      <section className="relative pt-20 pb-24 lg:pt-20 lg:pb-36 overflow-hidden bg-[#f8fafc]">
         <div className="absolute inset-0 pointer-events-none">
           {/* Dot grid */}
           <div
@@ -442,14 +459,25 @@ export const Home: React.FC = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4 animate-fade-in-up animate-delay-300">
-                <Link to="/coaching-offer" className="w-full sm:w-auto h-[52px] px-9 bg-blue-600 text-white rounded-full font-bold text-[17px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/40 flex items-center justify-center gap-2 group ring-4 ring-transparent hover:ring-blue-100">
+                <Link to="/tawjih" className="w-full sm:w-auto h-[52px] px-9 bg-blue-600 text-white rounded-full font-bold text-[17px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/40 flex items-center justify-center gap-2 group ring-4 ring-transparent hover:ring-blue-100">
                   <span>{t('home.startJourney')}</span>
                   <ArrowLeft size={20} className="transform rtl:group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/about" className="w-full sm:w-auto h-[52px] px-9 bg-white text-slate-700 border border-slate-200 rounded-full font-bold text-[17px] hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md">
+                <Link to="/higher-schools" className="w-full sm:w-auto h-[52px] px-9 bg-white text-slate-700 border border-slate-200 rounded-full font-bold text-[17px] hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md">
                   <PlayCircle size={20} className="group-hover:text-blue-600" />
                   <span>{t('home.discoverUs')}</span>
                 </Link>
+              </div>
+
+              <p className="text-[13px] font-bold text-slate-400 -mt-1 animate-fade-in-up animate-delay-300">
+                {t('home.ctaTrust')}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-1 animate-fade-in-up animate-delay-300">
+                <IntentChip to="/tawjih" icon={Compass} label={t('home.intentFiliere')} />
+                <IntentChip to="/bac-simulator" icon={Calculator} label={t('home.intentChances')} />
+                <IntentChip to="/higher-schools" icon={Building2} label={t('home.intentEcoles')} />
+                <IntentChip href="https://wa.me/message/GN4XKUOMHNHGO1" icon={Users} label={t('home.intentConseiller')} />
               </div>
             </div>
 
@@ -478,9 +506,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ============================ PROGRAMS ============================= */}
-      <section className="relative z-10 pt-16 pb-4 px-4">
+      <section className="relative z-10 pt-14 pb-4 px-4">
         <div className="container mx-auto max-w-6xl">
-          <Reveal className="text-center max-w-2xl mx-auto mb-14 space-y-4">
+          <Reveal className="text-center max-w-2xl mx-auto mb-10 space-y-4">
             <Eyebrow>{t('home.programsEyebrow')}</Eyebrow>
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('home.programsTitle')}</h2>
           </Reveal>
@@ -563,9 +591,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ========================== HOW IT WORKS ============================ */}
-      <section className="py-24 lg:py-28 px-4 bg-[#f8fafc]">
+      <section className="py-16 lg:py-20 px-4 bg-[#f8fafc]">
         <div className="container mx-auto max-w-6xl">
-          <Reveal className="text-center max-w-2xl mx-auto mb-14 space-y-4">
+          <Reveal className="text-center max-w-2xl mx-auto mb-10 space-y-4">
             <Eyebrow>{t('home.howItWorksEyebrow')}</Eyebrow>
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('home.howItWorksTitle')}</h2>
           </Reveal>
@@ -588,7 +616,7 @@ export const Home: React.FC = () => {
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-multiply"></div>
         </div>
         <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
-          <Reveal className="max-w-3xl mx-auto mb-16 space-y-5">
+          <Reveal className="max-w-3xl mx-auto mb-12 space-y-5">
             <Eyebrow>{t('home.reelsEyebrow')}</Eyebrow>
             <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
               {t('home.mostWatched')}
@@ -609,7 +637,7 @@ export const Home: React.FC = () => {
       {/* =========================== TESTIMONIALS =========================== */}
       {successStories.length > 0 && (
         <section className="py-10 bg-[#f8fafc] overflow-hidden border-t border-slate-100 relative">
-          <Reveal className="container mx-auto px-4 lg:px-8 mb-16 text-center relative z-10 space-y-4">
+          <Reveal className="container mx-auto px-4 lg:px-8 mb-10 text-center relative z-10 space-y-4">
             <Eyebrow>{t('home.successStories')}</Eyebrow>
             <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight">{t('home.heroesShare1')} <span className="text-primary">{t('home.heroesShare2')}</span> {t('home.heroesShare3')}</h2>
           </Reveal>

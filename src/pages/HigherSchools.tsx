@@ -4,15 +4,17 @@ import {
   Search, X, MapPin, GraduationCap, Compass, ChevronDown, Heart, Scale,
   SlidersHorizontal, ArrowLeft, Check, Building2, Briefcase,
   Code2, Stethoscope, Ruler, Atom, Sprout, Calculator, MessageCircle,
-  Cog, Frown
+  Cog, Frown, Target
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import {
   School, SCHOOLS, FIELDS, CITIES, ACCESS_LEVELS, ADMISSION_METHODS,
   SchoolFilters, EMPTY_FILTERS, filterSchools, getFieldCounts, getCityCounts,
-  getSuggestions
+  getSuggestions, toSlug, computeMatch, MIN_MATCH_DIMENSIONS, MatchResult, SchoolProfile
 } from '../constants/schools';
 import { useFavorites, useCompareList } from '../hooks/useSchoolCollections';
+import { useSchoolProfile } from '../hooks/useSchoolProfile';
+import { MatchScoreBadge } from '../components/MatchScoreBadge';
 
 /* -------------------------------------------------------------------------- */
 /* Shared primitives                                                          */
@@ -102,15 +104,17 @@ const SchoolCard: React.FC<{
   isCompared: boolean;
   onToggleCompare: () => void;
   compareDisabled: boolean;
-}> = ({ school, isFavorite, onToggleFavorite, isCompared, onToggleCompare, compareDisabled }) => {
+  match?: MatchResult | null;
+}> = ({ school, isFavorite, onToggleFavorite, isCompared, onToggleCompare, compareDisabled, match }) => {
   const extraFields = Math.max(0, school.fields.length - 2);
   return (
     <div className="group relative bg-white border border-slate-200 rounded-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_42px_rgba(15,23,42,0.09)] hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col h-full">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <SchoolLogo school={school} />
-          <div>
+          <div className="flex flex-wrap items-center gap-1.5">
             <TypeBadge type={school.type} />
+            {match && <MatchScoreBadge match={match} />}
           </div>
         </div>
         <button
@@ -375,7 +379,8 @@ const SchoolsHero: React.FC<{
 const FeaturedSchools: React.FC<{
   favorites: ReturnType<typeof useFavorites>;
   compare: ReturnType<typeof useCompareList>;
-}> = ({ favorites, compare }) => {
+  profile: SchoolProfile;
+}> = ({ favorites, compare, profile }) => {
   const featured = SCHOOLS.slice(0, 6);
   return (
     <section>
@@ -390,6 +395,7 @@ const FeaturedSchools: React.FC<{
               isCompared={compare.has(s.id)}
               onToggleCompare={() => compare.toggle(s.id)}
               compareDisabled={compare.isFull}
+              match={computeMatch(s, profile)}
             />
           </Reveal>
         ))}
@@ -459,10 +465,73 @@ const FilterPanelContent: React.FC<{ filters: SchoolFilters; setFilters: (f: Sch
 
 
 /* -------------------------------------------------------------------------- */
+/* Compatibility profile — drives the match-score badges, entirely local      */
+/* -------------------------------------------------------------------------- */
+
+const SELECT_CLASS = "h-11 px-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-700 bg-white outline-none focus:border-primary/50 w-full";
+
+const MatchProfilePanel: React.FC<{
+  profile: SchoolProfile;
+  setField: <K extends keyof SchoolProfile>(key: K, value: SchoolProfile[K] | '') => void;
+  clear: () => void;
+  dimensionCount: number;
+}> = ({ profile, setField, clear, dimensionCount }) => {
+  const [expanded, setExpanded] = useState(dimensionCount === 0);
+  const active = dimensionCount >= MIN_MATCH_DIMENSIONS;
+
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm mb-6 overflow-hidden">
+      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center justify-between gap-3 p-4 min-h-[44px]">
+        <span className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0">
+            <Target size={15} />
+          </span>
+          <span className="font-black text-slate-900 text-sm text-start">Score de compatibilité</span>
+          {active && <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wide">Activé</span>}
+        </span>
+        <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4">
+          <p className="text-slate-500 text-[12.5px] font-medium leading-relaxed mb-4">
+            Indiquez vos préférences pour afficher un score de compatibilité sur chaque école — basé uniquement sur ces critères, ce n'est pas une prédiction d'admission.
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <select value={profile.field || ''} onChange={(e) => setField('field', e.target.value)} className={SELECT_CLASS} aria-label="Filière souhaitée">
+              <option value="">Filière</option>
+              {FIELDS.map((f) => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <select value={profile.city || ''} onChange={(e) => setField('city', e.target.value)} className={SELECT_CLASS} aria-label="Ville souhaitée">
+              <option value="">Ville</option>
+              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={profile.accessLevel || ''} onChange={(e) => setField('accessLevel', e.target.value)} className={SELECT_CLASS} aria-label="Niveau d'accès">
+              <option value="">Niveau d'accès</option>
+              {ACCESS_LEVELS.map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+            <select value={profile.type || ''} onChange={(e) => setField('type', e.target.value as SchoolProfile['type'] | '')} className={SELECT_CLASS} aria-label="Type d'établissement">
+              <option value="">Public ou privé</option>
+              <option value="public">Public</option>
+              <option value="private">Privé</option>
+            </select>
+          </div>
+          {dimensionCount > 0 && (
+            <button onClick={clear} className="mt-3 text-[12px] font-bold text-slate-400 hover:text-red-500 transition-colors">
+              Réinitialiser mes préférences
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* Results                                                                    */
 /* -------------------------------------------------------------------------- */
 
-type SortOption = 'pertinence' | 'name' | 'city';
+type SortOption = 'pertinence' | 'name' | 'city' | 'match';
 
 const PAGE_SIZE = 9;
 
@@ -485,18 +554,24 @@ const SchoolsExplorer: React.FC<{
   setFilters: (f: SchoolFilters) => void;
   favorites: ReturnType<typeof useFavorites>;
   compare: ReturnType<typeof useCompareList>;
-}> = ({ filters, setFilters, favorites, compare }) => {
+  profile: SchoolProfile;
+  setProfileField: <K extends keyof SchoolProfile>(key: K, value: SchoolProfile[K] | '') => void;
+  clearProfile: () => void;
+  profileDimensionCount: number;
+}> = ({ filters, setFilters, favorites, compare, profile, setProfileField, clearProfile, profileDimensionCount }) => {
   const [sort, setSort] = useState<SortOption>('pertinence');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const matchActive = profileDimensionCount >= MIN_MATCH_DIMENSIONS;
 
   const filtered = useMemo(() => {
     const results = filterSchools(SCHOOLS, filters);
     const sorted = [...results];
     if (sort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
     else if (sort === 'city') sorted.sort((a, b) => a.city.localeCompare(b.city, 'fr'));
+    else if (sort === 'match') sorted.sort((a, b) => (computeMatch(b, profile)?.pct || 0) - (computeMatch(a, profile)?.pct || 0));
     return sorted;
-  }, [filters, sort]);
+  }, [filters, sort, profile]);
 
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filters, sort]);
 
@@ -531,6 +606,8 @@ const SchoolsExplorer: React.FC<{
 
         {/* Results */}
         <div>
+          <MatchProfilePanel profile={profile} setField={setProfileField} clear={clearProfile} dimensionCount={profileDimensionCount} />
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <p className="text-sm font-bold text-slate-500">{filtered.length} école{filtered.length !== 1 ? 's' : ''} trouvée{filtered.length !== 1 ? 's' : ''}</p>
             <div className="flex items-center gap-2">
@@ -539,6 +616,7 @@ const SchoolsExplorer: React.FC<{
                 <option value="pertinence">Pertinence</option>
                 <option value="name">Nom A–Z</option>
                 <option value="city">Ville</option>
+                {matchActive && <option value="match">Compatibilité</option>}
               </select>
             </div>
           </div>
@@ -557,6 +635,7 @@ const SchoolsExplorer: React.FC<{
                     isCompared={compare.has(s.id)}
                     onToggleCompare={() => compare.toggle(s.id)}
                     compareDisabled={compare.isFull}
+                    match={computeMatch(s, profile)}
                   />
                 ))}
               </div>
@@ -690,7 +769,7 @@ const PublicPrivateGuide: React.FC<{ onSelectType: (type: 'public' | 'private') 
 /* Comparison CTA + modal                                                    */
 /* -------------------------------------------------------------------------- */
 
-const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onClear: () => void; onRemove: (id: string) => void }> = ({ schoolIds, onClose, onClear, onRemove }) => {
+const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onClear: () => void; onRemove: (id: string) => void; profile: SchoolProfile }> = ({ schoolIds, onClose, onClear, onRemove, profile }) => {
   const schools = schoolIds.map((id) => SCHOOLS.find((s) => s.id === id)).filter(Boolean) as School[];
   const rows: { label: string; render: (s: School) => React.ReactNode }[] = [
     { label: 'Type', render: (s) => <TypeBadge type={s.type} /> },
@@ -699,6 +778,12 @@ const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onCl
     { label: "Niveau d'accès", render: (s) => s.accessLevels.join(', ') },
     { label: "Mode d'admission", render: (s) => s.admissionMethods.join(', ') },
     { label: 'Frais de scolarité', render: () => <span className="text-slate-400 italic">Information non disponible</span> },
+    {
+      label: 'Compatibilité', render: (s) => {
+        const match = computeMatch(s, profile);
+        return match ? <MatchScoreBadge match={match} /> : <span className="text-slate-400 italic">—</span>;
+      }
+    },
   ];
 
   return (
@@ -900,8 +985,6 @@ const FinalCTA: React.FC = () => (
 /* URL <-> filters                                                           */
 /* -------------------------------------------------------------------------- */
 
-const toSlug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
 const buildSlugMap = (values: readonly string[]) => {
   const map = new Map<string, string>();
   values.forEach((v) => map.set(toSlug(v), v));
@@ -945,6 +1028,7 @@ export const HigherSchools: React.FC = () => {
 
   const favorites = useFavorites();
   const compare = useCompareList();
+  const { profile, setField: setProfileField, clear: clearProfile, dimensionCount: profileDimensionCount } = useSchoolProfile();
 
   const setFilters = (next: SchoolFilters) => {
     setFiltersState(next);
@@ -974,8 +1058,17 @@ export const HigherSchools: React.FC = () => {
       <SchoolsHero query={heroQuery} onQueryChange={setHeroQuery} onSubmit={runHeroSearch} onQuickFilter={applyQuickFilter} />
 
       <div className="container mx-auto px-4 lg:px-8 mt-16 lg:mt-24 relative z-20 space-y-24 lg:space-y-28">
-        <FeaturedSchools favorites={favorites} compare={compare} />
-        <SchoolsExplorer filters={filters} setFilters={setFilters} favorites={favorites} compare={compare} />
+        <FeaturedSchools favorites={favorites} compare={compare} profile={profile} />
+        <SchoolsExplorer
+          filters={filters}
+          setFilters={setFilters}
+          favorites={favorites}
+          compare={compare}
+          profile={profile}
+          setProfileField={setProfileField}
+          clearProfile={clearProfile}
+          profileDimensionCount={profileDimensionCount}
+        />
         <StudyFieldsExplorer onSelectField={selectField} />
         <CitiesExplorer onSelectCity={selectCity} />
         <PublicPrivateGuide onSelectType={selectType} />
@@ -987,7 +1080,7 @@ export const HigherSchools: React.FC = () => {
 
       <StickyCompareBar count={compare.ids.length} onOpen={() => setCompareModalOpen(true)} onClear={compare.clear} />
       {compareModalOpen && (
-        <ComparisonModal schoolIds={compare.ids} onClose={() => setCompareModalOpen(false)} onClear={compare.clear} onRemove={compare.toggle} />
+        <ComparisonModal schoolIds={compare.ids} onClose={() => setCompareModalOpen(false)} onClear={compare.clear} onRemove={compare.toggle} profile={profile} />
       )}
     </div>
   );

@@ -1,24 +1,40 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, User } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
 import { Link, useLocation } from 'react-router-dom';
 import { IMAGES } from '../constants/images';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { GlobalSearch } from './GlobalSearch';
+import { Button } from './ui/Button';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Desktop command-search shortcut
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -89,24 +105,6 @@ export const Navbar: React.FC = () => {
       );
     }
 
-    if (item.isButton) {
-      return (
-        <Link
-          to={item.href}
-          onClick={() => mobile && setIsOpen(false)}
-          className={`
-            relative overflow-hidden group
-            ${mobile ? 'block w-full text-center mt-6 py-4 mx-6 w-[calc(100%-3rem)]' : 'px-8 py-3.5'} 
-            bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/25 
-            hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300
-          `}
-        >
-          <span className="relative z-10">{t(item.label)}</span>
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-        </Link>
-      );
-    }
-
     return (
       <Link
         to={item.href}
@@ -122,7 +120,7 @@ export const Navbar: React.FC = () => {
         `}
       >
         {t(item.label)}
-        {!mobile && !item.isButton && (
+        {!mobile && (
           <span className={`
             absolute -bottom-1 right-0 h-0.5 bg-primary rounded-full transition-all duration-300
             ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}
@@ -141,10 +139,10 @@ export const Navbar: React.FC = () => {
           } supports-[backdrop-filter]:bg-white/80`}
       >
         <div className="container mx-auto px-4 lg:px-8">
-          <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-[76px] lg:h-[88px]' : 'h-20 lg:h-24'}`}>
+          <div className={`flex items-center justify-between gap-4 transition-all duration-300 ${scrolled ? 'h-[76px] lg:h-[84px]' : 'h-20 lg:h-[92px]'}`}>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center transition-transform hover:scale-105 duration-300">
+            <Link to="/" className="flex items-center shrink-0 transition-transform hover:scale-105 duration-300">
               <img
                 src={IMAGES.LOGOS.OFFICIAL}
                 alt="Tilmid Logo"
@@ -153,25 +151,63 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-7 lg:gap-10">
+            <nav className="hidden md:flex items-center gap-6 lg:gap-9">
               {NAV_ITEMS.map((item) => (
                 <NavLink key={item.label} item={item} />
               ))}
-              <span className="w-px h-6 bg-slate-200" aria-hidden="true" />
-              <LanguageSwitcher />
             </nav>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2.5 text-slate-800 hover:bg-slate-100/50 rounded-xl transition-all active:scale-95"
-              onClick={toggleMenu}
-              aria-label="القائمة"
-            >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
+            {/* Right cluster */}
+            <div className="hidden md:flex items-center gap-3 lg:gap-4 shrink-0">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 h-10 px-3.5 lg:px-4 rounded-full bg-slate-100/80 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-all ring-1 ring-slate-200"
+                aria-label={t('search.ariaLabel')}
+              >
+                <Search size={17} />
+                <span className="hidden lg:inline text-sm font-bold">{t('search.trigger')}</span>
+                <kbd className="hidden lg:inline text-[10px] font-black text-slate-400 bg-white border border-slate-200 rounded px-1.5 py-0.5 ms-1">⌘K</kbd>
+              </button>
+
+              <Link
+                to="/student-area"
+                className="w-10 h-10 rounded-full bg-slate-100/80 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-all ring-1 ring-slate-200"
+                aria-label={t('nav.studentArea')}
+                title={t('nav.studentArea')}
+              >
+                <User size={18} />
+              </Link>
+
+              <span className="w-px h-6 bg-slate-200" aria-hidden="true" />
+              <LanguageSwitcher />
+
+              <Button to="/tawjih" size="md" className="shadow-primary/25">
+                {t('nav.primaryCta')}
+              </Button>
+            </div>
+
+            {/* Mobile controls */}
+            <div className="flex md:hidden items-center gap-1.5">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2.5 text-slate-600 hover:bg-slate-100/50 rounded-xl transition-all active:scale-95"
+                aria-label={t('search.ariaLabel')}
+              >
+                <Search size={22} />
+              </button>
+              <button
+                className="p-2.5 text-slate-800 hover:bg-slate-100/50 rounded-xl transition-all active:scale-95"
+                onClick={toggleMenu}
+                aria-label={t('nav.menu')}
+              >
+                {isOpen ? <X size={26} /> : <Menu size={26} />}
+              </button>
+            </div>
           </div>
         </div>
       </header>
+
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Mobile Menu Overlay */}
       <div
@@ -184,7 +220,7 @@ export const Navbar: React.FC = () => {
 
       <div
         className={`
-          fixed top-0 right-0 w-[80%] max-w-sm h-full bg-white z-50 md:hidden 
+          fixed top-0 right-0 w-[80%] max-w-sm h-full bg-white z-50 md:hidden
           shadow-2xl transition-transform duration-300 ease-out flex flex-col
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
@@ -203,7 +239,15 @@ export const Navbar: React.FC = () => {
           </button>
         </div>
 
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-end">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <Link
+            to="/student-area"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-2 text-sm font-bold text-slate-700 bg-slate-100/80 rounded-full px-4 py-2 ring-1 ring-slate-200"
+          >
+            <User size={16} className="text-primary" />
+            {t('nav.studentArea')}
+          </Link>
           <LanguageSwitcher />
         </div>
 
@@ -214,9 +258,9 @@ export const Navbar: React.FC = () => {
         </nav>
 
         <div className="p-6 bg-slate-50 border-t border-slate-100">
-          <p className="text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} Tilmid. All rights reserved.
-          </p>
+          <Button to="/tawjih" fullWidth size="lg" onClick={() => setIsOpen(false)}>
+            {t('nav.primaryCta')}
+          </Button>
         </div>
       </div>
     </>
