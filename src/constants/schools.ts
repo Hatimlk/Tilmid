@@ -1,3 +1,5 @@
+import schoolsDataset from '../data/ecoles_superieures_maroc_2026_complet.json';
+
 /**
  * Static directory of well-known Moroccan higher-education institutions.
  *
@@ -24,6 +26,16 @@ export interface School {
   fields: string[];
   accessLevels: string[];
   admissionMethods: string[];
+  network?: string;
+  authority?: string;
+  domain?: string;
+  degree?: string;
+  bacProfiles?: string;
+  deadline2026?: string;
+  contestStatus2026?: string;
+  sourceUrl?: string;
+  contestSourceUrl?: string;
+  verificationLevel?: string;
 }
 
 export const FIELDS = [
@@ -41,34 +53,96 @@ export const ACCESS_LEVELS = ['Après le bac', 'Bac +2', 'Master'] as const;
 
 export const ADMISSION_METHODS = ['Concours', 'Dossier', 'Sélection'] as const;
 
-export const SCHOOLS: School[] = [
-  { id: '1', slug: 'emi-rabat', name: "École Mohammadia d'Ingénieurs", acronym: 'EMI', type: 'public', city: 'Rabat', fields: ['Ingénierie'], accessLevels: ['Bac +2'], admissionMethods: ['Concours'] },
-  { id: '2', slug: 'ensias-rabat', name: 'École Nationale Supérieure d\'Informatique et d\'Analyse des Systèmes', acronym: 'ENSIAS', type: 'public', city: 'Rabat', fields: ['Informatique & Digital', 'Ingénierie'], accessLevels: ['Après le bac', 'Bac +2'], admissionMethods: ['Concours'] },
-  { id: '3', slug: 'inpt-rabat', name: 'Institut National des Postes et Télécommunications', acronym: 'INPT', type: 'public', city: 'Rabat', fields: ['Ingénierie', 'Informatique & Digital'], accessLevels: ['Bac +2'], admissionMethods: ['Concours'] },
-  { id: '4', slug: 'ehtp-casablanca', name: 'École Hassania des Travaux Publics', acronym: 'EHTP', type: 'public', city: 'Casablanca', fields: ['Ingénierie'], accessLevels: ['Bac +2'], admissionMethods: ['Concours'] },
-  { id: '5', slug: 'ensa-rabat', name: 'École Nationale des Sciences Appliquées de Rabat', acronym: 'ENSA Rabat', type: 'public', city: 'Rabat', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '6', slug: 'ensa-casablanca', name: 'École Nationale des Sciences Appliquées de Casablanca', acronym: 'ENSA Casablanca', type: 'public', city: 'Casablanca', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '7', slug: 'ensa-marrakech', name: 'École Nationale des Sciences Appliquées de Marrakech', acronym: 'ENSA Marrakech', type: 'public', city: 'Marrakech', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '8', slug: 'ensa-fes', name: 'École Nationale des Sciences Appliquées de Fès', acronym: 'ENSA Fès', type: 'public', city: 'Fès', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '9', slug: 'ensa-tanger', name: 'École Nationale des Sciences Appliquées de Tanger', acronym: 'ENSA Tanger', type: 'public', city: 'Tanger', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '10', slug: 'ensa-agadir', name: 'École Nationale des Sciences Appliquées d\'Agadir', acronym: 'ENSA Agadir', type: 'public', city: 'Agadir', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '11', slug: 'ensa-kenitra', name: 'École Nationale des Sciences Appliquées de Kénitra', acronym: 'ENSA Kénitra', type: 'public', city: 'Kénitra', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '12', slug: 'encg-casablanca', name: 'École Nationale de Commerce et de Gestion de Casablanca', acronym: 'ENCG Casablanca', type: 'public', city: 'Casablanca', fields: ['Commerce & Management'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '13', slug: 'encg-rabat', name: 'École Nationale de Commerce et de Gestion de Rabat', acronym: 'ENCG Rabat', type: 'public', city: 'Rabat', fields: ['Commerce & Management'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '14', slug: 'encg-agadir', name: 'École Nationale de Commerce et de Gestion d\'Agadir', acronym: 'ENCG Agadir', type: 'public', city: 'Agadir', fields: ['Commerce & Management'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '15', slug: 'encg-settat', name: 'École Nationale de Commerce et de Gestion de Settat', acronym: 'ENCG Settat', type: 'public', city: 'Settat', fields: ['Commerce & Management'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '16', slug: 'encg-tanger', name: 'École Nationale de Commerce et de Gestion de Tanger', acronym: 'ENCG Tanger', type: 'public', city: 'Tanger', fields: ['Commerce & Management'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '17', slug: 'iscae-casablanca', name: 'Institut Supérieur de Commerce et d\'Administration des Entreprises', acronym: 'ISCAE', type: 'public', city: 'Casablanca', fields: ['Commerce & Management'], accessLevels: ['Après le bac', 'Bac +2'], admissionMethods: ['Concours'] },
-  { id: '18', slug: 'ena-rabat', name: 'École Nationale d\'Architecture', acronym: 'ENA', type: 'public', city: 'Rabat', fields: ['Architecture'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '19', slug: 'iav-hassan2-rabat', name: 'Institut Agronomique et Vétérinaire Hassan II', acronym: 'IAV Hassan II', type: 'public', city: 'Rabat', fields: ['Agriculture & Vétérinaire'], accessLevels: ['Après le bac', 'Bac +2'], admissionMethods: ['Concours'] },
-  { id: '20', slug: 'insea-rabat', name: 'Institut National de Statistique et d\'Économie Appliquée', acronym: 'INSEA', type: 'public', city: 'Rabat', fields: ['Économie & Statistique', 'Sciences'], accessLevels: ['Après le bac', 'Bac +2'], admissionMethods: ['Concours'] },
-  { id: '21', slug: 'fmp-rabat', name: 'Faculté de Médecine et de Pharmacie de Rabat', acronym: 'FMP Rabat', type: 'public', city: 'Rabat', fields: ['Médecine & Santé'], accessLevels: ['Après le bac'], admissionMethods: ['Sélection'] },
-  { id: '22', slug: 'fmp-casablanca', name: 'Faculté de Médecine et de Pharmacie de Casablanca', acronym: 'FMP Casablanca', type: 'public', city: 'Casablanca', fields: ['Médecine & Santé'], accessLevels: ['Après le bac'], admissionMethods: ['Sélection'] },
-  { id: '23', slug: 'esith-casablanca', name: 'École Supérieure des Industries du Textile et de l\'Habillement', acronym: 'ESITH', type: 'public', city: 'Casablanca', fields: ['Ingénierie'], accessLevels: ['Après le bac'], admissionMethods: ['Concours'] },
-  { id: '24', slug: 'hem-casablanca', name: 'Institut des Hautes Études de Management', acronym: 'HEM', type: 'private', city: 'Casablanca', fields: ['Commerce & Management'], accessLevels: ['Après le bac'], admissionMethods: ['Dossier'] },
-  { id: '25', slug: 'uir-rabat', name: 'Université Internationale de Rabat', acronym: 'UIR', type: 'private', city: 'Rabat', fields: ['Ingénierie', 'Commerce & Management', 'Architecture'], accessLevels: ['Après le bac'], admissionMethods: ['Dossier'] },
-  { id: '26', slug: 'um6p-benguerir', name: 'Université Mohammed VI Polytechnique', acronym: 'UM6P', type: 'private', city: 'Benguerir', fields: ['Ingénierie', 'Sciences', 'Agriculture & Vétérinaire'], accessLevels: ['Après le bac'], admissionMethods: ['Dossier', 'Concours'] },
-];
+interface RawSchoolRecord {
+  'Établissement': string;
+  'Sigle': string;
+  'Réseau / catégorie': string;
+  'Statut': string;
+  'Université / tutelle': string;
+  'Ville': string;
+  'Domaine principal': string;
+  'Diplôme / niveau': string;
+  "Mode d'accès": string;
+  'Bacs / profils': string;
+  'Date limite 2026': string;
+  'Statut concours 2026': string;
+  'Source principale': string;
+  'Source concours': string;
+  'Niveau de vérification': string;
+}
+
+interface SchoolsDataset {
+  generated_on: string;
+  count: number;
+  scope: string;
+  sources: string[];
+  data: RawSchoolRecord[];
+}
+
+const dataset = schoolsDataset as SchoolsDataset;
+
+const inferFields = (domain: string): string[] => {
+  const value = domain.toLocaleLowerCase('fr');
+  const fields = new Set<string>();
+  if (/ingén|industrie|génie|technique|travaux publics|textile/.test(value)) fields.add('Ingénierie');
+  if (/informatique|digital|numérique|intelligence artificielle|\bia\b/.test(value)) fields.add('Informatique & Digital');
+  if (/médec|santé|pharma|dentaire|infirm/.test(value)) fields.add('Médecine & Santé');
+  if (/commerce|gestion|business|management|finance|marketing/.test(value)) fields.add('Commerce & Management');
+  if (/architecture|design|urbanisme/.test(value)) fields.add('Architecture');
+  if (/science|chimie|physique|math|biologie/.test(value)) fields.add('Sciences');
+  if (/agro|agri|vétérinaire/.test(value)) fields.add('Agriculture & Vétérinaire');
+  if (/économie|statistique/.test(value)) fields.add('Économie & Statistique');
+  if (fields.size === 0) fields.add('Sciences');
+  return [...fields];
+};
+
+const inferAccessLevels = (degree: string, admission: string): string[] => {
+  const value = `${degree} ${admission}`.toLocaleLowerCase('fr');
+  const levels = new Set<string>();
+  if (/bac\s*\+?\s*2|prépa|\bcnc\b|deug|dut|deust/.test(value)) levels.add('Bac +2');
+  if (/master|bac\s*\+?\s*3|licence/.test(value)) levels.add('Master');
+  if (levels.size === 0 || /après le bac|post.?bac|bachelier/.test(value)) levels.add('Après le bac');
+  return [...levels];
+};
+
+const inferAdmissionMethods = (admission: string): string[] => {
+  const value = admission.toLocaleLowerCase('fr');
+  const methods = new Set<string>();
+  if (/concours|tafem|\bcnc\b|test/.test(value)) methods.add('Concours');
+  if (/dossier/.test(value)) methods.add('Dossier');
+  if (/sélection|admission|orientation/.test(value)) methods.add('Sélection');
+  if (methods.size === 0) methods.add('Sélection');
+  return [...methods];
+};
+
+export const SCHOOL_DATASET_META = {
+  generatedOn: dataset.generated_on,
+  count: dataset.count,
+  scope: dataset.scope,
+  sources: dataset.sources,
+};
+
+export const SCHOOLS: School[] = dataset.data.map((row, index) => ({
+  id: String(index + 1),
+  slug: toSlug(`${row.Sigle || row.Établissement}-${row.Ville}`),
+  name: row.Établissement,
+  acronym: row.Sigle || undefined,
+  type: row.Statut.toLocaleLowerCase('fr').includes('priv') ? 'private' : 'public',
+  city: row.Ville || 'Non renseignée',
+  fields: inferFields(row['Domaine principal']),
+  accessLevels: inferAccessLevels(row['Diplôme / niveau'], row["Mode d'accès"]),
+  admissionMethods: inferAdmissionMethods(row["Mode d'accès"]),
+  network: row['Réseau / catégorie'] || undefined,
+  authority: row['Université / tutelle'] || undefined,
+  domain: row['Domaine principal'] || undefined,
+  degree: row['Diplôme / niveau'] || undefined,
+  bacProfiles: row['Bacs / profils'] || undefined,
+  deadline2026: row['Date limite 2026'] || undefined,
+  contestStatus2026: row['Statut concours 2026'] || undefined,
+  sourceUrl: row['Source principale'] || undefined,
+  contestSourceUrl: row['Source concours'] || undefined,
+  verificationLevel: row['Niveau de vérification'] || undefined,
+}));
 
 export const CITIES = Array.from(new Set(SCHOOLS.map((s) => s.city))).sort((a, b) => a.localeCompare(b, 'fr'));
 

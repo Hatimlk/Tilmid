@@ -4,13 +4,14 @@ import {
   Search, X, MapPin, GraduationCap, Compass, ChevronDown, Heart, Scale,
   SlidersHorizontal, ArrowLeft, Check, Building2, Briefcase,
   Code2, Stethoscope, Ruler, Atom, Sprout, Calculator, MessageCircle,
-  Cog, Frown, Target
+  Cog, Frown, Target, Download, Database
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import {
   School, SCHOOLS, FIELDS, CITIES, ACCESS_LEVELS, ADMISSION_METHODS,
   SchoolFilters, EMPTY_FILTERS, filterSchools, getFieldCounts, getCityCounts,
-  getSuggestions, toSlug, computeMatch, MIN_MATCH_DIMENSIONS, MatchResult, SchoolProfile
+  getSuggestions, toSlug, computeMatch, MIN_MATCH_DIMENSIONS, MatchResult, SchoolProfile,
+  SCHOOL_DATASET_META
 } from '../constants/schools';
 import { useFavorites, useCompareList } from '../hooks/useSchoolCollections';
 import { useSchoolProfile } from '../hooks/useSchoolProfile';
@@ -37,6 +38,21 @@ const useReveal = () => {
   }, []);
   return { ref, visible };
 };
+
+const DatasetNotice: React.FC = () => (
+  <section className="rounded-[1.75rem] border border-blue-100 bg-blue-50/70 p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex items-start gap-3">
+      <span className="w-10 h-10 rounded-xl bg-white text-primary flex items-center justify-center shrink-0 shadow-sm"><Database size={19} /></span>
+      <div>
+        <p className="font-black text-slate-900">Base complète des établissements 2026</p>
+        <p className="text-sm font-medium text-slate-600 mt-1">{SCHOOL_DATASET_META.count} établissements · mise à jour du {SCHOOL_DATASET_META.generatedOn}</p>
+      </div>
+    </div>
+    <a href="/data/ecoles_superieures_maroc_2026_complet.xlsx" download className="inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-xl bg-white text-primary border border-blue-100 font-black text-sm hover:bg-blue-100 transition-colors">
+      <Download size={17} /> Télécharger le fichier Excel
+    </a>
+  </section>
+);
 
 const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({ children, delay = 0, className = '' }) => {
   const { ref, visible } = useReveal();
@@ -1058,6 +1074,7 @@ export const HigherSchools: React.FC = () => {
       <SchoolsHero query={heroQuery} onQueryChange={setHeroQuery} onSubmit={runHeroSearch} onQuickFilter={applyQuickFilter} />
 
       <div className="container mx-auto px-4 lg:px-8 mt-16 lg:mt-24 relative z-20 space-y-24 lg:space-y-28">
+        <DatasetNotice />
         <FeaturedSchools favorites={favorites} compare={compare} profile={profile} />
         <SchoolsExplorer
           filters={filters}

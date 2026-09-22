@@ -8,8 +8,6 @@ import { ProgramDetails } from './pages/ProgramDetails';
 import { OrientationRegistration } from './pages/OrientationRegistration';
 import { CoachingOffer } from './pages/CoachingOffer';
 import { CoachingRegistration } from './pages/CoachingRegistration';
-import { HigherSchools } from './pages/HigherSchools';
-import { SchoolDetail } from './pages/SchoolDetail';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { BacSimulator } from './pages/BacSimulator';
 import { About } from './pages/About';
@@ -18,6 +16,8 @@ import { NotFound } from './pages/NotFound';
 import { Login } from './pages/Login';
 
 const StudentArea = lazy(() => import('./pages/StudentArea').then(m => ({ default: m.StudentArea })));
+const HigherSchools = lazy(() => import('./pages/HigherSchools').then(m => ({ default: m.HigherSchools })));
+const SchoolDetail = lazy(() => import('./pages/SchoolDetail').then(m => ({ default: m.SchoolDetail })));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminStudents = lazy(() => import('./pages/admin/Students').then(m => ({ default: m.AdminStudents })));

@@ -177,9 +177,29 @@ export const SchoolDetail: React.FC = () => {
                 </div>
               </DetailBlock>
 
+              <DetailBlock title="Informations 2026">
+                <dl className="grid sm:grid-cols-2 gap-4 text-sm">
+                  {school.network && <div><dt className="font-black text-slate-400 text-xs uppercase tracking-wide">Réseau / catégorie</dt><dd className="font-bold text-slate-700 mt-1">{school.network}</dd></div>}
+                  {school.authority && <div><dt className="font-black text-slate-400 text-xs uppercase tracking-wide">Université / tutelle</dt><dd className="font-bold text-slate-700 mt-1">{school.authority}</dd></div>}
+                  {school.domain && <div><dt className="font-black text-slate-400 text-xs uppercase tracking-wide">Domaine principal</dt><dd className="font-bold text-slate-700 mt-1">{school.domain}</dd></div>}
+                  {school.degree && <div><dt className="font-black text-slate-400 text-xs uppercase tracking-wide">Diplôme / niveau</dt><dd className="font-bold text-slate-700 mt-1">{school.degree}</dd></div>}
+                  {school.bacProfiles && <div className="sm:col-span-2"><dt className="font-black text-slate-400 text-xs uppercase tracking-wide">Bacs / profils</dt><dd className="font-bold text-slate-700 mt-1">{school.bacProfiles}</dd></div>}
+                  {school.verificationLevel && <div className="sm:col-span-2"><dt className="font-black text-slate-400 text-xs uppercase tracking-wide">Niveau de vérification</dt><dd className="font-bold text-slate-700 mt-1">{school.verificationLevel}</dd></div>}
+                </dl>
+              </DetailBlock>
+
               <DetailBlock title="Frais de scolarité"><NotAvailable /></DetailBlock>
               <DetailBlock title="Débouchés"><NotAvailable /></DetailBlock>
-              <DetailBlock title="Dates importantes"><NotAvailable /></DetailBlock>
+              <DetailBlock title="Concours et dates 2026">
+                <div className="space-y-3 text-sm font-medium text-slate-600">
+                  <p><span className="font-black text-slate-800">Statut :</span> {school.contestStatus2026 || 'À vérifier'}</p>
+                  <p><span className="font-black text-slate-800">Date limite :</span> {school.deadline2026 || 'Non renseignée'}</p>
+                  <div className="flex flex-wrap gap-3">
+                    {school.sourceUrl && <a href={school.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-black text-primary hover:underline">Source établissement</a>}
+                    {school.contestSourceUrl && <a href={school.contestSourceUrl} target="_blank" rel="noopener noreferrer" className="font-black text-primary hover:underline">Source concours</a>}
+                  </div>
+                </div>
+              </DetailBlock>
 
               <DetailBlock title="Questions fréquentes">
                 <div className="space-y-3">
