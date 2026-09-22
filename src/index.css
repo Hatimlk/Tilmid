@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Keep mixed-language fragments readable while a page is being localized.
+   `plaintext` lets the browser determine each text run's direction from its
+   actual content, so French punctuation is not reversed inside an RTL page. */
+html[dir='rtl'] p,
+html[dir='rtl'] h1,
+html[dir='rtl'] h2,
+html[dir='rtl'] h3,
+html[dir='rtl'] h4,
+html[dir='rtl'] label,
+html[dir='rtl'] li {
+  unicode-bidi: plaintext;
+}
+
 @layer base {
   body {
     font-family: 'Tajawal', sans-serif;

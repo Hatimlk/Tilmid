@@ -1065,7 +1065,7 @@ export const HigherSchools: React.FC = () => {
   const selectType = (type: 'public' | 'private') => { setFilters({ ...EMPTY_FILTERS, types: [type] }); document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' }); };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-4 overflow-x-hidden font-sans w-full max-w-full text-start">
+    <div dir="ltr" lang="fr" className="min-h-screen bg-slate-50 pb-4 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title="Écoles Supérieures au Maroc"
         description="Découvrez les écoles supérieures au Maroc, explorez leurs filières, villes et conditions d'accès et comparez les établissements qui correspondent à votre projet."

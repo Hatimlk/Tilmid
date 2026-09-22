@@ -542,7 +542,7 @@ export const BacSimulator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-4 overflow-x-hidden font-sans w-full max-w-full text-start">
+    <div dir="ltr" lang="fr" className="min-h-screen bg-white pb-4 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title="Simulateur BAC Maroc — Calculez votre moyenne"
         description="Calculez la note nécessaire à l'examen national pour atteindre votre moyenne cible au BAC et testez différents scénarios avec le simulateur Tilmid."
