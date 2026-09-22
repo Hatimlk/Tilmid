@@ -78,7 +78,14 @@
     "bookConsultation": "Réservez votre première consultation aujourd'hui et découvrez comment nous pouvons améliorer votre parcours d'études.",
     "registerNow": "S'inscrire maintenant",
     "contactWhatsapp": "Contacter via WhatsApp",
-    "heroSkills": ["Consultations pédagogiques", "Techniques de révision", "Gestion du temps", "Orientation", "Excellence", "Motivation"],
+    "heroSkills": [
+      "Consultations pédagogiques",
+      "Techniques de révision",
+      "Gestion du temps",
+      "Orientation",
+      "Excellence",
+      "Motivation"
+    ],
     "studentsBadge": "+2K étudiants accompagnés",
     "programsEyebrow": "Nos programmes",
     "programsTitle": "Trois piliers pour construire ton parcours",
@@ -97,17 +104,38 @@
     "statsEyebrow": "En chiffres",
     "statsTitle": "Ils nous font confiance",
     "stats": [
-      { "value": "+2K", "label": "Étudiants accompagnés" },
-      { "value": "98%", "label": "Taux de satisfaction" },
-      { "value": "+50", "label": "Écoles référencées" },
-      { "value": "+100K", "label": "Vues sur nos contenus" }
+      {
+        "value": "+2K",
+        "label": "Étudiants accompagnés"
+      },
+      {
+        "value": "98%",
+        "label": "Taux de satisfaction"
+      },
+      {
+        "value": "+50",
+        "label": "Écoles référencées"
+      },
+      {
+        "value": "+100K",
+        "label": "Vues sur nos contenus"
+      }
     ],
     "howItWorksEyebrow": "Comment ça marche",
     "howItWorksTitle": "Votre parcours vers la réussite en 3 étapes",
     "howItWorksSteps": [
-      { "title": "Découvrez votre profil", "desc": "Analyse de vos objectifs, intérêts et résultats scolaires." },
-      { "title": "Construisez votre parcours", "desc": "Recevez des recommandations adaptées à votre profil." },
-      { "title": "Progressez avec un accompagnement", "desc": "Suivez votre évolution avec nos méthodes et nos mentors." }
+      {
+        "title": "Découvrez votre profil",
+        "desc": "Analyse de vos objectifs, intérêts et résultats scolaires."
+      },
+      {
+        "title": "Construisez votre parcours",
+        "desc": "Recevez des recommandations adaptées à votre profil."
+      },
+      {
+        "title": "Progressez avec un accompagnement",
+        "desc": "Suivez votre évolution avec nos méthodes et nos mentors."
+      }
     ]
   },
   "programs": {
@@ -115,45 +143,108 @@
       "title": "Orientation Scolaire",
       "subtitle": "Nos objectifs principaux pour t'accompagner en tant qu'élève dans ton parcours d'orientation",
       "features": [
-        { "title": "Choisir la filière adaptée", "description": "Nous aidons chaque élève à comprendre quelles filières correspondent à ses intérêts, son profil académique et ses objectifs d'avenir." },
-        { "title": "Simplifier les inscriptions", "description": "Nous centralisons les délais, les procédures, les documents et les conditions d'admission des principales écoles." },
-        { "title": "Bénéficier d'un accompagnement personnalisé", "description": "Des recommandations construites pour chaque élève, plutôt que des informations génériques." },
-        { "title": "Ne manquer aucune opportunité", "description": "Nous suivons les délais, les listes d'admission et les évolutions des listes d'attente." }
+        {
+          "title": "Choisir la filière adaptée",
+          "description": "Nous aidons chaque élève à comprendre quelles filières correspondent à ses intérêts, son profil académique et ses objectifs d'avenir."
+        },
+        {
+          "title": "Simplifier les inscriptions",
+          "description": "Nous centralisons les délais, les procédures, les documents et les conditions d'admission des principales écoles."
+        },
+        {
+          "title": "Bénéficier d'un accompagnement personnalisé",
+          "description": "Des recommandations construites pour chaque élève, plutôt que des informations génériques."
+        },
+        {
+          "title": "Ne manquer aucune opportunité",
+          "description": "Nous suivons les délais, les listes d'admission et les évolutions des listes d'attente."
+        }
       ],
       "extraTopics": [
-        { "title": "La différence entre écoles, instituts et universités", "query": "conseils" },
-        { "title": "Les écoles post-bac", "query": "orientation" },
-        { "title": "Comment calculer le seuil de sélection", "query": "orientation" }
+        {
+          "title": "La différence entre écoles, instituts et universités",
+          "query": "conseils"
+        },
+        {
+          "title": "Les écoles post-bac",
+          "query": "orientation"
+        },
+        {
+          "title": "Comment calculer le seuil de sélection",
+          "query": "orientation"
+        }
       ]
     },
     "tilmid": {
       "title": "Programme Tilmid",
       "subtitle": "Nos grands objectifs qui t'aideront en tant qu'élève dans ton parcours",
       "features": [
-        { "title": "Atteindre le meilleur niveau scolaire", "description": "Nous t'aidons à construire un parcours réussi avec des étapes claires et ciblées." },
-        { "title": "Apprendre à travailler intelligemment", "description": "Grâce à des techniques avancées de révision et des plans pratiques et efficaces qui te donneront des résultats plus rapides et meilleurs." },
-        { "title": "Raccourcir le chemin et t'éloigner des erreurs", "description": "Nous te donnons toutes les erreurs à éviter pour que tu puisses avancer sans répéter les mêmes faux pas." },
-        { "title": "T'offrir l'orientation et l'accompagnement adéquats", "description": "Pour que tu choisisses le chemin qui te convient le mieux et que tu restes toujours confiant dans tes choix." }
+        {
+          "title": "Atteindre le meilleur niveau scolaire",
+          "description": "Nous t'aidons à construire un parcours réussi avec des étapes claires et ciblées."
+        },
+        {
+          "title": "Apprendre à travailler intelligemment",
+          "description": "Grâce à des techniques avancées de révision et des plans pratiques et efficaces qui te donneront des résultats plus rapides et meilleurs."
+        },
+        {
+          "title": "Raccourcir le chemin et t'éloigner des erreurs",
+          "description": "Nous te donnons toutes les erreurs à éviter pour que tu puisses avancer sans répéter les mêmes faux pas."
+        },
+        {
+          "title": "T'offrir l'orientation et l'accompagnement adéquats",
+          "description": "Pour que tu choisisses le chemin qui te convient le mieux et que tu restes toujours confiant dans tes choix."
+        }
       ],
       "extraTopics": [
-        { "title": "Techniques de révision efficaces", "query": "technique" },
-        { "title": "Organisation du temps scolaire", "query": "kanban" },
-        { "title": "Préparation aux examens", "query": "examens" }
+        {
+          "title": "Techniques de révision efficaces",
+          "query": "technique"
+        },
+        {
+          "title": "Organisation du temps scolaire",
+          "query": "kanban"
+        },
+        {
+          "title": "Préparation aux examens",
+          "query": "examens"
+        }
       ]
     },
     "talib": {
       "title": "Programme Talib",
       "subtitle": "Nos grands objectifs qui t'aideront en tant qu'étudiant dans ton parcours",
       "features": [
-        { "title": "Permettre aux étudiants d'exceller avec moins d'effort et de temps", "description": "En les équipant d'outils pratiques et de techniques intelligentes de révision et d'organisation, raccourcissant le chemin pour de solides résultats sans perdre des années." },
-        { "title": "Bâtir un étudiant organisé et conscient de ses capacités", "description": "L'objectif n'est pas seulement de réussir, mais de former une personnalité indépendante capable d'organiser son temps et de construire ses plans avec confiance." },
-        { "title": "Offrir un accompagnement personnel qui accélère les progrès", "description": "Chaque étudiant bénéficie de consultations personnalisées sur mesure pour trouver des solutions rapides à toute difficulté." },
-        { "title": "Transformer le parcours d'études supérieures en une expérience réussie", "description": "Notre grand objectif est de transformer les années d'études de la souffrance et la pression à une expérience positive pleine de réalisations." }
+        {
+          "title": "Permettre aux étudiants d'exceller avec moins d'effort et de temps",
+          "description": "En les équipant d'outils pratiques et de techniques intelligentes de révision et d'organisation, raccourcissant le chemin pour de solides résultats sans perdre des années."
+        },
+        {
+          "title": "Bâtir un étudiant organisé et conscient de ses capacités",
+          "description": "L'objectif n'est pas seulement de réussir, mais de former une personnalité indépendante capable d'organiser son temps et de construire ses plans avec confiance."
+        },
+        {
+          "title": "Offrir un accompagnement personnel qui accélère les progrès",
+          "description": "Chaque étudiant bénéficie de consultations personnalisées sur mesure pour trouver des solutions rapides à toute difficulté."
+        },
+        {
+          "title": "Transformer le parcours d'études supérieures en une expérience réussie",
+          "description": "Notre grand objectif est de transformer les années d'études de la souffrance et la pression à une expérience positive pleine de réalisations."
+        }
       ],
       "extraTopics": [
-        { "title": "Méthodologie de recherche universitaire", "query": "excellence" },
-        { "title": "Équilibre entre études et vie personnelle", "query": "habitudes" },
-        { "title": "Planification du parcours professionnel", "query": "développement" }
+        {
+          "title": "Méthodologie de recherche universitaire",
+          "query": "excellence"
+        },
+        {
+          "title": "Équilibre entre études et vie personnelle",
+          "query": "habitudes"
+        },
+        {
+          "title": "Planification du parcours professionnel",
+          "query": "développement"
+        }
       ]
     },
     "coaching": {
@@ -212,25 +303,100 @@
       "retryBtn": "Refaire le test",
       "levelTitle": "Quel est votre niveau ?",
       "levelSubtitle": "Cela nous aide à adapter nos recommandations.",
-      "levelOptions": ["3e collège", "Tronc commun", "1ère Bac", "2ème Bac", "Bachelier", "Étudiant"],
+      "levelOptions": [
+        "3e collège",
+        "Tronc commun",
+        "1ère Bac",
+        "2ème Bac",
+        "Bachelier",
+        "Étudiant"
+      ],
       "yourLevel": "Votre niveau : {{level}}",
       "schoolsTitle": "Écoles qui correspondent à ce domaine",
       "schoolsEmpty": "Notre annuaire d'écoles ne couvre pas encore ce domaine en détail. Un conseiller peut vous orienter vers les bonnes options.",
       "disclaimer": "Ce résultat est indicatif : il ne remplace pas un accompagnement personnalisé et ne garantit aucune admission.",
       "questions": [
-        { "text": "Quelle activité vous fait perdre la notion du temps ?", "options": ["Résoudre des énigmes et des problèmes logiques", "Aider les autres et expliquer des choses", "Écrire, dessiner ou concevoir", "Organiser des projets et des plans"] },
-        { "text": "Dans le travail d'équipe, quel rôle préférez-vous généralement ?", "options": ["L'analyste technique", "L'auditeur et le soutien", "Le créateur d'idées", "Le leader et l'organisateur"] },
-        { "text": "Comment préférez-vous aborder les problèmes complexes ?", "options": ["Les décomposer en petites parties logiques", "Chercher une solution qui satisfait tout le monde", "Penser hors des sentiers battus", "Prendre une décision rapide et ferme"] },
-        { "text": "Dans quel type d'environnement préférez-vous travailler ?", "options": ["Un laboratoire ou un bureau calme avec de la technologie", "Un lieu avec une communication constante avec les gens", "Un studio ouvert et flexible", "Un environnement de travail dynamique et changeant"] },
-        { "text": "Qu'est-ce qui suscite le plus votre curiosité ?", "options": ["Comment fonctionnent les objets et les machines", "Le comportement humain et la psychologie", "L'esthétique et l'expression artistique", "Les histoires de réussite et de richesse"] },
-        { "text": "Comment agissez-vous sous pression ?", "options": ["Je me concentre sur des solutions logiques", "Je demande de l'aide et collabore avec l'équipe", "Je cherche des solutions alternatives et innovantes", "Je prends les devants et distribue les tâches"] },
-        { "text": "Quelle est la valeur la plus importante pour vous sur le plan professionnel ?", "options": ["Précision et innovation technique", "Impact direct sur la vie des gens", "Liberté d'expression et unicité", "Croissance, leadership et influence"] }
+        {
+          "text": "Quelle activité vous fait perdre la notion du temps ?",
+          "options": [
+            "Résoudre des énigmes et des problèmes logiques",
+            "Aider les autres et expliquer des choses",
+            "Écrire, dessiner ou concevoir",
+            "Organiser des projets et des plans"
+          ]
+        },
+        {
+          "text": "Dans le travail d'équipe, quel rôle préférez-vous généralement ?",
+          "options": [
+            "L'analyste technique",
+            "L'auditeur et le soutien",
+            "Le créateur d'idées",
+            "Le leader et l'organisateur"
+          ]
+        },
+        {
+          "text": "Comment préférez-vous aborder les problèmes complexes ?",
+          "options": [
+            "Les décomposer en petites parties logiques",
+            "Chercher une solution qui satisfait tout le monde",
+            "Penser hors des sentiers battus",
+            "Prendre une décision rapide et ferme"
+          ]
+        },
+        {
+          "text": "Dans quel type d'environnement préférez-vous travailler ?",
+          "options": [
+            "Un laboratoire ou un bureau calme avec de la technologie",
+            "Un lieu avec une communication constante avec les gens",
+            "Un studio ouvert et flexible",
+            "Un environnement de travail dynamique et changeant"
+          ]
+        },
+        {
+          "text": "Qu'est-ce qui suscite le plus votre curiosité ?",
+          "options": [
+            "Comment fonctionnent les objets et les machines",
+            "Le comportement humain et la psychologie",
+            "L'esthétique et l'expression artistique",
+            "Les histoires de réussite et de richesse"
+          ]
+        },
+        {
+          "text": "Comment agissez-vous sous pression ?",
+          "options": [
+            "Je me concentre sur des solutions logiques",
+            "Je demande de l'aide et collabore avec l'équipe",
+            "Je cherche des solutions alternatives et innovantes",
+            "Je prends les devants et distribue les tâches"
+          ]
+        },
+        {
+          "text": "Quelle est la valeur la plus importante pour vous sur le plan professionnel ?",
+          "options": [
+            "Précision et innovation technique",
+            "Impact direct sur la vie des gens",
+            "Liberté d'expression et unicité",
+            "Croissance, leadership et influence"
+          ]
+        }
       ],
       "results": {
-        "eng": { "t": "Ingénierie et Sciences Appliquées", "d": "Vous avez une forte pensée analytique et logique. Vous avez tendance à comprendre comment les choses fonctionnent et vous aimez résoudre des problèmes complexes avec des chiffres et des données. Des domaines tels que l'ingénierie (informatique, civile, industrielle) ou l'intelligence artificielle vous conviennent parfaitement." },
-        "med": { "t": "Sciences Médicales et Humaines", "d": "Vous avez une grande intelligence émotionnelle et un désir sincère d'aider les autres. Vous vous retrouvez dans des domaines nécessitant de la communication et des soins, tels que la médecine, la pharmacie, les soins infirmiers, ou même la psychologie et l'enseignement." },
-        "art": { "t": "Arts, Design et Médias", "d": "Votre imagination est votre super-pouvoir. Vous n'aimez pas les restrictions et la routine, et vous cherchez toujours de nouvelles façons d'exprimer vos idées. L'architecture, le design graphique, le journalisme ou les arts numériques sont votre terrain de jeu naturel." },
-        "bus": { "t": "Management, Économie et Entrepreneuriat", "d": "Vous êtes un leader né. Vous avez une vision stratégique, vous vous souciez des résultats et de la croissance, et vous appréciez la compétition. Des spécialités comme le commerce et la gestion (ENCG), l'administration des affaires ou l'économie permettront à vos capacités de direction de s'épanouir." }
+        "eng": {
+          "t": "Ingénierie et Sciences Appliquées",
+          "d": "Vous avez une forte pensée analytique et logique. Vous avez tendance à comprendre comment les choses fonctionnent et vous aimez résoudre des problèmes complexes avec des chiffres et des données. Des domaines tels que l'ingénierie (informatique, civile, industrielle) ou l'intelligence artificielle vous conviennent parfaitement."
+        },
+        "med": {
+          "t": "Sciences Médicales et Humaines",
+          "d": "Vous avez une grande intelligence émotionnelle et un désir sincère d'aider les autres. Vous vous retrouvez dans des domaines nécessitant de la communication et des soins, tels que la médecine, la pharmacie, les soins infirmiers, ou même la psychologie et l'enseignement."
+        },
+        "art": {
+          "t": "Arts, Design et Médias",
+          "d": "Votre imagination est votre super-pouvoir. Vous n'aimez pas les restrictions et la routine, et vous cherchez toujours de nouvelles façons d'exprimer vos idées. L'architecture, le design graphique, le journalisme ou les arts numériques sont votre terrain de jeu naturel."
+        },
+        "bus": {
+          "t": "Management, Économie et Entrepreneuriat",
+          "d": "Vous êtes un leader né. Vous avez une vision stratégique, vous vous souciez des résultats et de la croissance, et vous appréciez la compétition. Des spécialités comme le commerce et la gestion (ENCG), l'administration des affaires ou l'économie permettront à vos capacités de direction de s'épanouir."
+        }
       }
     }
   },
@@ -247,14 +413,28 @@
       "title": "Choisir sa filière ne devrait pas être un pari",
       "desc": "Une bonne orientation repose sur votre profil, vos objectifs, vos résultats et les opportunités qui s'offrent réellement à vous.",
       "points": [
-        { "title": "Comprendre son profil", "desc": "Identifier vos points forts, vos centres d'intérêt et vos résultats académiques." },
-        { "title": "Comparer les bonnes filières", "desc": "Explorer les parcours et écoles réellement accessibles avec votre profil." },
-        { "title": "Construire un choix réaliste", "desc": "Passer d'une décision incertaine à une stratégie claire et réfléchie." }
+        {
+          "title": "Comprendre son profil",
+          "desc": "Identifier vos points forts, vos centres d'intérêt et vos résultats académiques."
+        },
+        {
+          "title": "Comparer les bonnes filières",
+          "desc": "Explorer les parcours et écoles réellement accessibles avec votre profil."
+        },
+        {
+          "title": "Construire un choix réaliste",
+          "desc": "Passer d'une décision incertaine à une stratégie claire et réfléchie."
+        }
       ]
     },
     "advisor": {
       "eyebrow": "Outil intelligent",
-      "steps": ["Profil scolaire", "Centres d'intérêt", "Objectifs", "Parcours recommandés"],
+      "steps": [
+        "Profil scolaire",
+        "Centres d'intérêt",
+        "Objectifs",
+        "Parcours recommandés"
+      ],
       "note": "Environ 5 minutes • Gratuit"
     },
     "benefits": {
@@ -265,10 +445,22 @@
       "eyebrow": "Comment ça marche",
       "title": "Votre orientation en 4 étapes simples",
       "steps": [
-        { "title": "Parlez-nous de vous", "desc": "Profil scolaire, matières, ambitions et préférences." },
-        { "title": "Explorez vos options", "desc": "Découvrez les filières et écoles adaptées à votre profil." },
-        { "title": "Construisez votre stratégie", "desc": "Comparez les conditions d'accès, les dates et vos chances réalistes." },
-        { "title": "Passez à l'action", "desc": "Préparez vos inscriptions et suivez les échéances importantes." }
+        {
+          "title": "Parlez-nous de vous",
+          "desc": "Profil scolaire, matières, ambitions et préférences."
+        },
+        {
+          "title": "Explorez vos options",
+          "desc": "Découvrez les filières et écoles adaptées à votre profil."
+        },
+        {
+          "title": "Construisez votre stratégie",
+          "desc": "Comparez les conditions d'accès, les dates et vos chances réalistes."
+        },
+        {
+          "title": "Passez à l'action",
+          "desc": "Préparez vos inscriptions et suivez les échéances importantes."
+        }
       ]
     },
     "helpCard": {
@@ -281,7 +473,11 @@
     "commitment": {
       "title": "Notre engagement",
       "desc": "Nous nous engageons à vous fournir des informations claires, actualisées et adaptées à votre situation académique.",
-      "points": ["Informations vérifiées", "Conseils personnalisés", "Suivi humain disponible"]
+      "points": [
+        "Informations vérifiées",
+        "Conseils personnalisés",
+        "Suivi humain disponible"
+      ]
     },
     "guide": {
       "eyebrow": "Cadeau exclusif",
@@ -289,10 +485,22 @@
       "titlePart2": "\"Les secrets de l'orientation universitaire\"",
       "desc": "Un guide pratique pour comprendre les filières, comparer les écoles et construire votre stratégie post-bac.",
       "features": [
-        { "title": "Comparatif des écoles", "desc": "Conditions d'accès, concours et sélectivité." },
-        { "title": "Choisir selon son profil", "desc": "Méthodes pour identifier les parcours adaptés." },
-        { "title": "Calendrier des inscriptions", "desc": "Les principales périodes à ne pas manquer." },
-        { "title": "Comprendre les débouchés", "desc": "Analyse des métiers et des opportunités." }
+        {
+          "title": "Comparatif des écoles",
+          "desc": "Conditions d'accès, concours et sélectivité."
+        },
+        {
+          "title": "Choisir selon son profil",
+          "desc": "Méthodes pour identifier les parcours adaptés."
+        },
+        {
+          "title": "Calendrier des inscriptions",
+          "desc": "Les principales périodes à ne pas manquer."
+        },
+        {
+          "title": "Comprendre les débouchés",
+          "desc": "Analyse des métiers et des opportunités."
+        }
       ],
       "ctaLabel": "Recevoir le guide gratuitement",
       "emailPlaceholder": "Votre adresse email"
@@ -306,12 +514,30 @@
       "eyebrow": "Questions fréquentes",
       "title": "Questions fréquentes sur l'orientation",
       "items": [
-        { "q": "À quel moment faut-il commencer son orientation ?", "a": "Le plus tôt est le mieux, idéalement dès la première ou la terminale, mais un accompagnement reste utile à tout moment de votre parcours." },
-        { "q": "L'accompagnement est-il adapté à toutes les filières ?", "a": "Oui, notre méthode s'adapte aux filières scientifiques, littéraires, économiques et techniques." },
-        { "q": "Est-ce que Tilmid aide aussi pour les concours ?", "a": "Oui, nous vous aidons à comprendre les conditions d'accès et à préparer votre dossier pour les concours des grandes écoles." },
-        { "q": "Puis-je être accompagné si je ne connais pas encore mon projet ?", "a": "Bien sûr. C'est justement le point de départ le plus fréquent : nous vous aidons à clarifier votre profil avant de choisir une direction." },
-        { "q": "Comment fonctionne le conseiller IA ?", "a": "Il analyse vos réponses sur votre profil, vos matières et vos ambitions pour vous suggérer les parcours les plus pertinents." },
-        { "q": "L'accompagnement concerne-t-il aussi les écoles privées ?", "a": "Oui, nous couvrons aussi bien les établissements publics que les écoles privées reconnues." }
+        {
+          "q": "À quel moment faut-il commencer son orientation ?",
+          "a": "Le plus tôt est le mieux, idéalement dès la première ou la terminale, mais un accompagnement reste utile à tout moment de votre parcours."
+        },
+        {
+          "q": "L'accompagnement est-il adapté à toutes les filières ?",
+          "a": "Oui, notre méthode s'adapte aux filières scientifiques, littéraires, économiques et techniques."
+        },
+        {
+          "q": "Est-ce que Tilmid aide aussi pour les concours ?",
+          "a": "Oui, nous vous aidons à comprendre les conditions d'accès et à préparer votre dossier pour les concours des grandes écoles."
+        },
+        {
+          "q": "Puis-je être accompagné si je ne connais pas encore mon projet ?",
+          "a": "Bien sûr. C'est justement le point de départ le plus fréquent : nous vous aidons à clarifier votre profil avant de choisir une direction."
+        },
+        {
+          "q": "Comment fonctionne le conseiller IA ?",
+          "a": "Il analyse vos réponses sur votre profil, vos matières et vos ambitions pour vous suggérer les parcours les plus pertinents."
+        },
+        {
+          "q": "L'accompagnement concerne-t-il aussi les écoles privées ?",
+          "a": "Oui, nous couvrons aussi bien les établissements publics que les écoles privées reconnues."
+        }
       ]
     },
     "jumpNav": {
@@ -336,9 +562,18 @@
       "title2": "vers vos objectifs",
       "description": "Retrouvez vos ressources, vos outils et votre accompagnement Tilmid.",
       "benefits": [
-        { "title": "Votre emploi du temps", "desc": "Organisez vos séances de révision et suivez votre semaine." },
-        { "title": "Votre bibliothèque", "desc": "Retrouvez les ressources et documents mis à votre disposition." },
-        { "title": "Votre accompagnement", "desc": "Restez en contact avec votre conseiller Tilmid." }
+        {
+          "title": "Votre emploi du temps",
+          "desc": "Organisez vos séances de révision et suivez votre semaine."
+        },
+        {
+          "title": "Votre bibliothèque",
+          "desc": "Retrouvez les ressources et documents mis à votre disposition."
+        },
+        {
+          "title": "Votre accompagnement",
+          "desc": "Restez en contact avec votre conseiller Tilmid."
+        }
       ]
     },
     "eyebrow": "Espace Étudiant",
@@ -382,5 +617,237 @@
     "reel1": "Une dose d'espoir, vous allez être fiers de vous... N'abandonnez pas ✌️❤️🫡",
     "reel2": "Si vous venez de commencer à réviser, ces précieux conseils sont pour vous",
     "reel3": "Attention à l'illusion de la révision"
+  },
+  "higherSchools": {
+    "title": "Écoles Supérieures",
+    "subtitle": "Explore les écoles supérieures au Maroc, leurs filières et leurs conditions d'accès pour préparer sereinement tes candidatures",
+    "hero": {
+      "guide": "Guide des écoles supérieures",
+      "title1": "Trouvez l'école qui correspond ",
+      "title2": "vraiment à votre projet",
+      "description": "Découvrez les écoles supérieures au Maroc, explorez leurs filières, leurs conditions d'accès et leurs villes, puis comparez les options qui correspondent à votre profil et à vos ambitions.",
+      "searchPlaceholder": "Rechercher une école, une filière ou une ville...",
+      "searchClear": "Effacer la recherche",
+      "searchBtn": "Rechercher",
+      "searchSchools": "Écoles",
+      "searchFields": "Filières",
+      "searchCities": "Villes",
+      "popularSearch": "Recherches populaires",
+      "features": {
+        "publicPrivate": "Écoles publiques & privées",
+        "cities": "Plusieurs villes du Maroc",
+        "fields": "Filières et conditions d'accès"
+      }
+    },
+    "featured": {
+      "eyebrow": "À découvrir",
+      "title": "Établissements à explorer",
+      "subtitle": "Commencez votre recherche parmi les écoles et établissements disponibles dans notre base."
+    },
+    "card": {
+      "public": "Public",
+      "private": "Privé",
+      "addToFav": "Ajouter aux favoris",
+      "rmFromFav": "Retirer des favoris",
+      "fieldsMore": "+{{count}} filière",
+      "fieldsMorePlural": "+{{count}} filières",
+      "viewSchool": "Voir l'école",
+      "addToCompare": "Ajouter au comparateur",
+      "rmFromCompare": "Retirer du comparateur"
+    },
+    "explorer": {
+      "eyebrow": "Annuaire des écoles",
+      "title": "Explorez les écoles supérieures au Maroc",
+      "subtitle": "Utilisez les filtres pour trouver les établissements adaptés à votre projet académique.",
+      "filters": "Filtres",
+      "resetButton": "Réinitialiser",
+      "schoolsFound": "école trouvée",
+      "schoolsFoundPlural": "écoles trouvées",
+      "sortBy": "Trier par",
+      "sortOptions": {
+        "relevance": "Pertinence",
+        "name": "Nom A–Z",
+        "city": "Ville",
+        "match": "Compatibilité"
+      },
+      "loadMore": "Afficher plus d'écoles",
+      "mobileFilterTitle": "Filtrer les écoles",
+      "showResults": "Afficher {{count}} résultat"
+    },
+    "empty": {
+      "title": "Aucun établissement trouvé",
+      "description": "Essayez de modifier vos filtres ou recherchez une autre filière, école ou ville.",
+      "resetButton": "Réinitialiser les filtres",
+      "contactButton": "Parler à un conseiller"
+    },
+    "filters": {
+      "type": "Type d'établissement",
+      "city": "Ville",
+      "field": "Domaine d'études",
+      "accessLevel": "Niveau d'accès",
+      "admissionMethod": "Mode d'admission"
+    },
+    "match": {
+      "title": "Score de compatibilité",
+      "activeBadge": "Activé",
+      "description": "Indiquez vos préférences pour afficher un score de compatibilité sur chaque école — basé uniquement sur ces critères, ce n'est pas une prédiction d'admission.",
+      "fields": {
+        "field": "Filière",
+        "city": "Ville",
+        "accessLevel": "Niveau d'accès",
+        "type": "Public ou privé"
+      },
+      "publicOption": "Public",
+      "privateOption": "Privé",
+      "resetButton": "Réinitialiser mes préférences"
+    },
+    "exploreFields": {
+      "eyebrow": "Par domaine",
+      "title": "Explorez selon votre domaine d'études",
+      "schools": "établissement",
+      "schoolsPlural": "établissements"
+    },
+    "exploreCities": {
+      "eyebrow": "Par ville",
+      "title": "Où souhaitez-vous étudier ?",
+      "subtitle": "Explorez les établissements disponibles dans les principales villes étudiantes du Maroc.",
+      "schools": "établissement",
+      "schoolsPlural": "établissements"
+    },
+    "guide": {
+      "eyebrow": "Comprendre vos options",
+      "title": "École publique ou privée ?",
+      "public": {
+        "badge": "Public",
+        "title": "Établissements publics",
+        "description": "Les établissements publics proposent différents parcours accessibles selon les conditions définies par chaque établissement : sélection, concours, dossier ou accès spécifique.",
+        "button": "Explorer les écoles publiques"
+      },
+      "private": {
+        "badge": "Privé",
+        "title": "Établissements privés",
+        "description": "Les établissements privés proposent des programmes et conditions d'admission propres à chaque institution. Vérifiez toujours l'accréditation, le programme et les modalités d'accès avant de choisir.",
+        "button": "Explorer les écoles privées"
+      }
+    },
+    "compare": {
+      "title": "Comparer les écoles",
+      "typeLabel": "Type",
+      "cityLabel": "Ville",
+      "fieldsLabel": "Filières",
+      "accessLabel": "Niveau d'accès",
+      "admissionLabel": "Mode d'admission",
+      "tuitionLabel": "Frais de scolarité",
+      "notAvailable": "Information non disponible",
+      "matchLabel": "Compatibilité",
+      "empty": "Ajoutez des écoles au comparateur pour les visualiser ici.",
+      "removeButton": "Retirer",
+      "clearAll": "Effacer la comparaison"
+    },
+    "compareCTA": {
+      "eyebrow": "Comparez avant de choisir",
+      "title": "Comparez vos écoles préférées côte à côte",
+      "subtitle": "Sélectionnez plusieurs établissements et comparez leurs filières, villes, conditions d'accès et autres informations disponibles.",
+      "schoolA": "École A",
+      "schoolB": "École B",
+      "schoolC": "École C",
+      "button": "Comparer des écoles"
+    },
+    "stickyBar": {
+      "selected": "école sélectionnée",
+      "selectedPlural": "écoles sélectionnées",
+      "clear": "Effacer",
+      "compare": "Comparer"
+    },
+    "orientationCTA": {
+      "eyebrow": "Vous ne savez pas par où commencer ?",
+      "title": "Vous hésitez encore entre plusieurs parcours ?",
+      "subtitle": "Découvrez les filières qui correspondent à votre profil avant de choisir vos établissements.",
+      "primaryButton": "Commencer mon orientation",
+      "secondaryButton": "Parler à un conseiller"
+    },
+    "faq": {
+      "eyebrow": "Questions fréquentes",
+      "title": "Tout savoir sur les écoles supérieures au Maroc",
+      "q1": {
+        "q": "Comment trouver une école adaptée à mon profil ?",
+        "a": "Utilisez les filtres par domaine, ville, type d'établissement et niveau d'accès. Vous pouvez également utiliser le programme d'orientation Tilmid pour mieux identifier les parcours adaptés à votre projet."
+      },
+      "q2": {
+        "q": "Quelle est la différence entre une école publique et une école privée ?",
+        "a": "Chaque établissement possède ses propres conditions d'accès, programmes et modalités. Consultez toujours la fiche détaillée de l'école avant de prendre une décision."
+      },
+      "q3": {
+        "q": "Comment connaître les conditions d'accès à une école ?",
+        "a": "Les conditions disponibles sont indiquées sur la fiche de chaque établissement lorsqu'elles ont été renseignées et vérifiées."
+      },
+      "q4": {
+        "q": "Puis-je comparer plusieurs écoles ?",
+        "a": "Oui. Ajoutez les établissements qui vous intéressent au comparateur pour visualiser leurs principales différences côte à côte."
+      },
+      "q5": {
+        "q": "Puis-je enregistrer mes écoles préférées ?",
+        "a": "Oui, utilisez l'icône Favoris pour conserver les établissements que vous souhaitez consulter plus tard sur cet appareil."
+      },
+      "q6": {
+        "q": "Les informations sur les écoles sont-elles mises à jour ?",
+        "a": "Nous nous appuyons sur des informations publiques générales. Les conditions d'accès et modalités peuvent évoluer : vérifiez toujours les détails directement auprès de l'établissement avant de vous engager."
+      }
+    },
+    "finalCTA": {
+      "eyebrow": "Préparez votre avenir",
+      "title1": "Une école n'est pas seulement un nom.",
+      "title2": "Choisissez un parcours qui vous correspond.",
+      "subtitle": "Explorez vos options, comparez les établissements et avancez vers votre orientation avec plus de clarté.",
+      "primaryButton": "Explorer les écoles",
+      "secondaryButton": "Commencer mon orientation"
+    },
+    "types": {
+      "public": "Public",
+      "private": "Privé"
+    },
+    "access": {
+      "Bac": "Bac",
+      "Bac+1": "Bac+1",
+      "Bac+2": "Bac+2",
+      "Bac+3": "Bac+3"
+    },
+    "admission": {
+      "Concours": "Concours",
+      "Sélection sur dossier": "Sélection sur dossier",
+      "Accès direct": "Accès direct",
+      "Test d'admission": "Test d'admission",
+      "Entretien": "Entretien"
+    },
+    "cities": {
+      "Casablanca": "Casablanca",
+      "Rabat": "Rabat",
+      "Marrakech": "Marrakech",
+      "Fès": "Fès",
+      "Agadir": "Agadir",
+      "Tanger": "Tanger",
+      "Meknès": "Meknès",
+      "Oujda": "Oujda",
+      "Salé": "Salé",
+      "Kénitra": "Kénitra",
+      "Tétouan": "Tétouan",
+      "Safi": "Safi",
+      "Mohammedia": "Mohammedia",
+      "El Jadida": "El Jadida",
+      "Béni Mellal": "Béni Mellal",
+      "Ifrane": "Ifrane",
+      "Settat": "Settat",
+      "Benguérir": "Benguérir"
+    },
+    "fields": {
+      "Ingénierie & Technologie": "Ingénierie & Technologie",
+      "Commerce & Management": "Commerce & Management",
+      "Médecine & Santé": "Médecine & Santé",
+      "Architecture & Design": "Architecture & Design",
+      "Agriculture & Environnement": "Agriculture & Environnement",
+      "Sciences & Fondamental": "Sciences & Fondamental",
+      "Droit & Sciences Politiques": "Droit & Sciences Politiques",
+      "Hôtellerie & Tourisme": "Hôtellerie & Tourisme"
+    }
   }
 }
