@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Search, X, MapPin, GraduationCap, Compass, ChevronDown, Heart, Scale,
   SlidersHorizontal, ArrowLeft, Check, Building2, Briefcase,
@@ -87,11 +88,14 @@ const SchoolLogo: React.FC<{ school: School; size?: 'sm' | 'md' | 'lg' }> = ({ s
   );
 };
 
-const TypeBadge: React.FC<{ type: School['type'] }> = ({ type }) => (
-  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide ${type === 'public' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>
-    {type === 'public' ? 'Public' : 'Privé'}
-  </span>
-);
+const TypeBadge: React.FC<{ type: School['type'] }> = ({ type }) => {
+  const { t } = useTranslation();
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide ${type === 'public' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>
+      {type === 'public' ? t('higherSchools.card.public') : t('higherSchools.card.private')}
+    </span>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* School card                                                               */
@@ -106,6 +110,7 @@ const SchoolCard: React.FC<{
   compareDisabled: boolean;
   match?: MatchResult | null;
 }> = ({ school, isFavorite, onToggleFavorite, isCompared, onToggleCompare, compareDisabled, match }) => {
+  const { t } = useTranslation();
   const extraFields = Math.max(0, school.fields.length - 2);
   return (
     <div className="group relative bg-white border border-slate-200 rounded-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_42px_rgba(15,23,42,0.09)] hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col h-full">
@@ -120,7 +125,7 @@ const SchoolCard: React.FC<{
         <button
           onClick={onToggleFavorite}
           aria-pressed={isFavorite}
-          aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          aria-label={isFavorite ? t('higherSchools.card.rmFromFav') : t('higherSchools.card.addToFav')}
           className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${isFavorite ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-300 hover:text-red-400'}`}
         >
           <Heart size={17} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -140,7 +145,9 @@ const SchoolCard: React.FC<{
           <span key={f} className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 text-[11px] font-bold">{f}</span>
         ))}
         {extraFields > 0 && (
-          <span className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[11px] font-bold">+{extraFields} filière{extraFields > 1 ? 's' : ''}</span>
+          <span className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[11px] font-bold">
+            {extraFields > 1 ? t('higherSchools.card.fieldsMorePlural', { count: extraFields }) : t('higherSchools.card.fieldsMore', { count: extraFields })}
+          </span>
         )}
       </div>
 
@@ -149,14 +156,14 @@ const SchoolCard: React.FC<{
           to={`/higher-schools/${school.slug}`}
           className="flex-1 min-h-[44px] flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all"
         >
-          <span>Voir l'école</span>
+          <span>{t('higherSchools.card.viewSchool')}</span>
           <ArrowLeft size={15} className="transform ltr:rotate-180" />
         </Link>
         <button
           onClick={onToggleCompare}
           disabled={!isCompared && compareDisabled}
           aria-pressed={isCompared}
-          title={isCompared ? 'Retirer du comparateur' : 'Ajouter au comparateur'}
+          title={isCompared ? t('higherSchools.card.rmFromCompare') : t('higherSchools.card.addToCompare')}
           className={`w-11 min-h-[44px] rounded-xl flex items-center justify-center border transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${isCompared ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-slate-200 text-slate-400 hover:text-primary hover:border-primary/40'}`}
         >
           <Scale size={16} />
@@ -170,7 +177,15 @@ const SchoolCard: React.FC<{
 /* Hero + search                                                             */
 /* -------------------------------------------------------------------------- */
 
-const POPULAR_CHIPS = ['Ingénierie', 'Médecine & Santé', 'Commerce & Management', 'Informatique & Digital', 'Architecture', 'Écoles publiques', 'Écoles privées'];
+const POPULAR_CHIPS = [
+  { id: 'engineering', value: 'Ingénierie' },
+  { id: 'medicine', value: 'Médecine & Santé' },
+  { id: 'business', value: 'Commerce & Management' },
+  { id: 'it', value: 'Informatique & Digital' },
+  { id: 'architecture', value: 'Architecture' },
+  { id: 'public', value: 'Écoles publiques' },
+  { id: 'private', value: 'Écoles privées' }
+];
 
 const SchoolsHero: React.FC<{
   query: string;
@@ -178,6 +193,7 @@ const SchoolsHero: React.FC<{
   onSubmit: () => void;
   onQuickFilter: (chip: string) => void;
 }> = ({ query, onQueryChange, onSubmit, onQuickFilter }) => {
+  const { t } = useTranslation();
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -240,18 +256,18 @@ const SchoolsHero: React.FC<{
       <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
         <Reveal className="inline-flex items-center gap-2 mb-7 px-4 py-2 rounded-full bg-white border border-blue-100 shadow-sm text-[13px] font-bold text-slate-700">
           <Compass size={14} className="text-primary" />
-          <span>Guide des écoles supérieures</span>
+          <span>{t('higherSchools.hero.badge')}</span>
         </Reveal>
 
         <Reveal delay={80}>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[60px] font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1] max-w-4xl mx-auto">
-            Trouvez l'école qui correspond <span className="text-primary">vraiment à votre projet</span>
+            {t('higherSchools.hero.title1')} <span className="text-primary">{t('higherSchools.hero.title2')}</span>
           </h1>
         </Reveal>
 
         <Reveal delay={140}>
           <p className="text-[17px] md:text-lg text-slate-500 max-w-[650px] mx-auto leading-[1.65] font-medium mb-10">
-            Découvrez les écoles supérieures au Maroc, explorez leurs filières, leurs conditions d'accès et leurs villes, puis comparez les options qui correspondent à votre profil et à vos ambitions.
+            {t('higherSchools.hero.subtitle')}
           </p>
         </Reveal>
 
@@ -265,8 +281,8 @@ const SchoolsHero: React.FC<{
                 onChange={(e) => { onQueryChange(e.target.value); setActiveIndex(-1); }}
                 onFocus={() => setFocused(true)}
                 onKeyDown={handleKeyDown}
-                placeholder="Rechercher une école, une filière ou une ville..."
-                aria-label="Rechercher une école, une filière ou une ville"
+                placeholder={t('higherSchools.hero.searchPlaceholder')}
+                aria-label={t('higherSchools.hero.searchPlaceholder')}
                 aria-expanded={showDropdown}
                 role="combobox"
                 aria-autocomplete="list"
@@ -281,7 +297,7 @@ const SchoolsHero: React.FC<{
                 onClick={() => { setFocused(false); onSubmit(); }}
                 className="h-11 px-6 bg-primary text-white rounded-xl font-bold text-sm hover:bg-[#0875E8] transition-all shrink-0 hidden sm:flex items-center"
               >
-                Rechercher
+                {t('higherSchools.hero.searchButton')}
               </button>
             </div>
 
@@ -289,7 +305,7 @@ const SchoolsHero: React.FC<{
               <div className="absolute top-full inset-x-0 mt-2 bg-white rounded-2xl border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.12)] p-3 text-start z-30 max-h-80 overflow-y-auto" role="listbox">
                 {suggestions.schools.length > 0 && (
                   <div className="mb-2">
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Écoles</p>
+                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.schoolsTitle')}</p>
                     {suggestions.schools.map((s) => {
                       const idx = flatSuggestions.findIndex((f) => f.type === 'school' && f.slug === s.slug);
                       return (
@@ -303,12 +319,12 @@ const SchoolsHero: React.FC<{
                 )}
                 {suggestions.fields.length > 0 && (
                   <div className="mb-2">
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Filières</p>
+                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.fieldsTitle')}</p>
                     {suggestions.fields.map((f) => {
                       const idx = flatSuggestions.findIndex((x) => x.type === 'field' && x.value === f);
                       return (
                         <button key={f} role="option" aria-selected={activeIndex === idx} onClick={() => selectSuggestion(flatSuggestions[idx])} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start ${activeIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
-                          <span className="text-sm font-bold text-slate-700">{f}</span>
+                          <span className="text-sm font-bold text-slate-700">{t(`higherSchools.fields.${f}`, f)}</span>
                         </button>
                       );
                     })}
@@ -316,13 +332,13 @@ const SchoolsHero: React.FC<{
                 )}
                 {suggestions.cities.length > 0 && (
                   <div>
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Villes</p>
+                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.citiesTitle')}</p>
                     {suggestions.cities.map((c) => {
                       const idx = flatSuggestions.findIndex((x) => x.type === 'city' && x.value === c);
                       return (
                         <button key={c} role="option" aria-selected={activeIndex === idx} onClick={() => selectSuggestion(flatSuggestions[idx])} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start ${activeIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
                           <MapPin size={14} className="text-slate-400" />
-                          <span className="text-sm font-bold text-slate-700">{c}</span>
+                          <span className="text-sm font-bold text-slate-700">{t(`higherSchools.cities.${c}`, c)}</span>
                         </button>
                       );
                     })}
@@ -336,20 +352,20 @@ const SchoolsHero: React.FC<{
             onClick={() => { setFocused(false); onSubmit(); }}
             className="sm:hidden w-full mt-3 h-12 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2"
           >
-            <Search size={17} /> Rechercher
+            <Search size={17} /> {t('higherSchools.hero.searchButton')}
           </button>
         </Reveal>
 
         <Reveal delay={260} className="mt-8">
-          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wide mb-3">Recherches populaires</p>
+          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wide mb-3">{t('higherSchools.hero.popularSearch')}</p>
           <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto">
             {POPULAR_CHIPS.map((chip) => (
               <button
-                key={chip}
-                onClick={() => onQuickFilter(chip)}
+                key={chip.id}
+                onClick={() => onQuickFilter(chip.value)}
                 className="px-4 py-2 min-h-[40px] rounded-full bg-white border border-slate-200 text-[13px] font-bold text-slate-600 hover:border-primary/40 hover:text-primary transition-all"
               >
-                {chip}
+                {t(`higherSchools.hero.chips.${chip.id}`)}
               </button>
             ))}
           </div>
@@ -357,13 +373,13 @@ const SchoolsHero: React.FC<{
 
         <Reveal delay={320} className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {[
-            { icon: Building2, label: 'Écoles publiques & privées' },
-            { icon: MapPin, label: 'Plusieurs villes du Maroc' },
-            { icon: GraduationCap, label: "Filières et conditions d'accès" },
+            { icon: Building2, id: 'types' },
+            { icon: MapPin, id: 'cities' },
+            { icon: GraduationCap, id: 'access' },
           ].map((item) => (
-            <span key={item.label} className="flex items-center gap-2 text-[13px] font-bold text-slate-500">
+            <span key={item.id} className="flex items-center gap-2 text-[13px] font-bold text-slate-500">
               <item.icon size={16} className="text-primary" />
-              {item.label}
+              {t(`higherSchools.hero.features.${item.id}`)}
             </span>
           ))}
         </Reveal>
@@ -381,10 +397,11 @@ const FeaturedSchools: React.FC<{
   compare: ReturnType<typeof useCompareList>;
   profile: SchoolProfile;
 }> = ({ favorites, compare, profile }) => {
+  const { t } = useTranslation();
   const featured = SCHOOLS.slice(0, 6);
   return (
     <section>
-      <SectionHeader eyebrow="À découvrir" title="Établissements à explorer" subtitle="Commencez votre recherche parmi les écoles et établissements disponibles dans notre base." className="mb-12" />
+      <SectionHeader eyebrow={t('higherSchools.featured.eyebrow')} title={t('higherSchools.featured.title')} subtitle={t('higherSchools.featured.subtitle')} className="mb-12" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {featured.map((s, i) => (
           <Reveal key={s.id} delay={(i % 3) * 90}>
@@ -436,6 +453,7 @@ const FilterCheckboxGroup: React.FC<{
 );
 
 const FilterPanelContent: React.FC<{ filters: SchoolFilters; setFilters: (f: SchoolFilters) => void }> = ({ filters, setFilters }) => {
+  const { t } = useTranslation();
   const fieldCounts = useMemo(getFieldCounts, []);
   const cityCounts = useMemo(getCityCounts, []);
 
@@ -448,17 +466,17 @@ const FilterPanelContent: React.FC<{ filters: SchoolFilters; setFilters: (f: Sch
   return (
     <div>
       <FilterCheckboxGroup
-        title="Type d'établissement"
+        title={t('higherSchools.filters.types')}
         options={['public', 'private']}
         selected={filters.types}
         onToggle={(v) => toggleIn('types', v)}
         counts={new Map([['public', SCHOOLS.filter(s => s.type === 'public').length], ['private', SCHOOLS.filter(s => s.type === 'private').length]])}
-        labels={{ public: 'Public', private: 'Privé' }}
+        labels={{ public: t('higherSchools.card.public'), private: t('higherSchools.card.private') }}
       />
-      <FilterCheckboxGroup title="Ville" options={CITIES} selected={filters.cities} onToggle={(v) => toggleIn('cities', v)} counts={cityCounts} />
-      <FilterCheckboxGroup title="Domaine d'études" options={FIELDS as unknown as string[]} selected={filters.fields} onToggle={(v) => toggleIn('fields', v)} counts={fieldCounts} />
-      <FilterCheckboxGroup title="Niveau d'accès" options={ACCESS_LEVELS as unknown as string[]} selected={filters.accessLevels} onToggle={(v) => toggleIn('accessLevels', v)} />
-      <FilterCheckboxGroup title="Mode d'admission" options={ADMISSION_METHODS as unknown as string[]} selected={filters.admissionMethods} onToggle={(v) => toggleIn('admissionMethods', v)} />
+      <FilterCheckboxGroup title={t('higherSchools.filters.cities')} options={CITIES} selected={filters.cities} onToggle={(v) => toggleIn('cities', v)} counts={cityCounts} labels={Object.fromEntries(CITIES.map(c => [c, t(`higherSchools.cities.${c}`, c)]))} />
+      <FilterCheckboxGroup title={t('higherSchools.filters.fields')} options={FIELDS as unknown as string[]} selected={filters.fields} onToggle={(v) => toggleIn('fields', v)} counts={fieldCounts} labels={Object.fromEntries(FIELDS.map(f => [f, t(`higherSchools.fields.${f}`, f)]))} />
+      <FilterCheckboxGroup title={t('higherSchools.filters.accessLevel')} options={ACCESS_LEVELS as unknown as string[]} selected={filters.accessLevels} onToggle={(v) => toggleIn('accessLevels', v)} labels={Object.fromEntries(ACCESS_LEVELS.map(a => [a, t(`higherSchools.access.${a}`, a)]))} />
+      <FilterCheckboxGroup title={t('higherSchools.filters.admissionMethod')} options={ADMISSION_METHODS as unknown as string[]} selected={filters.admissionMethods} onToggle={(v) => toggleIn('admissionMethods', v)} labels={Object.fromEntries(ADMISSION_METHODS.map(a => [a, t(`higherSchools.admission.${a}`, a)]))} />
     </div>
   );
 };
@@ -476,6 +494,7 @@ const MatchProfilePanel: React.FC<{
   clear: () => void;
   dimensionCount: number;
 }> = ({ profile, setField, clear, dimensionCount }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(dimensionCount === 0);
   const active = dimensionCount >= MIN_MATCH_DIMENSIONS;
 
@@ -486,8 +505,8 @@ const MatchProfilePanel: React.FC<{
           <span className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0">
             <Target size={15} />
           </span>
-          <span className="font-black text-slate-900 text-sm text-start">Score de compatibilité</span>
-          {active && <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wide">Activé</span>}
+          <span className="font-black text-slate-900 text-sm text-start">{t('higherSchools.profile.title')}</span>
+          {active && <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wide">{t('higherSchools.profile.activeBadge')}</span>}
         </span>
         <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
@@ -495,30 +514,30 @@ const MatchProfilePanel: React.FC<{
       {expanded && (
         <div className="px-4 pb-4">
           <p className="text-slate-500 text-[12.5px] font-medium leading-relaxed mb-4">
-            Indiquez vos préférences pour afficher un score de compatibilité sur chaque école — basé uniquement sur ces critères, ce n'est pas une prédiction d'admission.
+            {t('higherSchools.profile.description')}
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <select value={profile.field || ''} onChange={(e) => setField('field', e.target.value)} className={SELECT_CLASS} aria-label="Filière souhaitée">
-              <option value="">Filière</option>
-              {FIELDS.map((f) => <option key={f} value={f}>{f}</option>)}
+              <option value="">{t('higherSchools.profile.fieldPlaceholder')}</option>
+              {FIELDS.map((f) => <option key={f} value={f}>{t(`higherSchools.fields.${f}`, f)}</option>)}
             </select>
             <select value={profile.city || ''} onChange={(e) => setField('city', e.target.value)} className={SELECT_CLASS} aria-label="Ville souhaitée">
-              <option value="">Ville</option>
-              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              <option value="">{t('higherSchools.profile.cityPlaceholder')}</option>
+              {CITIES.map((c) => <option key={c} value={c}>{t(`higherSchools.cities.${c}`, c)}</option>)}
             </select>
             <select value={profile.accessLevel || ''} onChange={(e) => setField('accessLevel', e.target.value)} className={SELECT_CLASS} aria-label="Niveau d'accès">
-              <option value="">Niveau d'accès</option>
-              {ACCESS_LEVELS.map((a) => <option key={a} value={a}>{a}</option>)}
+              <option value="">{t('higherSchools.profile.accessPlaceholder')}</option>
+              {ACCESS_LEVELS.map((a) => <option key={a} value={a}>{t(`higherSchools.access.${a}`, a)}</option>)}
             </select>
             <select value={profile.type || ''} onChange={(e) => setField('type', e.target.value as SchoolProfile['type'] | '')} className={SELECT_CLASS} aria-label="Type d'établissement">
-              <option value="">Public ou privé</option>
-              <option value="public">Public</option>
-              <option value="private">Privé</option>
+              <option value="">{t('higherSchools.profile.typePlaceholder')}</option>
+              <option value="public">{t('higherSchools.card.public')}</option>
+              <option value="private">{t('higherSchools.card.private')}</option>
             </select>
           </div>
           {dimensionCount > 0 && (
             <button onClick={clear} className="mt-3 text-[12px] font-bold text-slate-400 hover:text-red-500 transition-colors">
-              Réinitialiser mes préférences
+              {t('higherSchools.profile.resetButton')}
             </button>
           )}
         </div>
@@ -535,19 +554,22 @@ type SortOption = 'pertinence' | 'name' | 'city' | 'match';
 
 const PAGE_SIZE = 9;
 
-const EmptyState: React.FC<{ onReset: () => void }> = ({ onReset }) => (
-  <div className="text-center py-16 px-6">
-    <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center mx-auto mb-5">
-      <Frown size={28} />
+const EmptyState: React.FC<{ onReset: () => void }> = ({ onReset }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="text-center py-16 px-6">
+      <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center mx-auto mb-5">
+        <Frown size={28} />
+      </div>
+      <h3 className="text-xl font-black text-slate-900 mb-2">{t('higherSchools.explorer.emptyTitle')}</h3>
+      <p className="text-slate-500 font-medium max-w-md mx-auto mb-7">{t('higherSchools.explorer.emptySubtitle')}</p>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button onClick={onReset} className="px-6 py-3 min-h-[44px] bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">{t('higherSchools.explorer.resetButton')}</button>
+        <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">{t('higherSchools.explorer.contactAdvisor')}</a>
+      </div>
     </div>
-    <h3 className="text-xl font-black text-slate-900 mb-2">Aucun établissement trouvé</h3>
-    <p className="text-slate-500 font-medium max-w-md mx-auto mb-7">Essayez de modifier vos filtres ou recherchez une autre filière, école ou ville.</p>
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-      <button onClick={onReset} className="px-6 py-3 min-h-[44px] bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">Réinitialiser les filtres</button>
-      <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">Parler à un conseiller</a>
-    </div>
-  </div>
-);
+  );
+};
 
 const SchoolsExplorer: React.FC<{
   filters: SchoolFilters;
@@ -559,6 +581,7 @@ const SchoolsExplorer: React.FC<{
   clearProfile: () => void;
   profileDimensionCount: number;
 }> = ({ filters, setFilters, favorites, compare, profile, setProfileField, clearProfile, profileDimensionCount }) => {
+  const { t } = useTranslation();
   const [sort, setSort] = useState<SortOption>('pertinence');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -580,13 +603,13 @@ const SchoolsExplorer: React.FC<{
 
   return (
     <section id="explorer">
-      <SectionHeader eyebrow="Annuaire des écoles" title="Explorez les écoles supérieures au Maroc" subtitle="Utilisez les filtres pour trouver les établissements adaptés à votre projet académique." className="mb-10" />
+      <SectionHeader eyebrow={t('higherSchools.explorer.eyebrow')} title={t('higherSchools.explorer.title')} subtitle={t('higherSchools.explorer.subtitle')} className="mb-10" />
 
       {/* Mobile filter trigger */}
       <div className="lg:hidden max-w-6xl mx-auto mb-6 px-4">
         <button onClick={() => setMobileFiltersOpen(true)} className="w-full min-h-[48px] flex items-center justify-center gap-2 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 shadow-sm">
           <SlidersHorizontal size={18} />
-          <span>Filtres{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</span>
+          <span>{t('higherSchools.explorer.filters')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</span>
         </button>
       </div>
 
@@ -595,9 +618,9 @@ const SchoolsExplorer: React.FC<{
         <aside className="hidden lg:block">
           <div className="sticky top-[110px] bg-white rounded-[22px] border border-slate-100 shadow-sm p-6 max-h-[calc(100vh-140px)] overflow-y-auto">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-black text-slate-900">Filtres</h3>
+              <h3 className="font-black text-slate-900">{t('higherSchools.explorer.filters')}</h3>
               {activeFilterCount > 0 && (
-                <button onClick={() => setFilters(EMPTY_FILTERS)} className="text-xs font-bold text-primary hover:underline">Réinitialiser</button>
+                <button onClick={() => setFilters(EMPTY_FILTERS)} className="text-xs font-bold text-primary hover:underline">{t('higherSchools.explorer.resetButton')}</button>
               )}
             </div>
             <FilterPanelContent filters={filters} setFilters={setFilters} />
@@ -609,14 +632,16 @@ const SchoolsExplorer: React.FC<{
           <MatchProfilePanel profile={profile} setField={setProfileField} clear={clearProfile} dimensionCount={profileDimensionCount} />
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-            <p className="text-sm font-bold text-slate-500">{filtered.length} école{filtered.length !== 1 ? 's' : ''} trouvée{filtered.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm font-bold text-slate-500">
+              {filtered.length} {filtered.length !== 1 ? t('higherSchools.explorer.schoolsFoundPlural') : t('higherSchools.explorer.schoolsFound')}
+            </p>
             <div className="flex items-center gap-2">
-              <label htmlFor="sort" className="text-xs font-bold text-slate-400">Trier par</label>
+              <label htmlFor="sort" className="text-xs font-bold text-slate-400">{t('higherSchools.explorer.sortBy')}</label>
               <select id="sort" value={sort} onChange={(e) => setSort(e.target.value as SortOption)} className="h-10 px-3 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 bg-white outline-none focus:border-primary/50">
-                <option value="pertinence">Pertinence</option>
-                <option value="name">Nom A–Z</option>
-                <option value="city">Ville</option>
-                {matchActive && <option value="match">Compatibilité</option>}
+                <option value="pertinence">{t('higherSchools.explorer.sortOptions.relevance')}</option>
+                <option value="name">{t('higherSchools.explorer.sortOptions.name')}</option>
+                <option value="city">{t('higherSchools.explorer.sortOptions.city')}</option>
+                {matchActive && <option value="match">{t('higherSchools.explorer.sortOptions.match')}</option>}
               </select>
             </div>
           </div>
@@ -642,7 +667,7 @@ const SchoolsExplorer: React.FC<{
               {visibleCount < filtered.length && (
                 <div className="text-center mt-10">
                   <button onClick={() => setVisibleCount((v) => v + PAGE_SIZE)} className="px-7 py-3.5 min-h-[48px] bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-bold hover:border-primary/40 hover:text-primary transition-all">
-                    Afficher plus d'écoles
+                    {t('higherSchools.explorer.loadMore')}
                   </button>
                 </div>
               )}
@@ -657,15 +682,17 @@ const SchoolsExplorer: React.FC<{
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setMobileFiltersOpen(false)} />
           <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-[2rem] max-h-[85vh] flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-              <h3 className="text-lg font-black text-slate-900">Filtrer les écoles</h3>
+              <h3 className="text-lg font-black text-slate-900">{t('higherSchools.explorer.mobileFilterTitle')}</h3>
               <button onClick={() => setMobileFiltersOpen(false)} aria-label="Fermer" className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto px-6 flex-1">
               <FilterPanelContent filters={filters} setFilters={setFilters} />
             </div>
             <div className="p-6 border-t border-slate-100 flex items-center gap-3 shrink-0">
-              <button onClick={() => setFilters(EMPTY_FILTERS)} className="flex-1 min-h-[48px] bg-white border border-slate-200 rounded-2xl font-bold text-slate-700">Réinitialiser</button>
-              <button onClick={() => setMobileFiltersOpen(false)} className="flex-1 min-h-[48px] bg-primary text-white rounded-2xl font-bold">Afficher {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}</button>
+              <button onClick={() => setFilters(EMPTY_FILTERS)} className="flex-1 min-h-[48px] bg-white border border-slate-200 rounded-2xl font-bold text-slate-700">{t('higherSchools.explorer.resetButton')}</button>
+              <button onClick={() => setMobileFiltersOpen(false)} className="flex-1 min-h-[48px] bg-primary text-white rounded-2xl font-bold">
+                {t('higherSchools.explorer.showResults', { count: filtered.length })}
+              </button>
             </div>
           </div>
         </div>
@@ -679,10 +706,11 @@ const SchoolsExplorer: React.FC<{
 /* -------------------------------------------------------------------------- */
 
 const StudyFieldsExplorer: React.FC<{ onSelectField: (field: string) => void }> = ({ onSelectField }) => {
+  const { t } = useTranslation();
   const counts = useMemo(getFieldCounts, []);
   return (
     <section>
-      <SectionHeader eyebrow="Par domaine" title="Explorez selon votre domaine d'études" className="mb-12" />
+      <SectionHeader eyebrow={t('higherSchools.exploreFields.eyebrow')} title={t('higherSchools.exploreFields.title')} className="mb-12" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
         {FIELDS.map((field, i) => {
           const Icon = FIELD_ICONS[field] || GraduationCap;
@@ -693,9 +721,9 @@ const StudyFieldsExplorer: React.FC<{ onSelectField: (field: string) => void }> 
                 <div className="w-11 h-11 rounded-xl bg-blue-50 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                   <Icon size={20} strokeWidth={2.2} />
                 </div>
-                <h3 className="text-[14px] font-black text-slate-900 mb-3 leading-tight">{field}</h3>
+                <h3 className="text-[14px] font-black text-slate-900 mb-3 leading-tight">{t(`higherSchools.fields.${field}`, field)}</h3>
                 <span className="flex items-center gap-1 text-[12px] font-bold text-primary">
-                  {count} établissement{count !== 1 ? 's' : ''}
+                  {count} {count !== 1 ? t('higherSchools.exploreFields.schoolsPlural') : t('higherSchools.exploreFields.schools')}
                   <ArrowLeft size={13} className="transform ltr:rotate-180 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </button>
@@ -708,10 +736,11 @@ const StudyFieldsExplorer: React.FC<{ onSelectField: (field: string) => void }> 
 };
 
 const CitiesExplorer: React.FC<{ onSelectCity: (city: string) => void }> = ({ onSelectCity }) => {
+  const { t } = useTranslation();
   const counts = useMemo(getCityCounts, []);
   return (
     <section>
-      <SectionHeader eyebrow="Par ville" title="Où souhaitez-vous étudier ?" subtitle="Explorez les établissements disponibles dans les principales villes étudiantes du Maroc." className="mb-12" />
+      <SectionHeader eyebrow={t('higherSchools.exploreCities.eyebrow')} title={t('higherSchools.exploreCities.title')} subtitle={t('higherSchools.exploreCities.subtitle')} className="mb-12" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
         {CITIES.map((city, i) => {
           const count = counts.get(city) || 0;
@@ -721,8 +750,8 @@ const CitiesExplorer: React.FC<{ onSelectCity: (city: string) => void }> = ({ on
                 <div className="absolute -end-6 -bottom-6 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-colors"></div>
                 <Building2 size={20} className="text-blue-300 relative z-10" />
                 <div className="relative z-10">
-                  <h3 className="text-white font-black text-[15px] mb-0.5">{city}</h3>
-                  <span className="text-blue-200 text-[11px] font-bold">{count} établissement{count !== 1 ? 's' : ''}</span>
+                  <h3 className="text-white font-black text-[15px] mb-0.5">{t(`higherSchools.cities.${city}`, city)}</h3>
+                  <span className="text-blue-200 text-[11px] font-bold">{count} {count !== 1 ? t('higherSchools.exploreCities.schoolsPlural') : t('higherSchools.exploreCities.schools')}</span>
                 </div>
               </button>
             </Reveal>
@@ -737,49 +766,53 @@ const CitiesExplorer: React.FC<{ onSelectCity: (city: string) => void }> = ({ on
 /* Public vs private                                                         */
 /* -------------------------------------------------------------------------- */
 
-const PublicPrivateGuide: React.FC<{ onSelectType: (type: 'public' | 'private') => void }> = ({ onSelectType }) => (
-  <section>
-    <SectionHeader eyebrow="Comprendre vos options" title="École publique ou privée ?" className="mb-12" />
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-      <Reveal>
-        <div className="bg-white rounded-[1.75rem] border border-slate-100 p-8 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-wide mb-4">Public</span>
-          <h3 className="text-xl font-black text-slate-900 mb-3">Établissements publics</h3>
-          <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">Les établissements publics proposent différents parcours accessibles selon les conditions définies par chaque établissement : sélection, concours, dossier ou accès spécifique.</p>
-          <button onClick={() => onSelectType('public')} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:gap-3 transition-all">
-            Explorer les écoles publiques <ArrowLeft size={15} className="transform ltr:rotate-180" />
-          </button>
-        </div>
-      </Reveal>
-      <Reveal delay={100}>
-        <div className="bg-white rounded-[1.75rem] border border-slate-100 p-8 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-          <span className="inline-flex px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-[11px] font-black uppercase tracking-wide mb-4">Privé</span>
-          <h3 className="text-xl font-black text-slate-900 mb-3">Établissements privés</h3>
-          <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">Les établissements privés proposent des programmes et conditions d'admission propres à chaque institution. Vérifiez toujours l'accréditation, le programme et les modalités d'accès avant de choisir.</p>
-          <button onClick={() => onSelectType('private')} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:gap-3 transition-all">
-            Explorer les écoles privées <ArrowLeft size={15} className="transform ltr:rotate-180" />
-          </button>
-        </div>
-      </Reveal>
-    </div>
-  </section>
-);
+const PublicPrivateGuide: React.FC<{ onSelectType: (type: 'public' | 'private') => void }> = ({ onSelectType }) => {
+  const { t } = useTranslation();
+  return (
+    <section>
+      <SectionHeader eyebrow={t('higherSchools.guide.eyebrow')} title={t('higherSchools.guide.title')} className="mb-12" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <Reveal>
+          <div className="bg-white rounded-[1.75rem] border border-slate-100 p-8 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-wide mb-4">{t('higherSchools.guide.public.badge')}</span>
+            <h3 className="text-xl font-black text-slate-900 mb-3">{t('higherSchools.guide.public.title')}</h3>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">{t('higherSchools.guide.public.description')}</p>
+            <button onClick={() => onSelectType('public')} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:gap-3 transition-all">
+              {t('higherSchools.guide.public.button')} <ArrowLeft size={15} className="transform ltr:rotate-180" />
+            </button>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <div className="bg-white rounded-[1.75rem] border border-slate-100 p-8 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <span className="inline-flex px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-[11px] font-black uppercase tracking-wide mb-4">{t('higherSchools.guide.private.badge')}</span>
+            <h3 className="text-xl font-black text-slate-900 mb-3">{t('higherSchools.guide.private.title')}</h3>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">{t('higherSchools.guide.private.description')}</p>
+            <button onClick={() => onSelectType('private')} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:gap-3 transition-all">
+              {t('higherSchools.guide.private.button')} <ArrowLeft size={15} className="transform ltr:rotate-180" />
+            </button>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Comparison CTA + modal                                                    */
 /* -------------------------------------------------------------------------- */
 
 const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onClear: () => void; onRemove: (id: string) => void; profile: SchoolProfile }> = ({ schoolIds, onClose, onClear, onRemove, profile }) => {
+  const { t } = useTranslation();
   const schools = schoolIds.map((id) => SCHOOLS.find((s) => s.id === id)).filter(Boolean) as School[];
   const rows: { label: string; render: (s: School) => React.ReactNode }[] = [
-    { label: 'Type', render: (s) => <TypeBadge type={s.type} /> },
-    { label: 'Ville', render: (s) => s.city },
-    { label: 'Filières', render: (s) => s.fields.join(', ') },
-    { label: "Niveau d'accès", render: (s) => s.accessLevels.join(', ') },
-    { label: "Mode d'admission", render: (s) => s.admissionMethods.join(', ') },
-    { label: 'Frais de scolarité', render: () => <span className="text-slate-400 italic">Information non disponible</span> },
+    { label: t('higherSchools.compare.typeLabel'), render: (s) => <TypeBadge type={s.type} /> },
+    { label: t('higherSchools.compare.cityLabel'), render: (s) => t(`higherSchools.cities.${s.city}`, s.city) },
+    { label: t('higherSchools.compare.fieldsLabel'), render: (s) => s.fields.map(f => t(`higherSchools.fields.${f}`, f)).join(', ') },
+    { label: t('higherSchools.compare.accessLabel'), render: (s) => s.accessLevels.map(a => t(`higherSchools.access.${a}`, a)).join(', ') },
+    { label: t('higherSchools.compare.admissionLabel'), render: (s) => s.admissionMethods.map(a => t(`higherSchools.admission.${a}`, a)).join(', ') },
+    { label: t('higherSchools.compare.tuitionLabel'), render: () => <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
     {
-      label: 'Compatibilité', render: (s) => {
+      label: t('higherSchools.compare.matchLabel'), render: (s) => {
         const match = computeMatch(s, profile);
         return match ? <MatchScoreBadge match={match} /> : <span className="text-slate-400 italic">—</span>;
       }
@@ -791,12 +824,12 @@ const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onCl
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute inset-x-0 bottom-0 md:inset-0 md:m-auto md:max-w-4xl md:h-fit md:max-h-[85vh] bg-white rounded-t-[2rem] md:rounded-[2rem] max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-          <h3 className="text-lg font-black text-slate-900">Comparer les écoles</h3>
+          <h3 className="text-lg font-black text-slate-900">{t('higherSchools.compare.title')}</h3>
           <button onClick={onClose} aria-label="Fermer le comparateur" className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center"><X size={18} /></button>
         </div>
         <div className="overflow-auto flex-1 p-6">
           {schools.length === 0 ? (
-            <p className="text-slate-500 font-medium text-center py-10">Ajoutez des écoles au comparateur pour les visualiser ici.</p>
+            <p className="text-slate-500 font-medium text-center py-10">{t('higherSchools.compare.empty')}</p>
           ) : (
             <table className="w-full text-start border-collapse min-w-[500px]">
               <thead>
@@ -808,7 +841,7 @@ const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onCl
                         <SchoolLogo school={s} size="sm" />
                         <div>
                           <p className="text-[13px] font-black text-slate-900 leading-tight">{s.acronym || s.name}</p>
-                          <button onClick={() => onRemove(s.id)} className="text-[11px] font-bold text-slate-400 hover:text-red-500 mt-1">Retirer</button>
+                          <button onClick={() => onRemove(s.id)} className="text-[11px] font-bold text-slate-400 hover:text-red-500 mt-1">{t('higherSchools.compare.removeButton')}</button>
                         </div>
                       </div>
                     </th>
@@ -830,7 +863,7 @@ const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onCl
         </div>
         {schools.length > 0 && (
           <div className="p-6 border-t border-slate-100 shrink-0">
-            <button onClick={onClear} className="text-sm font-bold text-slate-400 hover:text-red-500">Effacer la comparaison</button>
+            <button onClick={onClear} className="text-sm font-bold text-slate-400 hover:text-red-500">{t('higherSchools.compare.clearAll')}</button>
           </div>
         )}
       </div>
@@ -838,89 +871,102 @@ const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onCl
   );
 };
 
-const ComparisonCTA: React.FC<{ onOpen: () => void }> = ({ onOpen }) => (
-  <section>
-    <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#F4F8FF] to-white border border-blue-100 rounded-[2rem] p-8 md:p-12 text-center">
-      <Eyebrow>Comparez avant de choisir</Eyebrow>
-      <h2 className="text-2xl md:text-4xl font-black text-slate-900 mt-4 mb-4 tracking-tight">Comparez vos écoles préférées côte à côte</h2>
-      <p className="text-slate-500 font-medium max-w-lg mx-auto mb-8">Sélectionnez plusieurs établissements et comparez leurs filières, villes, conditions d'accès et autres informations disponibles.</p>
+const ComparisonCTA: React.FC<{ onOpen: () => void }> = ({ onOpen }) => {
+  const { t } = useTranslation();
+  return (
+    <section>
+      <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#F4F8FF] to-white border border-blue-100 rounded-[2rem] p-8 md:p-12 text-center">
+        <Eyebrow>{t('higherSchools.compareCTA.eyebrow')}</Eyebrow>
+        <h2 className="text-2xl md:text-4xl font-black text-slate-900 mt-4 mb-4 tracking-tight">{t('higherSchools.compareCTA.title')}</h2>
+        <p className="text-slate-500 font-medium max-w-lg mx-auto mb-8">{t('higherSchools.compareCTA.subtitle')}</p>
 
-      <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
-        {['École A', 'École B', 'École C'].map((label, i) => (
-          <React.Fragment key={label}>
-            <div className="w-24 h-16 rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-400">{label}</div>
-            {i < 2 && <span className="text-slate-300 font-black text-xs">VS</span>}
-          </React.Fragment>
-        ))}
+        <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
+          {[t('higherSchools.compareCTA.schoolA'), t('higherSchools.compareCTA.schoolB'), t('higherSchools.compareCTA.schoolC')].map((label, i) => (
+            <React.Fragment key={label}>
+              <div className="w-24 h-16 rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-400">{label}</div>
+              {i < 2 && <span className="text-slate-300 font-black text-xs">VS</span>}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <button onClick={onOpen} className="inline-flex items-center gap-2 px-7 py-3.5 min-h-[48px] bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all hover:-translate-y-0.5">
+          <Scale size={17} />
+          <span>{t('higherSchools.compareCTA.button')}</span>
+        </button>
       </div>
+    </section>
+  );
+};
 
-      <button onClick={onOpen} className="inline-flex items-center gap-2 px-7 py-3.5 min-h-[48px] bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all hover:-translate-y-0.5">
-        <Scale size={17} />
-        <span>Comparer des écoles</span>
-      </button>
-    </div>
-  </section>
-);
-
-const StickyCompareBar: React.FC<{ count: number; onOpen: () => void; onClear: () => void }> = ({ count, onOpen, onClear }) => (
-  <div className={`fixed bottom-0 inset-x-0 z-40 transition-transform duration-300 ${count >= 2 ? 'translate-y-0' : 'translate-y-full'}`}>
-    <div className="max-w-2xl mx-auto m-4 bg-slate-900 text-white rounded-2xl shadow-2xl p-4 flex items-center justify-between gap-4">
-      <span className="font-bold text-sm">{count} écoles sélectionnées</span>
-      <div className="flex items-center gap-2">
-        <button onClick={onClear} className="px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-bold text-slate-300 hover:bg-white/10 transition-colors">Effacer</button>
-        <button onClick={onOpen} className="px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-bold bg-primary text-white hover:bg-[#0875E8] transition-colors">Comparer</button>
+const StickyCompareBar: React.FC<{ count: number; onOpen: () => void; onClear: () => void }> = ({ count, onOpen, onClear }) => {
+  const { t } = useTranslation();
+  return (
+    <div className={`fixed bottom-0 inset-x-0 z-40 transition-transform duration-300 ${count >= 2 ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className="max-w-2xl mx-auto m-4 bg-slate-900 text-white rounded-2xl shadow-2xl p-4 flex items-center justify-between gap-4">
+        <span className="font-bold text-sm">
+          {count} {count !== 1 ? t('higherSchools.stickyBar.selectedPlural') : t('higherSchools.stickyBar.selected')}
+        </span>
+        <div className="flex items-center gap-2">
+          <button onClick={onClear} className="px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-bold text-slate-300 hover:bg-white/10 transition-colors">{t('higherSchools.stickyBar.clear')}</button>
+          <button onClick={onOpen} className="px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-bold bg-primary text-white hover:bg-[#0875E8] transition-colors">{t('higherSchools.stickyBar.compare')}</button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Orientation CTA                                                           */
 /* -------------------------------------------------------------------------- */
 
-const OrientationCTA: React.FC = () => (
-  <Reveal>
-    <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-[#F4F8FF] border border-blue-100 rounded-[2rem] p-8 md:p-12 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-white text-primary flex items-center justify-center mx-auto mb-6 shadow-sm">
-        <Compass size={26} />
+const OrientationCTA: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <Reveal>
+      <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-[#F4F8FF] border border-blue-100 rounded-[2rem] p-8 md:p-12 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-white text-primary flex items-center justify-center mx-auto mb-6 shadow-sm">
+          <Compass size={26} />
+        </div>
+        <Eyebrow>{t('higherSchools.orientationCTA.eyebrow')}</Eyebrow>
+        <h2 className="text-2xl md:text-4xl font-black text-slate-900 mt-4 mb-4 tracking-tight">{t('higherSchools.orientationCTA.title')}</h2>
+        <p className="text-slate-500 font-medium max-w-lg mx-auto mb-8">{t('higherSchools.orientationCTA.subtitle')}</p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link to="/tawjih" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-primary text-white rounded-2xl font-bold hover:bg-[#0875E8] transition-all hover:-translate-y-0.5">
+            <span>{t('higherSchools.orientationCTA.primaryButton')}</span>
+            <ArrowLeft size={16} className="transform ltr:rotate-180" />
+          </Link>
+          <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all">
+            <MessageCircle size={16} />
+            <span>{t('higherSchools.orientationCTA.secondaryButton')}</span>
+          </a>
+        </div>
       </div>
-      <Eyebrow>Vous ne savez pas par où commencer ?</Eyebrow>
-      <h2 className="text-2xl md:text-4xl font-black text-slate-900 mt-4 mb-4 tracking-tight">Vous hésitez encore entre plusieurs parcours ?</h2>
-      <p className="text-slate-500 font-medium max-w-lg mx-auto mb-8">Découvrez les filières qui correspondent à votre profil avant de choisir vos établissements.</p>
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Link to="/tawjih" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-primary text-white rounded-2xl font-bold hover:bg-[#0875E8] transition-all hover:-translate-y-0.5">
-          <span>Commencer mon orientation</span>
-          <ArrowLeft size={16} className="transform ltr:rotate-180" />
-        </Link>
-        <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all">
-          <MessageCircle size={16} />
-          <span>Parler à un conseiller</span>
-        </a>
-      </div>
-    </div>
-  </Reveal>
-);
+    </Reveal>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* FAQ                                                                       */
 /* -------------------------------------------------------------------------- */
 
-const FAQ_ITEMS = [
-  { q: 'Comment trouver une école adaptée à mon profil ?', a: "Utilisez les filtres par domaine, ville, type d'établissement et niveau d'accès. Vous pouvez également utiliser le programme d'orientation Tilmid pour mieux identifier les parcours adaptés à votre projet." },
-  { q: 'Quelle est la différence entre une école publique et une école privée ?', a: 'Chaque établissement possède ses propres conditions d\'accès, programmes et modalités. Consultez toujours la fiche détaillée de l\'école avant de prendre une décision.' },
-  { q: "Comment connaître les conditions d'accès à une école ?", a: 'Les conditions disponibles sont indiquées sur la fiche de chaque établissement lorsqu\'elles ont été renseignées et vérifiées.' },
-  { q: 'Puis-je comparer plusieurs écoles ?', a: 'Oui. Ajoutez les établissements qui vous intéressent au comparateur pour visualiser leurs principales différences côte à côte.' },
-  { q: 'Puis-je enregistrer mes écoles préférées ?', a: "Oui, utilisez l'icône Favoris pour conserver les établissements que vous souhaitez consulter plus tard sur cet appareil." },
-  { q: 'Les informations sur les écoles sont-elles mises à jour ?', a: "Nous nous appuyons sur des informations publiques générales. Les conditions d'accès et modalités peuvent évoluer : vérifiez toujours les détails directement auprès de l'établissement avant de vous engager." },
-];
-
 const SchoolsFAQ: React.FC = () => {
+  const { t } = useTranslation();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  
+  const faqItems = [
+    { q: t('higherSchools.faq.q1.q'), a: t('higherSchools.faq.q1.a') },
+    { q: t('higherSchools.faq.q2.q'), a: t('higherSchools.faq.q2.a') },
+    { q: t('higherSchools.faq.q3.q'), a: t('higherSchools.faq.q3.a') },
+    { q: t('higherSchools.faq.q4.q'), a: t('higherSchools.faq.q4.a') },
+    { q: t('higherSchools.faq.q5.q'), a: t('higherSchools.faq.q5.a') },
+    { q: t('higherSchools.faq.q6.q'), a: t('higherSchools.faq.q6.a') },
+  ];
+
   return (
     <section className="max-w-3xl mx-auto">
-      <SectionHeader eyebrow="Questions fréquentes" title="Tout savoir sur les écoles supérieures au Maroc" className="mb-12" />
+      <SectionHeader eyebrow={t('higherSchools.faq.eyebrow')} title={t('higherSchools.faq.title')} className="mb-12" />
       <div className="space-y-4">
-        {FAQ_ITEMS.map((item, i) => {
+        {faqItems.map((item, i) => {
           const isOpen = openIndex === i;
           const panelId = `schools-faq-panel-${i}`;
           const buttonId = `schools-faq-button-${i}`;
@@ -951,35 +997,38 @@ const SchoolsFAQ: React.FC = () => {
 /* Final CTA                                                                 */
 /* -------------------------------------------------------------------------- */
 
-const FinalCTA: React.FC = () => (
-  <Reveal>
-    <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] border border-white/5 shadow-2xl p-10 md:p-16 text-center max-w-5xl mx-auto">
-      <div className="absolute top-0 start-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="relative z-10 max-w-2xl mx-auto">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-primary/10 text-blue-300 ring-1 ring-primary/20 mb-6">
-          <GraduationCap size={12} />
-          Préparez votre avenir
-        </span>
-        <h2 className="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight leading-tight">
-          Une école n'est pas seulement un nom.<br />Choisissez un parcours qui vous correspond.
-        </h2>
-        <p className="text-slate-300 text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl mx-auto">
-          Explorez vos options, comparez les établissements et avancez vers votre orientation avec plus de clarté.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button onClick={() => document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto min-h-[52px] px-9 bg-primary text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-primary/20 hover:bg-[#0875E8] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3">
-            <span>Explorer les écoles</span>
-            <ArrowLeft size={20} className="transform ltr:rotate-180" />
-          </button>
-          <Link to="/tawjih" className="w-full sm:w-auto min-h-[52px] px-9 bg-white/5 text-white border border-white/15 rounded-2xl font-black text-base md:text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3">
-            <Compass size={19} />
-            <span>Commencer mon orientation</span>
-          </Link>
+const FinalCTA: React.FC = () => {
+  const { t } = useTranslation();
+  return (
+    <Reveal>
+      <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] border border-white/5 shadow-2xl p-10 md:p-16 text-center max-w-5xl mx-auto">
+        <div className="absolute top-0 start-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-primary/10 text-blue-300 ring-1 ring-primary/20 mb-6">
+            <GraduationCap size={12} />
+            {t('higherSchools.finalCTA.eyebrow')}
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight leading-tight">
+            {t('higherSchools.finalCTA.title1')}<br />{t('higherSchools.finalCTA.title2')}
+          </h2>
+          <p className="text-slate-300 text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl mx-auto">
+            {t('higherSchools.finalCTA.subtitle')}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button onClick={() => document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto min-h-[52px] px-9 bg-primary text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-primary/20 hover:bg-[#0875E8] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3">
+              <span>{t('higherSchools.finalCTA.primaryButton')}</span>
+              <ArrowLeft size={20} className="transform ltr:rotate-180" />
+            </button>
+            <Link to="/tawjih" className="w-full sm:w-auto min-h-[52px] px-9 bg-white/5 text-white border border-white/15 rounded-2xl font-black text-base md:text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3">
+              <Compass size={19} />
+              <span>{t('higherSchools.finalCTA.secondaryButton')}</span>
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
-  </Reveal>
-);
+    </Reveal>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* URL <-> filters                                                           */
