@@ -305,12 +305,6 @@ export const dataManager = {
   getErrorLog: async (studentId?: string): Promise<any[]> => {
     return await api.get(`/error-log${studentId ? `?studentId=${studentId}` : ''}`);
   },
-  saveErrorLogEntry: async (entry: any): Promise<{ id: number; message: string }> => {
-    return await api.post('/error-log', entry);
-  },
-  deleteErrorLogEntry: async (id: string | number): Promise<void> => {
-    await api.delete(`/error-log/${id}`);
-  },
 
   getCheckIns: async (studentId?: string): Promise<any[]> => {
     return await api.get(`/checkins${studentId ? `?studentId=${studentId}` : ''}`);

@@ -199,38 +199,6 @@ export interface ErrorLogEntry {
   createdAt: string;
 }
 
-const mapErrorLogFromApi = (r: any): ErrorLogEntry => ({
-  id: String(r.id),
-  subject: r.subject,
-  topic: r.topic || '',
-  mistake: r.mistake,
-  reason: r.reason || '',
-  correctMethod: r.correct_method || '',
-  reviewDate: r.review_date || '',
-  status: r.status,
-  createdAt: r.created_at,
-});
-const mapErrorLogToApi = (item: ErrorLogEntry) => ({
-  subject: item.subject,
-  topic: item.topic,
-  mistake: item.mistake,
-  reason: item.reason,
-  correctMethod: item.correctMethod,
-  reviewDate: item.reviewDate,
-  status: item.status,
-});
-
-export const useErrorLog = (username: string) =>
-  useApiList<ErrorLogEntry>(
-    username,
-    () => dataManager.getErrorLog(),
-    mapErrorLogFromApi,
-    (body) => dataManager.saveErrorLogEntry(body),
-    mapErrorLogToApi,
-    (item) => ({ id: item.id, ...mapErrorLogToApi(item) }),
-    (id) => dataManager.deleteErrorLogEntry(id)
-  );
-
 /* -------------------------------------------------------------------------- */
 /* Revision tracker                                                           */
 /* -------------------------------------------------------------------------- */

@@ -819,44 +819,6 @@ if ($request_uri === '/api/error-log' && $method == 'GET') {
     exit;
 }
 
-if ($request_uri === '/api/error-log' && $method == 'POST') {
-    $user = requireStudent($secret_key);
-    $id = $input['id'] ?? null;
-    $subject = $input['subject'] ?? '';
-    $topic = $input['topic'] ?? null;
-    $mistake = $input['mistake'] ?? '';
-    $reason = $input['reason'] ?? null;
-    $correctMethod = $input['correctMethod'] ?? null;
-    $reviewDate = $input['reviewDate'] ?? null;
-    $status = $input['status'] ?? 'a_revoir';
-
-    try {
-        if ($id) {
-            $stmt = $pdo->prepare("UPDATE error_log_entries SET subject=?, topic=?, mistake=?, reason=?, correct_method=?, review_date=?, status=? WHERE id=? AND student_id=?");
-            $stmt->execute([$subject, $topic, $mistake, $reason, $correctMethod, $reviewDate, $status, $id, $user['id']]);
-            echo json_encode(['id' => (int)$id, 'message' => 'Error log entry updated']);
-        } else {
-            $stmt = $pdo->prepare("INSERT INTO error_log_entries (student_id, subject, topic, mistake, reason, correct_method, review_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$user['id'], $subject, $topic, $mistake, $reason, $correctMethod, $reviewDate, $status]);
-            http_response_code(201);
-            echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Error log entry created']);
-        }
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['message' => 'Database error']);
-        error_log('Save error log entry failed: ' . $e->getMessage());
-    }
-    exit;
-}
-
-if (preg_match('#^/api/error-log/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
-    $user = requireStudent($secret_key);
-    $stmt = $pdo->prepare("DELETE FROM error_log_entries WHERE id = ? AND student_id = ?");
-    $stmt->execute([$matches[1], $user['id']]);
-    echo json_encode(['message' => 'Error log entry deleted']);
-    exit;
-}
-
 // 19. CHECK-INS
 if ($request_uri === '/api/checkins' && $method == 'GET') {
     $user = requireStudentOrAdmin($secret_key);

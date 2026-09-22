@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Search, FileText, DownloadCloud, CalendarDays, ClipboardList, ListChecks, AlertOctagon, GraduationCap, Library } from 'lucide-react';
+import { Search, FileText, DownloadCloud, CalendarDays, ClipboardList, ListChecks, GraduationCap, Library } from 'lucide-react';
 import { StudyResource } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
 import { PageHeader, Card, LockedState, EmptyState } from '../../components/student/primitives';
@@ -10,7 +10,6 @@ const TOOL_CARDS = [
   { icon: CalendarDays, title: 'Programme hebdomadaire', desc: 'Organisez votre semaine selon vos priorités et disponibilités.', tab: 'planning' as StudentTab },
   { icon: ListChecks, title: 'Tableau de suivi des révisions', desc: 'Consignez vos sessions de révision et suivez votre régularité.', tab: 'outils' as StudentTab },
   { icon: ClipboardList, title: 'Habit Tracker', desc: 'Suivez vos habitudes de travail au quotidien.', tab: 'outils' as StudentTab },
-  { icon: AlertOctagon, title: 'Error Log', desc: 'Transformez vos erreurs en points de progression.', tab: 'outils' as StudentTab },
   { icon: GraduationCap, title: 'Plan de préparation aux examens', desc: 'Organisez votre révision à l\'approche des examens.', tab: 'outils' as StudentTab },
 ];
 

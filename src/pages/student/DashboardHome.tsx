@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import {
   Sparkles, ArrowLeft, Target, CalendarDays, TrendingUp, Wrench, Lightbulb,
-  ClipboardList, AlertOctagon, BookOpen, CheckCircle2
+  ClipboardList, BookOpen, CheckCircle2
 } from 'lucide-react';
 import { Student } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
 import { Card, ProgressBar, EmptyState } from '../../components/student/primitives';
 import { StudentTab } from '../../components/student/navigation';
-import { useSelfGuidedPlan, useGoals, useErrorLog, useRevisionTracker, useCheckIns } from '../../hooks/useStudentData';
+import { useSelfGuidedPlan, useGoals, useRevisionTracker, useCheckIns } from '../../hooks/useStudentData';
 import { TimetableTask } from '../../types';
 
 const DAYS_FR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -34,7 +34,6 @@ export const DashboardHome: React.FC<{
 }> = ({ student, entitlements, timetable, onNavigate }) => {
   const plan = useSelfGuidedPlan(student.username);
   const goals = useGoals(student.username);
-  const errorLog = useErrorLog(student.username);
   const revisions = useRevisionTracker(student.username);
   const checkIns = useCheckIns(student.username);
 
@@ -59,11 +58,8 @@ export const DashboardHome: React.FC<{
     if (entitlements.hasCoachingPack && planActionsTotal === 0 && plan.loaded) {
       return { title: 'Configurer votre plan', meta: 'Définissez votre objectif principal', cta: 'Configurer', tab: 'plan' as StudentTab, icon: Target };
     }
-    if (errorLog.items.filter((e) => e.status !== 'maitrise').length > 0) {
-      return { title: 'Revoir vos erreurs à réviser', meta: `${errorLog.items.filter((e) => e.status !== 'maitrise').length} entrée(s)`, cta: 'Ouvrir mon Error Log', tab: 'outils' as StudentTab, icon: AlertOctagon };
-    }
     return { title: 'Découvrir vos contenus', meta: 'Reprenez votre programme', cta: 'Continuer', tab: 'contenus' as StudentTab, icon: BookOpen };
-  }, [todaysSessions, entitlements, checkIns.items.length, planActionsTotal, plan.loaded, errorLog.items]);
+  }, [todaysSessions, entitlements, checkIns.items.length, planActionsTotal, plan.loaded]);
 
   // Weekly activity — real revision-tracker sessions grouped by day of week (last 7 days).
   const weeklyMinutesByDay = useMemo(() => {
@@ -181,10 +177,6 @@ export const DashboardHome: React.FC<{
               <p className="text-[11.5px] font-bold text-slate-400 mt-1">Objectifs atteints</p>
             </div>
             <div className="bg-slate-50 rounded-2xl p-4">
-              <p className="text-2xl font-black text-slate-900 tabular-nums">{errorLog.items.filter((e) => e.status === 'maitrise').length}</p>
-              <p className="text-[11.5px] font-bold text-slate-400 mt-1">Erreurs maîtrisées</p>
-            </div>
-            <div className="bg-slate-50 rounded-2xl p-4">
               <p className="text-2xl font-black text-slate-900 tabular-nums">{revisions.items.length}</p>
               <p className="text-[11.5px] font-bold text-slate-400 mt-1">Sessions de révision</p>
             </div>
@@ -205,7 +197,6 @@ export const DashboardHome: React.FC<{
             {[
               { label: 'Ajouter une session', tab: 'planning' as StudentTab, icon: CalendarDays },
               { label: 'Mettre à jour mon plan', tab: 'plan' as StudentTab, icon: Target },
-              { label: 'Ajouter une erreur', tab: 'outils' as StudentTab, icon: AlertOctagon },
               { label: 'Voir mes contenus', tab: 'contenus' as StudentTab, icon: BookOpen },
             ].map((a) => (
               <button key={a.label} onClick={() => onNavigate(a.tab)} className="flex items-center gap-2.5 p-3.5 min-h-[44px] bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors text-start">

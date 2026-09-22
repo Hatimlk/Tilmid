@@ -473,7 +473,6 @@ const PackCard: React.FC<{ pack: PackDef; onChoose: (label: string) => void }> =
                     'Modèle de programme hebdomadaire',
                     'Tableau de suivi des révisions',
                     'Habit Tracker',
-                    'Error Log',
                     'Plan de préparation aux examens',
                   ]} />
                   <PackDetailList title="Accompagnement collectif" items={[

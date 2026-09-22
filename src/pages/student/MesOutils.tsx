@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { Plus, X, ListChecks, AlertOctagon, BookOpen, Target, Check } from 'lucide-react';
+import { Plus, X, ListChecks, BookOpen, Target, Check } from 'lucide-react';
 import { Student } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
 import { PageHeader, Card, LockedState, EmptyState, StatusPill, ProgressBar } from '../../components/student/primitives';
 import {
-  useHabitTracker, useErrorLog, useRevisionTracker, useGoals,
-  ErrorLogStatus, GoalStatus, GoalCategory
+  useHabitTracker, useRevisionTracker, useGoals,
+  GoalStatus, GoalCategory
 } from '../../hooks/useStudentData';
 
 const DAYS_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-type ToolId = 'habitudes' | 'error_log' | 'revisions' | 'objectifs';
+type ToolId = 'habitudes' | 'revisions' | 'objectifs';
 
 const TOOLS: { id: ToolId; label: string; icon: React.ElementType }[] = [
   { id: 'habitudes', label: 'Mes habitudes', icon: ListChecks },
-  { id: 'error_log', label: 'Mon Error Log', icon: AlertOctagon },
   { id: 'revisions', label: 'Suivi des révisions', icon: BookOpen },
   { id: 'objectifs', label: 'Objectifs', icon: Target },
 ];
@@ -81,89 +80,6 @@ const HabitTrackerPanel: React.FC<{ username: string }> = ({ username }) => {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Error log                                                                 */
-/* -------------------------------------------------------------------------- */
-
-const ERROR_STATUS_LABEL: Record<ErrorLogStatus, string> = { a_revoir: 'À revoir', en_cours: 'En cours', maitrise: 'Maîtrisé' };
-
-const ErrorLogPanel: React.FC<{ username: string }> = ({ username }) => {
-  const { items, add, update, remove } = useErrorLog(username);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ subject: '', topic: '', mistake: '', reason: '', correctMethod: '' });
-
-  const toRevoir = items.filter((e) => e.status === 'a_revoir').length;
-  const maitrisees = items.filter((e) => e.status === 'maitrise').length;
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.subject.trim() || !form.mistake.trim()) return;
-    add({ id: Date.now().toString(), ...form, reviewDate: '', status: 'a_revoir', createdAt: new Date().toLocaleDateString('fr-FR') });
-    setForm({ subject: '', topic: '', mistake: '', reason: '', correctMethod: '' });
-    setShowForm(false);
-  };
-
-  return (
-    <div>
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <Card className="p-4 text-center"><p className="text-2xl font-black text-slate-900">{toRevoir}</p><p className="text-[11px] font-bold text-slate-400 mt-1">À revoir</p></Card>
-        <Card className="p-4 text-center"><p className="text-2xl font-black text-slate-900">{maitrisees}</p><p className="text-[11px] font-bold text-slate-400 mt-1">Maîtrisées</p></Card>
-      </div>
-
-      {!showForm && (
-        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-primary text-white rounded-xl font-bold text-[13px] mb-5"><Plus size={15} /> Ajouter une erreur</button>
-      )}
-
-      {showForm && (
-        <Card className="p-5 mb-5">
-          <form onSubmit={submit} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <input required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Matière" className="h-11 px-3 rounded-xl border border-slate-200 text-[13.5px] font-medium outline-none focus:border-primary" />
-              <input value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} placeholder="Sujet" className="h-11 px-3 rounded-xl border border-slate-200 text-[13.5px] font-medium outline-none focus:border-primary" />
-            </div>
-            <textarea required value={form.mistake} onChange={(e) => setForm({ ...form, mistake: e.target.value })} placeholder="Quelle erreur avez-vous faite ?" rows={2} className="w-full p-3 rounded-xl border border-slate-200 text-[13.5px] font-medium outline-none focus:border-primary resize-none" />
-            <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Pourquoi je me suis trompé ?" rows={2} className="w-full p-3 rounded-xl border border-slate-200 text-[13.5px] font-medium outline-none focus:border-primary resize-none" />
-            <textarea value={form.correctMethod} onChange={(e) => setForm({ ...form, correctMethod: e.target.value })} placeholder="Bonne méthode / réponse" rows={2} className="w-full p-3 rounded-xl border border-slate-200 text-[13.5px] font-medium outline-none focus:border-primary resize-none" />
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setShowForm(false)} className="flex-1 h-11 rounded-xl border border-slate-200 font-bold text-[13px] text-slate-600">Annuler</button>
-              <button type="submit" className="flex-[2] h-11 rounded-xl bg-slate-900 text-white font-bold text-[13px]">Enregistrer</button>
-            </div>
-          </form>
-        </Card>
-      )}
-
-      {items.length === 0 ? (
-        <EmptyState icon={AlertOctagon} title="Aucune erreur enregistrée" description="Transformez vos erreurs en points de progression : ajoutez votre première erreur." />
-      ) : (
-        <div className="space-y-2.5">
-          {items.map((entry) => (
-            <Card key={entry.id} className="p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-black text-slate-900 text-[13.5px]">{entry.subject}{entry.topic ? ` · ${entry.topic}` : ''}</p>
-                  <p className="text-slate-500 text-[12.5px] font-medium mt-1">{entry.mistake}</p>
-                </div>
-                <button onClick={() => remove(entry.id)} aria-label="Supprimer" className="shrink-0 text-slate-300 hover:text-red-500"><X size={15} /></button>
-              </div>
-              <div className="flex items-center gap-2 mt-3">
-                {(['a_revoir', 'en_cours', 'maitrise'] as ErrorLogStatus[]).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => update(entry.id, { status: s })}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-black transition-colors ${entry.status === s ? 'bg-primary text-white' : 'bg-slate-50 text-slate-400'}`}
-                  >
-                    {ERROR_STATUS_LABEL[s]}
-                  </button>
-                ))}
-              </div>
-            </Card>
-          ))}
         </div>
       )}
     </div>
@@ -341,7 +257,6 @@ export const MesOutils: React.FC<{ student: Student; entitlements: Entitlements 
         ))}
       </div>
       {active === 'habitudes' && <HabitTrackerPanel username={student.username} />}
-      {active === 'error_log' && <ErrorLogPanel username={student.username} />}
       {active === 'revisions' && <RevisionTrackerPanel username={student.username} />}
       {active === 'objectifs' && <ObjectifsPanel username={student.username} />}
     </div>

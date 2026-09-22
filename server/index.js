@@ -770,37 +770,6 @@ app.get('/api/error-log', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/error-log', requireStudent, async (req, res) => {
-    const { id, subject, topic, mistake, reason, correctMethod, reviewDate, status } = req.body;
-    try {
-        if (id) {
-            await db.query(
-                'UPDATE error_log_entries SET subject=?, topic=?, mistake=?, reason=?, correct_method=?, review_date=?, status=? WHERE id=? AND student_id=?',
-                [subject, topic || null, mistake, reason || null, correctMethod || null, reviewDate || null, status, id, req.user.id]
-            );
-            return res.json({ id: Number(id), message: 'Error log entry updated' });
-        }
-        const [result] = await db.query(
-            'INSERT INTO error_log_entries (student_id, subject, topic, mistake, reason, correct_method, review_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [req.user.id, subject, topic || null, mistake, reason || null, correctMethod || null, reviewDate || null, status || 'a_revoir']
-        );
-        res.status(201).json({ id: result.insertId, message: 'Error log entry created' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-app.delete('/api/error-log/:id', requireStudent, async (req, res) => {
-    try {
-        await db.query('DELETE FROM error_log_entries WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
-        res.json({ message: 'Error log entry deleted' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
 /* ---------------- CHECK-INS ROUTES ---------------- */
 app.get('/api/checkins', requireStudentOrAdmin, async (req, res) => {
     const studentId = resolveStudentId(req, res);
