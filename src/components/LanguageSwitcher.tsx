@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 
 export const LanguageSwitcher: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const toggleLanguage = () => {
     // Determine the current language, default to 'ar' if undefined or starting with 'ar'
@@ -18,10 +18,10 @@ export const LanguageSwitcher: React.FC = () => {
     <button
       onClick={toggleLanguage}
       className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-700 bg-slate-100/80 rounded-full hover:bg-slate-200 transition-all shadow-sm ring-1 ring-slate-200 hover:scale-105"
-      aria-label="Toggle language"
+      aria-label={t('language.toggle')}
     >
       <Globe size={18} className="text-primary" />
-      <span>{isAr ? 'FR' : 'عربي'}</span>
+      <span>{isAr ? 'FR' : 'العربية'}</span>
     </button>
   );
 };

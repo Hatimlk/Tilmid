@@ -52,7 +52,7 @@ export const CoachingRegistration: React.FC = () => {
   };
 
   return (
-    <div dir="ltr" className="min-h-screen bg-slate-50 py-16 md:py-24 px-4 text-start">
+    <div className="min-h-screen bg-slate-50 py-16 md:py-24 px-4 text-start">
       <SEO
         title="Inscription - Offre d'accompagnement Mouwakaba"
         description="Choisissez votre formule Mouwakaba et remplissez le formulaire d'inscription."

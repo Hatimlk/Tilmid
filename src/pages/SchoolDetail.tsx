@@ -89,7 +89,7 @@ export const SchoolDetail: React.FC = () => {
   const isCompared = compare.has(school.id);
 
   return (
-    <div dir="ltr" className="min-h-screen bg-slate-50 pb-24 overflow-x-hidden font-sans w-full max-w-full text-start">
+    <div className="min-h-screen bg-slate-50 pb-24 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title={`${school.name}${school.acronym ? ` (${school.acronym})` : ''} — Écoles Supérieures`}
         description={`${school.name} — établissement ${school.type === 'public' ? 'public' : 'privé'} à ${school.city}. Filières : ${school.fields.join(', ')}.`}

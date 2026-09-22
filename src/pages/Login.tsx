@@ -181,7 +181,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div dir="ltr" className="min-h-screen flex flex-col font-sans text-slate-800" style={{
+    <div className="min-h-screen flex flex-col font-sans text-slate-800" style={{
       background: 'radial-gradient(circle at 18% 20%, rgba(22,139,255,0.06), transparent 28%), radial-gradient(circle at 85% 80%, rgba(15,23,42,0.04), transparent 30%), #F7F9FC',
     }}>
       <SEO title="Connexion Administration" description="Portail d'administration Tilmid, réservé aux utilisateurs autorisés." noindex />

@@ -1,4 +1,7 @@
 {
+  "language": {
+    "toggle": "Changer de langue"
+  },
   "nav": {
     "home": "Accueil",
     "tilmidTalib": "Programme Tilmid & Talib",

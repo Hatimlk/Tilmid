@@ -14,6 +14,8 @@ i18n
       fr: { translation: frTranslations },
     },
     fallbackLng: 'fr',
+    supportedLngs: ['fr', 'ar'],
+    nonExplicitSupportedLngs: true,
     detection: {
       order: ['localStorage', 'cookie'],
       caches: ['localStorage', 'cookie']
@@ -26,8 +28,9 @@ i18n
 
 // Automatically update the document direction based on the current language
 const updateDirection = (lng: string) => {
-  document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
-  document.documentElement.lang = lng;
+  const language = lng?.startsWith('ar') ? 'ar' : 'fr';
+  document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = language;
 };
 
 // Set initial direction

@@ -1041,7 +1041,7 @@ export const CoachingOffer: React.FC = () => {
   ];
 
   return (
-    <div dir="ltr" className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans w-full max-w-full text-start">
+    <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title="Offre d'accompagnement Mouwakaba"
         description="Le programme d'accompagnement Mouwakaba de Tilmid : méthode, outils et coaching pour progresser avec structure. Trois formules, Essentiel, Boost et Premium, adaptées à chaque étudiant."

@@ -337,7 +337,7 @@ export const StudentArea: React.FC = () => {
   }
 
   return (
-    <div dir="ltr" className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 text-start">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 text-start">
       <SEO title="Espace Étudiant | Tilmid" description="Votre espace personnel Tilmid : parcours Mouwakaba, planning, contenus et outils." noindex />
 
       <StudentHeader student={user} entitlements={entitlements} onNavigate={setActiveTab} onLogout={authLogout} onOpenMobileMenu={() => setMobileMenuOpen(true)} />

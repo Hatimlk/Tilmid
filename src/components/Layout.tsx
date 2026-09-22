@@ -3,6 +3,7 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { MessageCircle, ArrowUp, Zap, ArrowLeft, List, X, BookOpen, Star, UserCheck } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -59,6 +60,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
       {!isAdminRoute && !isLoginRoute && <Navbar />}
+      {(isAdminRoute || isStudentArea) && (
+        <div className="fixed top-3 end-16 sm:end-20 z-[90]">
+          <LanguageSwitcher />
+        </div>
+      )}
 
       {/* Scroll Progress Bar (Top Sticky) */}
       {!isAdminRoute && !isLoginRoute && (
