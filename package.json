@@ -3,10 +3,18 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.16.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build",
+    "server:start": "npm --prefix server start",
+    "server:db-check": "node server/test_db.js",
+    "server:seed-admin": "node server/seed.js"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

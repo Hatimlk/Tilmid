@@ -5,7 +5,10 @@
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
-        "dev": "nodemon index.js"
+        "dev": "nodemon index.js",
+        "check": "node --check index.js && node --check db.js",
+        "db:check": "node test_db.js",
+        "seed:admin": "node seed.js"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

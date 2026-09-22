@@ -1,7 +1,12 @@
 // @ts-ignore
 import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
-import { BlogPost } from '../types';
+
+interface ParsedSection {
+    title: string;
+    content: string;
+    list: Array<{ t: string; d: string }>;
+}
 
 // Set worker source to local file using Vite's ?url import
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -11,7 +16,7 @@ interface ParsedContent {
     title: string;
     excerpt: string;
     content?: string;
-    sections: BlogPost['sections'];
+    sections: ParsedSection[];
 }
 
 export const smartParser = {
@@ -83,8 +88,8 @@ export const smartParser = {
         const excerpt = lines[excerptIndex] || '';
 
         // Heuristic 3: Detect Sections and Lists
-        const sections: BlogPost['sections'] = [];
-        let currentSection = { title: 'مقدمة', content: '', list: [] as any[] };
+        const sections: ParsedSection[] = [];
+        let currentSection: ParsedSection = { title: 'مقدمة', content: '', list: [] };
 
         // Process remaining lines
         for (let i = excerptIndex + 1; i < lines.length; i++) {

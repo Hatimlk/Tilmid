@@ -49,7 +49,7 @@ To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
 
-*   **Node.js** (v18+ recommended)
+*   **Node.js** (v20.16+ required by the current PDF.js dependency)
 *   **npm** or **yarn**
 
 ### Installation
@@ -78,6 +78,54 @@ To get a local copy up and running, follow these simple steps.
     ```sh
     npm run dev
     ```
+
+## Backend and dashboard setup
+
+The React application supports two API deployments that expose the same `/api`
+contract. Use **Node/Express for local development** (`server/`) and the PHP
+router (`server-php/`) only on the Apache production host. Do not run both for
+the same environment.
+
+### Local Node API
+
+1. Start MySQL or MariaDB on `127.0.0.1:3306`.
+2. Create a database named `tilmid_db` and import `server/schema.sql`.
+3. Copy `server/.env.example` to `server/.env`, then set a long random
+   `JWT_SECRET` and the database credentials.
+4. Set `ADMIN_EMAIL`, `ADMIN_USERNAME`, and an
+   `ADMIN_BOOTSTRAP_PASSWORD` of at least 12 characters.
+5. Run the following commands:
+
+   ```sh
+   npm --prefix server install
+   npm run server:db-check
+   npm run server:seed-admin
+   npm run server:start
+   ```
+
+6. In another terminal, copy `.env.development.example` to
+   `.env.development.local` and run `npm run dev`.
+
+The API readiness endpoint is `http://127.0.0.1:5000/api/health`. It returns
+HTTP 503 until the database is reachable.
+
+### Production
+
+Production builds use `VITE_API_URL=https://tilmide.ma/api` from `.env` by
+default. Set `VITE_API_URL` explicitly in CI when deploying to another host.
+Never use `.env.local` for a development-only URL because Vite loads it during
+production builds too.
+
+For the PHP deployment, configure `server-php/.env`, run `migrate.php` and
+`seed_admin.php` once using `MIGRATION_SECRET`, and then delete both public
+scripts from the deployed server. The PHP runtime needs PDO MySQL, `mbstring`,
+Apache rewrite support, and write access to `server-php/uploads`.
+
+### Verification
+
+Run `npm run check` before deployment. This performs strict TypeScript checking
+and creates the production bundle. Run `npm --prefix server run check` for the
+Node API and `npm run server:db-check` for database connectivity.
 
 ## 🤝 Contributing
 

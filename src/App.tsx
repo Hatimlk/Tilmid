@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { Wrench, Bell, BarChart3, GraduationCap, KeyRound, Settings } from 'lucide-react';
 import { Layout } from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { Home } from './pages/Home';
 import { ProgramDetails } from './pages/ProgramDetails';
 import { OrientationRegistration } from './pages/OrientationRegistration';
-import { StudentArea } from './pages/StudentArea';
 import { CoachingOffer } from './pages/CoachingOffer';
 import { CoachingRegistration } from './pages/CoachingRegistration';
 import { HigherSchools } from './pages/HigherSchools';
@@ -16,30 +16,33 @@ import { About } from './pages/About';
 import { Contact } from './pages/Contact';
 import { NotFound } from './pages/NotFound';
 import { Login } from './pages/Login';
-import { AdminLayout } from './components/admin/AdminLayout';
-import { AdminDashboard } from './pages/admin/Dashboard';
-import { AdminStudents } from './pages/admin/Students';
-import { AdminStudentDetail } from './pages/admin/StudentDetail';
-import { AdminPackages } from './pages/admin/Packages';
-import { AdminAppointments } from './pages/admin/Appointments';
-import { AdminMessages } from './pages/admin/Messages';
-import { AdminStories } from './pages/admin/Stories';
-import { AdminActivity } from './pages/admin/Activity';
-import { AdminContent } from './pages/admin/Content';
-import { AdminLibrary } from './pages/admin/Library';
-import { AdminComingSoonPage } from './pages/admin/ComingSoonPage';
-import { AdminPlans } from './pages/admin/Plans';
-import { AdminCoaching } from './pages/admin/Coaching';
-import { AdminCheckIns } from './pages/admin/CheckIns';
-import { AdminFeedback } from './pages/admin/Feedback';
-import { AdminProgress } from './pages/admin/Progress';
-import { AdminCollectiveSessions } from './pages/admin/CollectiveSessions';
+
+const StudentArea = lazy(() => import('./pages/StudentArea').then(m => ({ default: m.StudentArea })));
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminStudents = lazy(() => import('./pages/admin/Students').then(m => ({ default: m.AdminStudents })));
+const AdminStudentDetail = lazy(() => import('./pages/admin/StudentDetail').then(m => ({ default: m.AdminStudentDetail })));
+const AdminPackages = lazy(() => import('./pages/admin/Packages').then(m => ({ default: m.AdminPackages })));
+const AdminAppointments = lazy(() => import('./pages/admin/Appointments').then(m => ({ default: m.AdminAppointments })));
+const AdminMessages = lazy(() => import('./pages/admin/Messages').then(m => ({ default: m.AdminMessages })));
+const AdminStories = lazy(() => import('./pages/admin/Stories').then(m => ({ default: m.AdminStories })));
+const AdminActivity = lazy(() => import('./pages/admin/Activity').then(m => ({ default: m.AdminActivity })));
+const AdminContent = lazy(() => import('./pages/admin/Content').then(m => ({ default: m.AdminContent })));
+const AdminLibrary = lazy(() => import('./pages/admin/Library').then(m => ({ default: m.AdminLibrary })));
+const AdminComingSoonPage = lazy(() => import('./pages/admin/ComingSoonPage').then(m => ({ default: m.AdminComingSoonPage })));
+const AdminPlans = lazy(() => import('./pages/admin/Plans').then(m => ({ default: m.AdminPlans })));
+const AdminCoaching = lazy(() => import('./pages/admin/Coaching').then(m => ({ default: m.AdminCoaching })));
+const AdminCheckIns = lazy(() => import('./pages/admin/CheckIns').then(m => ({ default: m.AdminCheckIns })));
+const AdminFeedback = lazy(() => import('./pages/admin/Feedback').then(m => ({ default: m.AdminFeedback })));
+const AdminProgress = lazy(() => import('./pages/admin/Progress').then(m => ({ default: m.AdminProgress })));
+const AdminCollectiveSessions = lazy(() => import('./pages/admin/CollectiveSessions').then(m => ({ default: m.AdminCollectiveSessions })));
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <Layout>
+        <Suspense fallback={<div className="min-h-[50vh]" aria-label="Chargement" />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tawjih" element={<ProgramDetails />} />
@@ -82,6 +85,7 @@ function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </Layout>
     </BrowserRouter>
   );

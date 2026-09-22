@@ -87,6 +87,20 @@ function requireStudent(req, res, next) {
     });
 }
 
+// mysql2 auto-parses JSON columns only when the DB reports a native JSON type;
+// MariaDB (e.g. XAMPP's bundled server) stores JSON as TEXT and mysql2 then
+// returns the raw string, so JSON columns must be parsed explicitly to behave
+// the same on both. Passes already-parsed values (real MySQL) through as-is.
+function parseJsonField(value, fallback) {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value !== 'string') return value;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+}
+
 // Resolves which student's data a GET should return: the caller's own id for
 // a student, or the ?studentId= query param for an admin. Writes a 400 and
 // returns null itself when an admin omits studentId — callers must check.
@@ -115,9 +129,15 @@ async function logActivity(actorId, action, entityType, entityLabel, meta) {
     }
 }
 
-// Test Route
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Server is running' });
+// Readiness probe: do not report healthy when the API cannot reach its database.
+app.get('/api/health', async (req, res) => {
+    try {
+        await db.query('SELECT 1');
+        res.json({ status: 'ok', database: 'connected' });
+    } catch (err) {
+        console.error('Health check failed:', err.message);
+        res.status(503).json({ status: 'unavailable', database: 'disconnected' });
+    }
 });
 
 /* ---------------- AUTH ROUTES ---------------- */
@@ -305,7 +325,7 @@ app.post('/api/upload', requireAdmin, (req, res) => {
 app.get('/api/posts', async (req, res) => {
     try {
         const [posts] = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
-        res.json(posts);
+        res.json(posts.map((p) => ({ ...p, sections: parseJsonField(p.sections, null) })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -476,7 +496,7 @@ app.get('/api/activity', requireAdmin, async (req, res) => {
         const [rows] = await db.query(
             'SELECT id, actor_name, action, entity_type, entity_label, meta, created_at FROM activity_log ORDER BY created_at DESC LIMIT 30'
         );
-        res.json(rows);
+        res.json(rows.map((r) => ({ ...r, meta: parseJsonField(r.meta, null) })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -589,7 +609,9 @@ app.get('/api/plan', requireStudentOrAdmin, async (req, res) => {
     if (studentId === null) return;
     try {
         const [rows] = await db.query('SELECT * FROM self_guided_plans WHERE student_id = ?', [studentId]);
-        res.json(rows[0] || null);
+        const plan = rows[0];
+        if (!plan) return res.json(null);
+        res.json({ ...plan, actions: parseJsonField(plan.actions, []), habits: parseJsonField(plan.habits, []) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -700,7 +722,7 @@ app.get('/api/habits', requireStudentOrAdmin, async (req, res) => {
     if (studentId === null) return;
     try {
         const [rows] = await db.query('SELECT * FROM habits WHERE student_id = ? ORDER BY created_at ASC', [studentId]);
-        res.json(rows);
+        res.json(rows.map((r) => ({ ...r, days: parseJsonField(r.days, [false, false, false, false, false, false, false]) })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -897,6 +919,296 @@ app.post('/api/course-modules/:id', requireAdmin, async (req, res) => {
     try {
         await db.query('UPDATE course_modules SET video_url = ?, video_source = ? WHERE id = ?', [videoUrl || null, videoSource, req.params.id]);
         res.json({ id: Number(req.params.id), message: 'Module updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- COACHING SESSIONS (appointments filtered to category='coaching') ---------------- */
+// Student sees only their own; admin sees all (or one student via ?studentId=).
+app.get('/api/coaching-sessions', requireStudentOrAdmin, async (req, res) => {
+    try {
+        let rows;
+        if (req.user.role === 'student') {
+            [rows] = await db.query(
+                "SELECT a.* FROM appointments a WHERE a.category = 'coaching' AND a.student_id = ? ORDER BY a.date DESC",
+                [req.user.id]
+            );
+        } else if (req.query.studentId) {
+            [rows] = await db.query(
+                "SELECT a.*, s.name AS student_full_name FROM appointments a LEFT JOIN students s ON a.student_id = s.id WHERE a.category = 'coaching' AND a.student_id = ? ORDER BY a.date DESC",
+                [Number(req.query.studentId)]
+            );
+        } else {
+            [rows] = await db.query(
+                "SELECT a.*, s.name AS student_full_name FROM appointments a LEFT JOIN students s ON a.student_id = s.id WHERE a.category = 'coaching' ORDER BY a.date DESC"
+            );
+        }
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- FEEDBACK (coach/admin messages to a student) ---------------- */
+app.get('/api/feedback', requireStudentOrAdmin, async (req, res) => {
+    const studentId = resolveStudentId(req, res);
+    if (studentId === null) return;
+    try {
+        const [rows] = await db.query('SELECT * FROM feedback WHERE student_id = ? ORDER BY created_at DESC', [studentId]);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/feedback', requireAdmin, async (req, res) => {
+    const { studentId, appointmentId } = req.body;
+    const message = (req.body.message || '').trim();
+    if (!studentId || message === '') {
+        return res.status(400).json({ message: 'studentId and message are required' });
+    }
+    try {
+        const [students] = await db.query('SELECT name FROM students WHERE id = ?', [studentId]);
+        const studentName = students[0]?.name;
+        if (!studentName) return res.status(404).json({ message: 'Student not found' });
+
+        const [users] = await db.query('SELECT username FROM users WHERE id = ?', [req.user.id]);
+        const authorName = users[0]?.username || 'Admin';
+
+        const [result] = await db.query(
+            'INSERT INTO feedback (student_id, appointment_id, message, author_name) VALUES (?, ?, ?, ?)',
+            [studentId, appointmentId || null, message, authorName]
+        );
+        await logActivity(req.user.id, 'feedback_sent', 'feedback', studentName, { message: message.slice(0, 120) });
+        res.status(201).json({ id: result.insertId, message: 'Feedback sent' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/admin/feedback', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT f.*, s.name, s.username FROM feedback f JOIN students s ON f.student_id = s.id ORDER BY f.created_at DESC LIMIT 200'
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- ADMIN CROSS-STUDENT OVERVIEWS (Plans, Check-ins, Progression) ---------------- */
+app.get('/api/admin/plans', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT s.id AS student_id, s.name, s.username, p.objective, p.start_date, p.obstacles, p.actions, p.habits, p.updated_at
+             FROM students s LEFT JOIN self_guided_plans p ON p.student_id = s.id
+             WHERE s.status = 'active' ORDER BY s.name ASC`
+        );
+        res.json(rows.map((r) => ({ ...r, actions: parseJsonField(r.actions, []), habits: parseJsonField(r.habits, []) })));
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/admin/checkins', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT c.*, s.name, s.username FROM checkins c JOIN students s ON c.student_id = s.id ORDER BY c.created_at DESC LIMIT 200'
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/admin/progress-overview', requireAdmin, async (req, res) => {
+    try {
+        const [students] = await db.query("SELECT id, name, username, package FROM students WHERE status = 'active'");
+
+        const plans = {};
+        const [planRows] = await db.query('SELECT student_id, actions FROM self_guided_plans');
+        for (const row of planRows) {
+            const actions = parseJsonField(row.actions, []);
+            plans[row.student_id] = { total: actions.length, done: actions.filter((a) => !!a?.done).length };
+        }
+
+        const goals = {};
+        const [goalRows] = await db.query(
+            "SELECT student_id, COUNT(*) AS total, SUM(status = 'atteint') AS atteints FROM goals GROUP BY student_id"
+        );
+        for (const row of goalRows) {
+            goals[row.student_id] = { total: Number(row.total), atteints: Number(row.atteints) };
+        }
+
+        const revisions = {};
+        const [revisionRows] = await db.query(
+            'SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE session_date > (NOW() - INTERVAL 7 DAY) GROUP BY student_id'
+        );
+        for (const row of revisionRows) {
+            revisions[row.student_id] = Number(row.recent);
+        }
+
+        const habits = {};
+        const [habitRows] = await db.query('SELECT student_id, days FROM habits');
+        for (const row of habitRows) {
+            const daysDone = parseJsonField(row.days, []).filter(Boolean).length;
+            if (!habits[row.student_id]) habits[row.student_id] = { count: 0, daysDone: 0 };
+            habits[row.student_id].count++;
+            habits[row.student_id].daysDone += daysDone;
+        }
+
+        const overview = students.map((s) => {
+            const plan = plans[s.id] || { total: 0, done: 0 };
+            const goal = goals[s.id] || { total: 0, atteints: 0 };
+            const habit = habits[s.id] || { count: 0, daysDone: 0 };
+            return {
+                studentId: s.id,
+                name: s.name,
+                username: s.username,
+                package: s.package,
+                planActionsTotal: plan.total,
+                planActionsDone: plan.done,
+                goalsTotal: goal.total,
+                goalsAtteints: goal.atteints,
+                revisionsLast7d: revisions[s.id] || 0,
+                habitCount: habit.count,
+                habitConsistencyPct: habit.count > 0 ? Math.round((habit.daysDone / (habit.count * 7)) * 100) : null,
+            };
+        });
+
+        res.json(overview);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- COLLECTIVE SESSIONS (Sessions collectives) ---------------- */
+app.get('/api/collective-sessions', authenticate, async (req, res) => {
+    try {
+        let rows;
+        if (req.user.role === 'student') {
+            [rows] = await db.query(
+                `SELECT cs.*,
+                    (SELECT COUNT(*) FROM collective_session_registrations r WHERE r.session_id = cs.id) AS registered_count,
+                    EXISTS(SELECT 1 FROM collective_session_registrations r WHERE r.session_id = cs.id AND r.student_id = ?) AS my_registration
+                 FROM collective_sessions cs WHERE cs.status != 'cancelled' ORDER BY cs.date ASC`,
+                [req.user.id]
+            );
+        } else {
+            [rows] = await db.query(
+                `SELECT cs.*,
+                    (SELECT COUNT(*) FROM collective_session_registrations r WHERE r.session_id = cs.id) AS registered_count
+                 FROM collective_sessions cs ORDER BY cs.date ASC`
+            );
+        }
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/collective-sessions', requireAdmin, async (req, res) => {
+    const { id, title, description, date, time, capacity, meetingLink, status } = req.body;
+    try {
+        if (id) {
+            await db.query(
+                'UPDATE collective_sessions SET title=?, description=?, date=?, time=?, capacity=?, meeting_link=?, status=? WHERE id=?',
+                [title, description || null, date, time, capacity || null, meetingLink || null, status || 'scheduled', id]
+            );
+            res.json({ id: Number(id), message: 'Session updated' });
+        } else {
+            const [result] = await db.query(
+                'INSERT INTO collective_sessions (title, description, date, time, capacity, meeting_link, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [title, description || null, date, time, capacity || null, meetingLink || null, status || 'scheduled']
+            );
+            await logActivity(req.user.id, 'collective_session_created', 'collective_session', title, { date, time });
+            res.status(201).json({ id: result.insertId, message: 'Session created' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/collective-sessions/:id', requireAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM collective_sessions WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Session deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/collective-sessions/:id/registrations', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT r.*, s.name, s.username FROM collective_session_registrations r JOIN students s ON r.student_id = s.id WHERE r.session_id = ? ORDER BY r.registered_at ASC',
+            [req.params.id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/collective-sessions/:id/register', requireStudent, async (req, res) => {
+    const sessionId = Number(req.params.id);
+    try {
+        const [sessions] = await db.query(
+            `SELECT capacity, (SELECT COUNT(*) FROM collective_session_registrations WHERE session_id = ?) AS registered
+             FROM collective_sessions WHERE id = ?`,
+            [sessionId, sessionId]
+        );
+        const session = sessions[0];
+        if (!session) return res.status(404).json({ message: 'Session not found' });
+        if (session.capacity !== null && Number(session.registered) >= Number(session.capacity)) {
+            return res.status(400).json({ message: 'Session complète' });
+        }
+
+        await db.query('INSERT INTO collective_session_registrations (session_id, student_id) VALUES (?, ?)', [sessionId, req.user.id]);
+        res.status(201).json({ message: 'Registered' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.json({ message: 'Already registered' });
+        }
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/collective-sessions/:id/register', requireStudent, async (req, res) => {
+    try {
+        await db.query('DELETE FROM collective_session_registrations WHERE session_id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        res.json({ message: 'Unregistered' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/collective-sessions/:id/attendance', requireAdmin, async (req, res) => {
+    const { studentId } = req.body;
+    const attended = 'attended' in req.body ? !!req.body.attended : null;
+    if (!studentId) return res.status(400).json({ message: 'studentId required' });
+    try {
+        await db.query(
+            'UPDATE collective_session_registrations SET attended = ? WHERE session_id = ? AND student_id = ?',
+            [attended, req.params.id, studentId]
+        );
+        res.json({ message: 'Attendance updated' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
