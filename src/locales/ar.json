@@ -816,17 +816,14 @@
       "private": "خاص"
     },
     "access": {
-      "Bac": "باك",
-      "Bac+1": "باك+1",
-      "Bac+2": "باك+2",
-      "Bac+3": "باك+3"
+      "Après le bac": "بعد البكالوريا",
+      "Bac +2": "بكالوريا +2",
+      "Master": "الماستر"
     },
     "admission": {
       "Concours": "مباراة",
-      "Sélection sur dossier": "انتقاء عبر الملف",
-      "Accès direct": "ولوج مباشر",
-      "Test d'admission": "اختبار القبول",
-      "Entretien": "مقابلة"
+      "Dossier": "انتقاء الملف",
+      "Sélection": "انتقاء"
     },
     "cities": {
       "Casablanca": "الدار البيضاء",
@@ -857,6 +854,16 @@
       "Sciences": "العلوم",
       "Agriculture & Vétérinaire": "الزراعة والبيطرة",
       "Économie & Statistique": "الاقتصاد والإحصاء"
+    },
+    "profile": {
+      "title": "هل ما زلت متردد بين عدة مسارات؟",
+      "activeBadge": "نشط",
+      "description": "قم بملء ملفك الشخصي لمعرفة مدى توافقك مع كل مدرسة.",
+      "fieldPlaceholder": "المسار المرغوب",
+      "cityPlaceholder": "المدينة المرغوبة",
+      "accessPlaceholder": "مستوى الولوج",
+      "typePlaceholder": "نوع المؤسسة",
+      "resetButton": "إعادة تعيين"
     }
   }
 }
