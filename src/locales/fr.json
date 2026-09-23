@@ -637,6 +637,15 @@
         "publicPrivate": "Écoles publiques & privées",
         "cities": "Plusieurs villes du Maroc",
         "fields": "Filières et conditions d'accès"
+      },
+      "chips": {
+        "engineering": "Ingénierie",
+        "medicine": "Médecine & Santé",
+        "business": "Commerce & Management",
+        "it": "Informatique & Digital",
+        "architecture": "Architecture",
+        "public": "Écoles publiques",
+        "private": "Écoles privées"
       }
     },
     "featured": {
@@ -840,14 +849,14 @@
       "Benguérir": "Benguérir"
     },
     "fields": {
-      "Ingénierie & Technologie": "Ingénierie & Technologie",
-      "Commerce & Management": "Commerce & Management",
+      "Ingénierie": "Ingénierie",
+      "Informatique & Digital": "Informatique & Digital",
       "Médecine & Santé": "Médecine & Santé",
-      "Architecture & Design": "Architecture & Design",
-      "Agriculture & Environnement": "Agriculture & Environnement",
-      "Sciences & Fondamental": "Sciences & Fondamental",
-      "Droit & Sciences Politiques": "Droit & Sciences Politiques",
-      "Hôtellerie & Tourisme": "Hôtellerie & Tourisme"
+      "Commerce & Management": "Commerce & Management",
+      "Architecture": "Architecture",
+      "Sciences": "Sciences",
+      "Agriculture & Vétérinaire": "Agriculture & Vétérinaire",
+      "Économie & Statistique": "Économie & Statistique"
     }
   }
 }

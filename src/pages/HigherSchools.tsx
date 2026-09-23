@@ -137,12 +137,12 @@ const SchoolCard: React.FC<{
 
       <div className="flex items-center gap-1.5 text-slate-500 text-[13px] font-semibold mb-4">
         <MapPin size={14} className="text-slate-400" />
-        {school.city}
+        {t(`higherSchools.cities.${school.city}`, school.city)}
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-5">
         {school.fields.slice(0, 2).map((f) => (
-          <span key={f} className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 text-[11px] font-bold">{f}</span>
+          <span key={f} className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 text-[11px] font-bold">{t(`higherSchools.fields.${f}`, f)}</span>
         ))}
         {extraFields > 0 && (
           <span className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[11px] font-bold">

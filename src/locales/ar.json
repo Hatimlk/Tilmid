@@ -637,6 +637,15 @@
         "publicPrivate": "مدارس عمومية وخاصة",
         "cities": "عدة مدن في المغرب",
         "fields": "شعب وشروط الولوج"
+      },
+      "chips": {
+        "engineering": "الهندسة",
+        "medicine": "الطب والصحة",
+        "business": "التجارة والتسيير",
+        "it": "المعلوماتيات والرقميات",
+        "architecture": "الهندسة المعمارية",
+        "public": "المدارس العمومية",
+        "private": "المدارس الخاصة"
       }
     },
     "featured": {
@@ -840,14 +849,14 @@
       "Benguérir": "بن جرير"
     },
     "fields": {
-      "Ingénierie & Technologie": "الهندسة والتكنولوجيا",
-      "Commerce & Management": "التجارة والتسيير",
+      "Ingénierie": "الهندسة",
+      "Informatique & Digital": "المعلوماتيات والرقميات",
       "Médecine & Santé": "الطب والصحة",
-      "Architecture & Design": "الهندسة المعمارية والتصميم",
-      "Agriculture & Environnement": "الزراعة والبيئة",
-      "Sciences & Fondamental": "العلوم الأساسية",
-      "Droit & Sciences Politiques": "الحقوق والعلوم السياسية",
-      "Hôtellerie & Tourisme": "الفندقة والسياحة"
+      "Commerce & Management": "التجارة والتسيير",
+      "Architecture": "الهندسة المعمارية",
+      "Sciences": "العلوم",
+      "Agriculture & Vétérinaire": "الزراعة والبيطرة",
+      "Économie & Statistique": "الاقتصاد والإحصاء"
     }
   }
 }
