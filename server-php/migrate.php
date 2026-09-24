@@ -116,6 +116,7 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS orientation_requests (
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     filiere VARCHAR(100),
+    school_type VARCHAR(20),
     city VARCHAR(100),
     bac_year VARCHAR(20),
     regional_grade VARCHAR(20),
@@ -124,6 +125,12 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS orientation_requests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
 $log[] = 'orientation_requests table ensured';
+
+$orientationCols = $pdo->query("SHOW COLUMNS FROM orientation_requests")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('school_type', $orientationCols, true)) {
+    $pdo->exec("ALTER TABLE orientation_requests ADD COLUMN school_type VARCHAR(20) DEFAULT NULL AFTER filiere");
+    $log[] = 'added orientation_requests.school_type column';
+}
 
 // 10. Student module tables — Mon Plan, Mes outils (habitudes, error log,
 // révisions, objectifs), Check-ins, Planning. Previously local-only

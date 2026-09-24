@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Loader2, ArrowLeft, Sparkles, UserRound, GraduationCap } from 'lucide-react';
 import { PACKS, GRADE_OPTIONS } from '../constants/mouwakabaPacks';
 import { dataManager } from '../utils/dataManager';
 import SEO from '../components/SEO';
@@ -52,13 +52,13 @@ export const CoachingRegistration: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-16 md:py-24 px-4 text-start">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,143,245,0.10),_transparent_32%),#f8fafc] py-10 md:py-16 px-4 text-start">
       <SEO
         title="Inscription - Offre d'accompagnement Mouwakaba"
         description="Choisissez votre formule Mouwakaba et remplissez le formulaire d'inscription."
         noindex={true}
       />
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <button
           onClick={() => navigate('/coaching-offer')}
           className="flex items-center gap-2 text-slate-500 hover:text-primary font-bold text-sm mb-8 transition-colors"
@@ -67,9 +67,9 @@ export const CoachingRegistration: React.FC = () => {
           <span>Retour aux formules</span>
         </button>
 
-        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-[0_20px_50px_-15px_rgba(15,23,42,0.12)] p-8 md:p-10">
+        <div className="bg-white rounded-[2rem] border border-blue-100/70 shadow-[0_24px_70px_-24px_rgba(8,117,232,0.28)] overflow-hidden">
           {isSuccess ? (
-            <div className="text-center py-6">
+            <div className="text-center py-16 px-6">
               <div className="w-16 h-16 rounded-full bg-blue-50 text-primary flex items-center justify-center mx-auto mb-5">
                 <CheckCircle size={32} />
               </div>
@@ -79,35 +79,48 @@ export const CoachingRegistration: React.FC = () => {
             </div>
           ) : (
             <>
-              <div className="text-center mb-7">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] ring-1 bg-blue-50 text-primary ring-primary/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <div className="relative overflow-hidden bg-gradient-to-br from-[#071a3b] via-[#0b2d62] to-[#0875e8] px-6 py-10 md:px-10 md:py-12 text-center text-white">
+                <div className="absolute -top-20 -end-16 w-64 h-64 rounded-full bg-white/10 blur-2xl" />
+                <div className="absolute -bottom-28 -start-16 w-72 h-72 rounded-full bg-cyan-400/10 blur-2xl" />
+                <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] ring-1 bg-white/10 text-blue-100 ring-white/20">
+                  <Sparkles size={13} />
                   Réservation
                 </span>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900 mt-4 mb-2 tracking-tight">Finalisez votre inscription</h1>
-                <p className="text-slate-500 text-sm font-medium">Laissez-nous vos coordonnées, nous vous recontactons rapidement.</p>
+                <h1 className="relative text-3xl md:text-4xl font-black mt-4 mb-2 tracking-tight">Démarrez votre accompagnement</h1>
+                <p className="relative text-blue-100/80 text-sm md:text-base font-medium">Choisissez la formule adaptée à votre rythme et à vos objectifs.</p>
               </div>
 
-              <div className="mb-6">
-                <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wide mb-2 text-center">Formule choisie</p>
-                <div className="flex items-center justify-center gap-2 flex-wrap">
+              <div className="p-6 md:p-10 pb-0 md:pb-0">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="w-9 h-9 rounded-xl bg-blue-50 text-primary flex items-center justify-center font-black text-sm">1</span>
+                  <div><h2 className="font-black text-slate-900">Choisissez votre formule</h2><p className="text-xs font-medium text-slate-400">Vous pourrez la confirmer avec notre équipe.</p></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {PACKS.map((p) => (
                     <button
                       key={p.label}
                       type="button"
                       onClick={() => setSelectedPack(p.label)}
-                      className={`px-4 py-2 min-h-[44px] rounded-full text-sm font-bold border transition-all ${selectedPack === p.label
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40'
+                      className={`relative p-4 min-h-[96px] rounded-2xl text-start border transition-all ${selectedPack === p.label
+                        ? 'bg-blue-50 text-primary border-primary ring-2 ring-primary/10 shadow-sm'
+                        : 'bg-slate-50/70 text-slate-600 border-slate-100 hover:border-primary/40 hover:bg-blue-50/50'
                         }`}
                     >
-                      {p.label}
+                      <span className="block text-[15px] font-black">{p.label}</span>
+                      <span className="block text-[12px] font-bold mt-1">{p.price}</span>
+                      <span className="block text-[10.5px] font-medium opacity-70 mt-1">{p.smallLabel}</span>
+                      {selectedPack === p.label && <CheckCircle size={16} className="absolute top-3 end-3" />}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-6">
+                <div className="flex items-center gap-3 border-t border-slate-100 pt-7">
+                  <span className="w-9 h-9 rounded-xl bg-blue-50 text-primary flex items-center justify-center"><UserRound size={17} /></span>
+                  <div><h2 className="font-black text-slate-900">Vos coordonnées</h2><p className="text-xs font-medium text-slate-400">Pour que notre équipe puisse vous recontacter.</p></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="block text-[13px] font-bold text-slate-600 mb-1.5">Nom complet</label>
                   <input
@@ -116,7 +129,7 @@ export const CoachingRegistration: React.FC = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Votre nom complet"
-                    className="w-full h-[48px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 font-medium"
+                    className="w-full h-[50px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-slate-900 font-medium"
                   />
                 </div>
                 <div>
@@ -129,8 +142,13 @@ export const CoachingRegistration: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="06 XX XX XX XX"
                     dir="ltr"
-                    className="w-full h-[48px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 font-medium"
+                    className="w-full h-[50px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-slate-900 font-medium"
                   />
+                </div>
+                </div>
+                <div className="flex items-center gap-3 border-t border-slate-100 pt-7">
+                  <span className="w-9 h-9 rounded-xl bg-blue-50 text-primary flex items-center justify-center"><GraduationCap size={18} /></span>
+                  <div><h2 className="font-black text-slate-900">Votre profil scolaire</h2><p className="text-xs font-medium text-slate-400">Pour préparer votre premier échange.</p></div>
                 </div>
                 <div>
                   <label htmlFor="grade" className="block text-[13px] font-bold text-slate-600 mb-1.5">Niveau scolaire</label>
@@ -139,7 +157,7 @@ export const CoachingRegistration: React.FC = () => {
                     name="grade"
                     value={formData.grade}
                     onChange={handleInputChange}
-                    className="w-full h-[48px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 font-medium bg-white"
+                    className="w-full h-[50px] px-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-slate-900 font-medium bg-white"
                   >
                     {GRADE_OPTIONS.map((g) => (
                       <option key={g} value={g}>{g}</option>
@@ -148,13 +166,13 @@ export const CoachingRegistration: React.FC = () => {
                 </div>
 
                 {error && (
-                  <p className="text-red-500 text-sm font-semibold text-center">{error}</p>
+                  <p className="text-rose-600 text-sm font-semibold text-center bg-rose-50 border border-rose-100 rounded-xl p-3">{error}</p>
                 )}
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full min-h-[52px] bg-primary text-white rounded-2xl font-black text-base flex items-center justify-center gap-2 hover:bg-[#0875E8] transition-all disabled:opacity-70"
+                  className="w-full min-h-[56px] bg-gradient-to-r from-primary to-[#0875E8] text-white rounded-2xl font-black text-base flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-0.5 shadow-lg shadow-primary/20 transition-all disabled:opacity-70 disabled:translate-y-0"
                 >
                   {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                   <span>Confirmer mon inscription</span>

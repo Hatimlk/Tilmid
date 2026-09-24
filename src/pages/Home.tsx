@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { TAWJIH_DATA, INSTAGRAM_REELS } from '../constants';
+import { TAWJIH_DATA } from '../constants';
 import { IMAGES } from '../constants/images';
 import { dataManager } from '../utils/dataManager';
-import { SuccessStory, VideoReel } from '../types';
+import { SuccessStory } from '../types';
+import { SCHOOLS, FIELDS, CITIES } from '../constants/schools';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, PlayCircle, Sparkles, Star, Quote, ArrowLeftIcon, Zap, TrendingUp,
-  Globe, Play, MessageCircle, Compass, BookOpen, GraduationCap, Target, Check,
+  MessageCircle, Compass, BookOpen, GraduationCap, Target, Check,
   BadgeCheck, ChevronLeft, ChevronRight, Building2, Calculator, Users
 } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -119,69 +120,6 @@ const DayCard: React.FC<{ date: Date; label: string; t: any }> = ({ date, label,
           <span className="text-[10px] text-slate-400 font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-500 -translate-x-2 group-hover:translate-x-0 rtl:translate-x-2 rtl:group-hover:translate-x-0">
             {date.toLocaleDateString(t('nav.home') === 'الرئيسية' ? 'ar-MA' : 'fr-FR', { day: 'numeric', month: 'short' })}
           </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Popular content video card                                                 */
-/* -------------------------------------------------------------------------- */
-
-const VideoCard: React.FC<{ reel: VideoReel; t: any }> = ({ reel, t }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  return (
-    <div className="group relative flex flex-col items-center w-full">
-      <div className="relative w-full max-w-[340px] p-[2px] rounded-[3rem] bg-gradient-to-b from-slate-200 via-white to-slate-200 group-hover:from-primary/60 group-hover:via-blue-500/30 group-hover:to-primary/60 transition-all duration-500 shadow-xl shadow-slate-200/50 group-hover:shadow-primary/20 group-hover:-translate-y-4">
-        <div className="relative bg-white rounded-[2.9rem] p-3 h-full mix-blend-normal ring-1 ring-slate-100">
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-black aspect-[9/16] w-full shadow-inner ring-1 ring-white/10">
-            <iframe
-              src={`https://www.instagram.com/reel/${reel.reelId}/embed/`}
-              className="w-full h-full border-0"
-              allowFullScreen
-              title={t(reel.title)}
-              scrolling="no"
-              loading="lazy"
-            ></iframe>
-
-            <div
-              onClick={() => setIsPlaying(true)}
-              className={`absolute inset-0 bg-black/30 group-hover:bg-transparent transition-all duration-500 flex items-center justify-center z-20 cursor-pointer ${isPlaying ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-            >
-              <div className="w-20 h-20 relative flex items-center justify-center">
-                <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-0 group-hover:opacity-100 duration-1000"></div>
-                <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500">
-                  <Play size={36} fill="white" className="text-white ms-2 opacity-90" />
-                </div>
-              </div>
-            </div>
-
-            <div className={`absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-10 pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}></div>
-
-            <div className={`absolute bottom-6 inset-x-6 z-20 text-start pointer-events-none transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
-              <div className="flex items-center justify-end gap-2 mb-2">
-                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold text-white border border-white/10 flex items-center gap-1.5">
-                  <Globe size={10} className="text-blue-400" />
-                  {t('home.reels')}
-                </span>
-              </div>
-              <h4 className="text-white font-black text-sm leading-relaxed line-clamp-2 drop-shadow-md pb-2 text-end">
-                {t(reel.title)}
-              </h4>
-              <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
-                <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-1">
-                  {reel.views} {t('home.views')}
-                </span>
-                <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -582,29 +520,68 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ========================== POPULAR CONTENT ========================= */}
-      <section id="media" className="py-10 bg-[#f8fafc] relative overflow-hidden">
+      {/* ===================== HIGHER SCHOOLS DISCOVERY ====================== */}
+      <section id="higher-schools" className="py-16 lg:py-20 px-4 bg-[#f8fafc] relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob"></div>
           <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob animation-delay-2000"></div>
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-multiply"></div>
         </div>
-        <div className="container mx-auto px-4 lg:px-8 text-center relative z-10">
-          <Reveal className="max-w-3xl mx-auto mb-12 space-y-5">
-            <Eyebrow>{t('home.reelsEyebrow')}</Eyebrow>
+        <div className="container mx-auto px-4 lg:px-8 relative z-10">
+          <Reveal className="max-w-3xl mx-auto mb-12 text-center space-y-5">
+            <Eyebrow>{t('home.higherSchoolsEyebrow')}</Eyebrow>
             <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-              {t('home.mostWatched')}
+              {t('home.higherSchoolsTitle')}
             </h2>
-            <p className="text-slate-500 text-lg font-bold">{t('home.motivationDoses')}</p>
+            <p className="text-slate-500 text-lg font-bold max-w-2xl mx-auto">{t('home.higherSchoolsSubtitle')}</p>
           </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 max-w-6xl mx-auto">
-            {INSTAGRAM_REELS.map((reel, i) => (
-              <Reveal key={reel.id} delay={i * 100}>
-                <VideoCard reel={reel} t={t} />
-              </Reveal>
-            ))}
-          </div>
+          <Reveal delay={100}>
+            <Link
+              to="/higher-schools"
+              className="group relative block bg-white/80 backdrop-blur-xl rounded-[3rem] md:rounded-[3.5rem] px-6 py-10 lg:px-14 lg:py-14 shadow-[0_12px_32px_-16px_rgba(15,23,42,0.12)] hover:shadow-[0_30px_60px_-20px_rgba(15,23,42,0.18)] border border-white/50 ring-1 ring-slate-100 overflow-hidden max-w-5xl mx-auto hover:-translate-y-1.5 transition-all duration-500"
+            >
+              <div className="absolute top-0 end-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -me-40 -mt-40 pointer-events-none group-hover:bg-primary/20 transition-colors duration-500"></div>
+
+              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
+                <div className="w-20 h-20 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                  <Building2 size={36} className="text-primary" strokeWidth={2} />
+                </div>
+
+                <div className="flex-1 text-center lg:text-start">
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mb-5">
+                    <div className="text-start">
+                      <span className="block text-3xl font-black text-slate-900 tabular-nums">{SCHOOLS.length}+</span>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('home.higherSchoolsStatSchools')}</span>
+                    </div>
+                    <div className="w-px h-8 bg-slate-200 hidden sm:block"></div>
+                    <div className="text-start">
+                      <span className="block text-3xl font-black text-slate-900 tabular-nums">{FIELDS.length}</span>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('home.higherSchoolsStatFields')}</span>
+                    </div>
+                    <div className="w-px h-8 bg-slate-200 hidden sm:block"></div>
+                    <div className="text-start">
+                      <span className="block text-3xl font-black text-slate-900 tabular-nums">{CITIES.length}</span>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('home.higherSchoolsStatCities')}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                    {FIELDS.slice(0, 5).map((f) => (
+                      <span key={f} className="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-[12px] font-bold ring-1 ring-slate-100">
+                        {t(`higherSchools.fields.${f}`, f)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="shrink-0 inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-[2rem] font-black text-base group-hover:bg-primary transition-all shadow-xl">
+                  <span>{t('home.higherSchoolsCta')}</span>
+                  <ArrowLeftIcon size={20} className="transform rtl:group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+          </Reveal>
         </div>
       </section>
 

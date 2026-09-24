@@ -996,14 +996,15 @@ if (strpos($request_uri, '/api/orientation-requests') !== false) {
         $name = $input['name'] ?? '';
         $phone = $input['phone'] ?? '';
         $filiere = $input['filiere'] ?? '';
+        $schoolType = $input['schoolType'] ?? '';
         $city = $input['city'] ?? '';
         $bacYear = $input['bacYear'] ?? '';
         $regionalGrade = $input['regionalGrade'] ?? '';
         $pack = $input['pack'] ?? '';
 
         try {
-            $stmt = $pdo->prepare("INSERT INTO orientation_requests (name, phone, filiere, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $phone, $filiere, $city, $bacYear, $regionalGrade, $pack]);
+            $stmt = $pdo->prepare("INSERT INTO orientation_requests (name, phone, filiere, school_type, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $phone, $filiere, $schoolType, $city, $bacYear, $regionalGrade, $pack]);
 
             http_response_code(201);
             echo json_encode(['message' => 'Request saved successfully', 'id' => $pdo->lastInsertId()]);

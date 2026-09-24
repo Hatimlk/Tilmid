@@ -917,11 +917,11 @@ app.get('/api/orientation-requests', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/orientation-requests', async (req, res) => {
-    const { name, phone, filiere, city, bacYear, regionalGrade, pack } = req.body;
+    const { name, phone, filiere, schoolType, city, bacYear, regionalGrade, pack } = req.body;
     try {
         const [result] = await db.query(
-            'INSERT INTO orientation_requests (name, phone, filiere, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, phone, filiere, city, bacYear, regionalGrade, pack]
+            'INSERT INTO orientation_requests (name, phone, filiere, school_type, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [name, phone, filiere, schoolType, city, bacYear, regionalGrade, pack]
         );
         res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {

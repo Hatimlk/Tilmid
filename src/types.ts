@@ -294,6 +294,7 @@ export interface OrientationRequest {
   name: string;
   phone: string;
   filiere: string;
+  schoolType: string;
   city: string;
   bacYear: string;
   regionalGrade: string;

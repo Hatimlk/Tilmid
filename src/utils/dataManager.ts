@@ -352,6 +352,7 @@ export const dataManager = {
     name: string;
     phone: string;
     filiere: string;
+    schoolType: string;
     city: string;
     bacYear: string;
     regionalGrade: string;

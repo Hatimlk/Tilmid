@@ -173,6 +173,7 @@ CREATE TABLE IF NOT EXISTS orientation_requests (
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     filiere VARCHAR(100),
+    school_type VARCHAR(20),
     city VARCHAR(100),
     bac_year VARCHAR(20),
     regional_grade VARCHAR(20),
