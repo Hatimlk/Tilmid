@@ -148,6 +148,60 @@ if (($request_uri == '/api/' || $request_uri == '/api') && $method == 'GET') {
     exit;
 }
 
+// 0b. PLATFORM SETTINGS (admin "Paramètres" module)
+// Public GET: the public Footer needs this on every page load, unauthenticated
+// visitors included. Falls back to the current hardcoded values if the row is
+// somehow missing so the footer is never blank.
+$SETTINGS_DEFAULTS = [
+    'contact_phone' => '+212778104220',
+    'contact_email' => 'contact@tilmide.ma',
+    'whatsapp_number' => 'https://wa.me/message/GN4XKUOMHNHGO1',
+    'instagram_url' => 'https://www.instagram.com/tilmid.official/',
+    'tiktok_url' => 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc',
+    'facebook_url' => 'https://web.facebook.com/profile.php?id=61568646044886',
+    'youtube_url' => 'https://www.youtube.com/@tilmid.official',
+];
+
+if ($request_uri === '/api/settings' && $method == 'GET') {
+    try {
+        $stmt = $pdo->query("SELECT * FROM platform_settings WHERE id = 1");
+        $row = $stmt->fetch();
+        echo json_encode(array_merge($SETTINGS_DEFAULTS, $row ?: []));
+    } catch (PDOException $e) {
+        echo json_encode($SETTINGS_DEFAULTS);
+    }
+    exit;
+}
+
+if ($request_uri === '/api/settings' && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $contactPhone = $input['contactPhone'] ?? null;
+    $contactEmail = $input['contactEmail'] ?? null;
+    $whatsappNumber = $input['whatsappNumber'] ?? null;
+    $instagramUrl = $input['instagramUrl'] ?? null;
+    $tiktokUrl = $input['tiktokUrl'] ?? null;
+    $facebookUrl = $input['facebookUrl'] ?? null;
+    $youtubeUrl = $input['youtubeUrl'] ?? null;
+
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO platform_settings (id, contact_phone, contact_email, whatsapp_number, instagram_url, tiktok_url, facebook_url, youtube_url)
+             VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE contact_phone=VALUES(contact_phone), contact_email=VALUES(contact_email),
+               whatsapp_number=VALUES(whatsapp_number), instagram_url=VALUES(instagram_url), tiktok_url=VALUES(tiktok_url),
+               facebook_url=VALUES(facebook_url), youtube_url=VALUES(youtube_url)"
+        );
+        $stmt->execute([$contactPhone, $contactEmail, $whatsappNumber, $instagramUrl, $tiktokUrl, $facebookUrl, $youtubeUrl]);
+        logActivity($pdo, $admin, 'settings_updated', 'settings', 'Paramètres de la plateforme', []);
+        echo json_encode(['message' => 'Settings saved']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save settings failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
 // 1. LOGIN (admin / general users)
 if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
     $email = trim($input['email'] ?? '');
@@ -285,6 +339,100 @@ if (strpos($request_uri, '/api/auth/register') !== false && $method == 'POST') {
     exit;
 }
 
+// 2b. USERS (admin "Utilisateurs & rôles" module)
+if ($request_uri === '/api/users' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query("SELECT id, username, email, role, created_at FROM users ORDER BY created_at ASC");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/users' && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $id = $input['id'] ?? null;
+    $isUpdate = $id !== null && ctype_digit((string)$id);
+    $username = $input['username'] ?? '';
+    $email = $input['email'] ?? '';
+    $password = $input['password'] ?? null;
+    $nextRole = ($input['role'] ?? 'user') === 'admin' ? 'admin' : 'user';
+
+    if (!$isUpdate && (!$username || !$email || !$password)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Username, email and password are required']);
+        exit;
+    }
+
+    try {
+        if ($isUpdate) {
+            if ($nextRole !== 'admin') {
+                $adminCount = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
+                $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+                $stmt->execute([$id]);
+                $current = $stmt->fetch();
+                if ($current && $current['role'] === 'admin' && $adminCount <= 1) {
+                    http_response_code(400);
+                    echo json_encode(['message' => 'Impossible de rétrograder le dernier administrateur']);
+                    exit;
+                }
+            }
+            if ($password) {
+                $stmt = $pdo->prepare("UPDATE users SET username=?, email=?, password_hash=?, role=? WHERE id=?");
+                $stmt->execute([$username, $email, password_hash($password, PASSWORD_DEFAULT), $nextRole, $id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET username=?, email=?, role=? WHERE id=?");
+                $stmt->execute([$username, $email, $nextRole, $id]);
+            }
+            logActivity($pdo, $admin, 'user_updated', 'user', $username ?: $email, ['role' => $nextRole]);
+            echo json_encode(['id' => (int)$id, 'message' => 'User updated']);
+        } else {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            if ($stmt->fetch()) {
+                http_response_code(400);
+                echo json_encode(['message' => 'Email already exists']);
+                exit;
+            }
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$username, $email, $hash, $nextRole]);
+            $newId = $pdo->lastInsertId();
+            logActivity($pdo, $admin, 'user_created', 'user', $username, ['role' => $nextRole]);
+            http_response_code(201);
+            echo json_encode(['id' => $newId, 'message' => 'User created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save user failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/users/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $id = $matches[1];
+    try {
+        $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $target = $stmt->fetch();
+        if ($target && $target['role'] === 'admin') {
+            $adminCount = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
+            if ($adminCount <= 1) {
+                http_response_code(400);
+                echo json_encode(['message' => 'Impossible de supprimer le dernier administrateur']);
+                exit;
+            }
+        }
+        $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+        echo json_encode(['message' => 'User deleted']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Delete user failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
 // 3. GET POSTS (List) - public
 if (($request_uri == '/api/posts' || $request_uri == '/api/posts/') && $method == 'GET') {
     $stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC");
@@ -392,6 +540,18 @@ if ($request_uri === '/api/students' && $method == 'GET') {
     exit;
 }
 
+// Resolves a coachId into [coachId, coachName]: coach_name is kept as a
+// denormalized label for any reader still on the free-text field. A missing/
+// unknown coachId clears the assignment; coachId omitted entirely leaves the
+// legacy coachName input field as a fallback (back-compat with old callers).
+function resolveCoach(PDO $pdo, $coachId, ?string $fallbackName): array {
+    if ($coachId === null) return [null, $fallbackName ?: null];
+    $stmt = $pdo->prepare("SELECT id, name FROM coaches WHERE id = ?");
+    $stmt->execute([$coachId]);
+    $coach = $stmt->fetch();
+    return $coach ? [(int)$coach['id'], $coach['name']] : [null, null];
+}
+
 if ($request_uri === '/api/students' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
     $id = $input['id'] ?? null;
@@ -406,20 +566,22 @@ if ($request_uri === '/api/students' && $method == 'POST') {
     $password = $input['password'] ?? null; // optional - only set/changed when provided
     $validPackages = ['essentiel', 'boost', 'premium'];
     $package = in_array($input['package'] ?? null, $validPackages, true) ? $input['package'] : null;
-    $coachName = $input['coachName'] ?? null;
+    $coachIdProvided = array_key_exists('coachId', $input);
+    [$coachId, $coachName] = resolveCoach($pdo, $input['coachId'] ?? null, $input['coachName'] ?? null);
 
     try {
         if ($isUpdate) {
-            $stmt = $pdo->prepare("SELECT status, package FROM students WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT status, package, coach_id FROM students WHERE id = ?");
             $stmt->execute([$id]);
             $existing = $stmt->fetch();
+            $nextCoachId = $coachIdProvided ? $coachId : ($existing['coach_id'] ?? null);
 
             if ($password) {
-                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=? WHERE id=?");
-                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, password_hash($password, PASSWORD_DEFAULT), $package, $coachName, $id]);
+                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=?, coach_id=? WHERE id=?");
+                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, password_hash($password, PASSWORD_DEFAULT), $package, $coachName, $nextCoachId, $id]);
             } else {
-                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, package=?, coach_name=? WHERE id=?");
-                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $package, $coachName, $id]);
+                $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, package=?, coach_name=?, coach_id=? WHERE id=?");
+                $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $package, $coachName, $nextCoachId, $id]);
             }
 
             if ($existing && $existing['package'] !== $package) {
@@ -433,8 +595,8 @@ if ($request_uri === '/api/students' && $method == 'POST') {
             echo json_encode(['id' => (int)$id, 'message' => 'Student updated']);
         } else {
             $hash = $password ? password_hash($password, PASSWORD_DEFAULT) : null;
-            $stmt = $pdo->prepare("INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash, package, coach_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $hash, $package, $coachName]);
+            $stmt = $pdo->prepare("INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash, package, coach_name, coach_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $username, $email, $grade, $status, $avatar, $hash, $package, $coachName, $coachId]);
             logActivity($pdo, $admin, 'student_created', 'student', $name, ['package' => $package]);
             http_response_code(201);
             echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Student created']);
@@ -444,6 +606,202 @@ if ($request_uri === '/api/students' && $method == 'POST') {
         echo json_encode(['message' => 'Database error']);
         error_log('Student save failed: ' . $e->getMessage());
     }
+    exit;
+}
+
+// 7a1. NOTIFICATIONS (admin "Notifications" module)
+// One row per recipient; a broadcast is fanned out to N rows at creation time.
+if ($request_uri === '/api/notifications' && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $title = trim($input['title'] ?? '');
+    $message = trim($input['message'] ?? '');
+    $target = $input['target'] ?? [];
+
+    if ($title === '' || $message === '') {
+        http_response_code(400);
+        echo json_encode(['message' => 'Title and message are required']);
+        exit;
+    }
+
+    try {
+        $studentIds = [];
+        if (!empty($target['studentId'])) {
+            $studentIds = [(int)$target['studentId']];
+        } elseif (!empty($target['package'])) {
+            $stmt = $pdo->prepare("SELECT id FROM students WHERE status = 'active' AND package = ?");
+            $stmt->execute([$target['package']]);
+            $studentIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        } elseif (!empty($target['all'])) {
+            $studentIds = array_map('intval', $pdo->query("SELECT id FROM students WHERE status = 'active'")->fetchAll(PDO::FETCH_COLUMN));
+        }
+
+        if (count($studentIds) === 0) {
+            http_response_code(400);
+            echo json_encode(['message' => 'No matching recipients']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("INSERT INTO notifications (student_id, title, message) VALUES (?, ?, ?)");
+        foreach ($studentIds as $sid) {
+            $stmt->execute([$sid, $title, $message]);
+        }
+        logActivity($pdo, $admin, 'notification_sent', 'notification', $title, ['recipients' => count($studentIds)]);
+        http_response_code(201);
+        echo json_encode(['message' => 'Notification sent', 'recipients' => count($studentIds)]);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Send notification failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if ($request_uri === '/api/notifications' && $method == 'GET') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("SELECT * FROM notifications WHERE student_id = ? ORDER BY created_at DESC LIMIT 50");
+    $stmt->execute([$user['id']]);
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if (preg_match('#^/api/notifications/(\d+)/read$#', $request_uri, $matches) && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $stmt = $pdo->prepare("UPDATE notifications SET read_at = NOW() WHERE id = ? AND student_id = ?");
+    $stmt->execute([$matches[1], $user['id']]);
+    echo json_encode(['message' => 'Marked as read']);
+    exit;
+}
+
+if ($request_uri === '/api/admin/notifications' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query(
+        "SELECT title, message, created_at, COUNT(*) AS recipient_count, SUM(read_at IS NOT NULL) AS read_count
+         FROM notifications GROUP BY title, message, created_at ORDER BY created_at DESC LIMIT 50"
+    );
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+// 7a2. TOOL OPTIONS (admin "Outils" module)
+if ($request_uri === '/api/tool-options' && $method == 'GET') {
+    requireAuth($secret_key);
+    $stmt = $pdo->query("SELECT * FROM tool_options ORDER BY category ASC, position ASC, id ASC");
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/tool-options' && $method == 'POST') {
+    requireAdmin($secret_key);
+    $id = $input['id'] ?? null;
+    $isUpdate = $id !== null && ctype_digit((string)$id);
+    $category = $input['category'] ?? '';
+    $label = trim($input['label'] ?? '');
+    $position = $input['position'] ?? 0;
+
+    if (!in_array($category, ['subject', 'technique'], true) || $label === '') {
+        http_response_code(400);
+        echo json_encode(['message' => 'Category and label are required']);
+        exit;
+    }
+
+    try {
+        if ($isUpdate) {
+            $stmt = $pdo->prepare("UPDATE tool_options SET category=?, label=?, position=? WHERE id=?");
+            $stmt->execute([$category, $label, $position, $id]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Tool option updated']);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO tool_options (category, label, position) VALUES (?, ?, ?)");
+            $stmt->execute([$category, $label, $position]);
+            http_response_code(201);
+            echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Tool option created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save tool option failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/tool-options/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM tool_options WHERE id = ?");
+    $stmt->execute([$matches[1]]);
+    echo json_encode(['message' => 'Tool option deleted']);
+    exit;
+}
+
+// 7b. COACHES (admin "Coachs" module)
+if ($request_uri === '/api/coaches' && $method == 'GET') {
+    requireAuth($secret_key);
+    $stmt = $pdo->query(
+        "SELECT c.*, COUNT(s.id) AS student_count
+         FROM coaches c LEFT JOIN students s ON s.coach_id = c.id AND s.status = 'active'
+         GROUP BY c.id ORDER BY c.name ASC"
+    );
+    echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if ($request_uri === '/api/coaches' && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $id = $input['id'] ?? null;
+    $isUpdate = $id !== null && ctype_digit((string)$id);
+    $name = trim($input['name'] ?? '');
+    $email = $input['email'] ?? null;
+    $phone = $input['phone'] ?? null;
+    $specialty = $input['specialty'] ?? null;
+    $status = in_array($input['status'] ?? null, ['active', 'inactive'], true) ? $input['status'] : 'active';
+
+    if ($name === '') {
+        http_response_code(400);
+        echo json_encode(['message' => 'Name required']);
+        exit;
+    }
+
+    try {
+        if ($isUpdate) {
+            $stmt = $pdo->prepare("UPDATE coaches SET name=?, email=?, phone=?, specialty=?, status=? WHERE id=?");
+            $stmt->execute([$name, $email, $phone, $specialty, $status, $id]);
+            // Keep the denormalized students.coach_name label in sync.
+            $pdo->prepare("UPDATE students SET coach_name = ? WHERE coach_id = ?")->execute([$name, $id]);
+            echo json_encode(['id' => (int)$id, 'message' => 'Coach updated']);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO coaches (name, email, phone, specialty, status) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $email, $phone, $specialty, $status]);
+            $newId = $pdo->lastInsertId();
+            logActivity($pdo, $admin, 'coach_created', 'coach', $name, []);
+            http_response_code(201);
+            echo json_encode(['id' => $newId, 'message' => 'Coach created']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Save coach failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/coaches/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->prepare("DELETE FROM coaches WHERE id = ?");
+    $stmt->execute([$matches[1]]);
+    echo json_encode(['message' => 'Coach deleted']);
+    exit;
+}
+
+if ($request_uri === '/api/admin/coaches-overview' && $method == 'GET') {
+    requireAdmin($secret_key);
+    $stmt = $pdo->query(
+        "SELECT c.id AS coach_id, c.name, c.specialty, c.status,
+            COUNT(DISTINCT s.id) AS student_count,
+            COUNT(DISTINCT CASE WHEN a.category = 'coaching' AND a.date > (NOW() - INTERVAL 30 DAY) THEN a.id END) AS sessions_last_30d
+         FROM coaches c
+         LEFT JOIN students s ON s.coach_id = c.id AND s.status = 'active'
+         LEFT JOIN appointments a ON a.student_id = s.id
+         GROUP BY c.id ORDER BY c.name ASC"
+    );
+    echo json_encode($stmt->fetchAll());
     exit;
 }
 
@@ -809,16 +1167,6 @@ if (preg_match('#^/api/habits/(\d+)$#', $request_uri, $matches) && $method == 'D
     exit;
 }
 
-// 18. ERROR LOG (Mon Error Log)
-if ($request_uri === '/api/error-log' && $method == 'GET') {
-    $user = requireStudentOrAdmin($secret_key);
-    $studentId = resolveStudentId($user);
-    $stmt = $pdo->prepare("SELECT * FROM error_log_entries WHERE student_id = ? ORDER BY created_at DESC");
-    $stmt->execute([$studentId]);
-    echo json_encode($stmt->fetchAll());
-    exit;
-}
-
 // 19. CHECK-INS
 if ($request_uri === '/api/checkins' && $method == 'GET') {
     $user = requireStudentOrAdmin($secret_key);
@@ -973,6 +1321,75 @@ if (preg_match('#^/api/course-modules/(\d+)$#', $request_uri, $matches) && $meth
         http_response_code(500);
         echo json_encode(['message' => 'Database error']);
         error_log('Update course module failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+// Admin creates a new module (title + description); slug is derived from the
+// insert id so it stays unique without the admin having to pick one.
+if ($request_uri === '/api/course-modules' && $method == 'POST') {
+    requireAdmin($secret_key);
+    $title = trim($input['title'] ?? '');
+    $description = $input['description'] ?? null;
+    if ($title === '') {
+        http_response_code(400);
+        echo json_encode(['message' => 'Title required']);
+        exit;
+    }
+    try {
+        $maxPos = (int)$pdo->query("SELECT COALESCE(MAX(position), 0) FROM course_modules")->fetchColumn();
+        $position = $maxPos + 1;
+        $tempSlug = 'custom-' . time() . '-' . random_int(1000, 9999);
+        $stmt = $pdo->prepare("INSERT INTO course_modules (slug, title, description, position) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$tempSlug, $title, $description, $position]);
+        $id = $pdo->lastInsertId();
+        $slug = 'custom-' . $id;
+        $pdo->prepare("UPDATE course_modules SET slug = ? WHERE id = ?")->execute([$slug, $id]);
+        http_response_code(201);
+        echo json_encode([
+            'id' => (int)$id, 'slug' => $slug, 'title' => $title, 'description' => $description,
+            'position' => $position, 'video_url' => null, 'video_source' => null, 'message' => 'Module created',
+        ]);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Create course module failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/course-modules/(\d+)/details$#', $request_uri, $matches) && $method == 'POST') {
+    requireAdmin($secret_key);
+    $id = $matches[1];
+    $title = trim($input['title'] ?? '');
+    $description = $input['description'] ?? null;
+    if ($title === '') {
+        http_response_code(400);
+        echo json_encode(['message' => 'Title required']);
+        exit;
+    }
+    try {
+        $stmt = $pdo->prepare("UPDATE course_modules SET title = ?, description = ? WHERE id = ?");
+        $stmt->execute([$title, $description, $id]);
+        echo json_encode(['id' => (int)$id, 'message' => 'Module updated']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Update course module details failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+if (preg_match('#^/api/course-modules/(\d+)$#', $request_uri, $matches) && $method == 'DELETE') {
+    requireAdmin($secret_key);
+    $id = $matches[1];
+    try {
+        $pdo->prepare("DELETE FROM course_modules WHERE id = ?")->execute([$id]);
+        echo json_encode(['message' => 'Module deleted']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Database error']);
+        error_log('Delete course module failed: ' . $e->getMessage());
     }
     exit;
 }

@@ -3,7 +3,8 @@ import { api } from '../lib/api';
 import {
   Student, Appointment, SuccessStory, StudyResource, ContactMessage, ActivityEntry,
   FeedbackEntry, PlanOverviewRow, CheckInOverviewRow, ProgressOverviewRow,
-  CollectiveSession, CollectiveSessionRegistration,
+  CollectiveSession, CollectiveSessionRegistration, Coach, CoachOverviewRow, AdminUser, PlatformSettings, ToolOption,
+  StudentNotification, NotificationSummary,
 } from '../types';
 
 // The backend stores/returns the students table's avatar_url / coach_name / join_date
@@ -13,8 +14,29 @@ const mapStudent = (s: any): Student => (s ? {
   ...s,
   avatar: s.avatar ?? s.avatar_url,
   coachName: s.coachName ?? s.coach_name ?? null,
+  coachId: s.coachId ?? s.coach_id ?? null,
   joinDate: s.joinDate ?? s.join_date,
 } : s);
+
+const mapCoach = (c: any): Coach => ({
+  id: c.id,
+  name: c.name,
+  email: c.email,
+  phone: c.phone,
+  specialty: c.specialty,
+  status: c.status,
+  studentCount: Number(c.student_count) || 0,
+  createdAt: c.created_at,
+});
+
+const mapCoachOverview = (c: any): CoachOverviewRow => ({
+  coachId: c.coach_id,
+  name: c.name,
+  specialty: c.specialty,
+  status: c.status,
+  studentCount: Number(c.student_count) || 0,
+  sessionsLast30d: Number(c.sessions_last_30d) || 0,
+});
 
 // Same idea for appointments: the DB/API return snake_case columns (student_name,
 // student_id) but the frontend Appointment type is camelCase.
@@ -122,6 +144,69 @@ export const dataManager = {
 
   deleteStudent: async (id: string): Promise<void> => {
     await api.delete(`/students/${id}`);
+  },
+
+  // --- Notifications (admin "Notifications" — in-app student notifications) ---
+  sendNotification: async (payload: { title: string; message: string; target: { studentId?: number | string } | { package: 'essentiel' | 'boost' | 'premium' } | { all: true } }): Promise<{ message: string; recipients: number }> => {
+    return await api.post('/notifications', payload);
+  },
+  getNotifications: async (): Promise<StudentNotification[]> => {
+    return await api.get('/notifications');
+  },
+  markNotificationRead: async (id: number | string): Promise<void> => {
+    await api.post(`/notifications/${id}/read`, {});
+  },
+  getAdminNotifications: async (): Promise<NotificationSummary[]> => {
+    return await api.get('/admin/notifications');
+  },
+
+  // --- Tool options (admin "Outils" — subjects/techniques dropdowns) ---
+  getToolOptions: async (): Promise<ToolOption[]> => {
+    return await api.get('/tool-options');
+  },
+  saveToolOption: async (option: { id?: number; category: 'subject' | 'technique'; label: string; position?: number }): Promise<{ id: number; message: string }> => {
+    return await api.post('/tool-options', option);
+  },
+  deleteToolOption: async (id: number | string): Promise<void> => {
+    await api.delete(`/tool-options/${id}`);
+  },
+
+  // --- Platform settings (admin "Paramètres") ---
+  getSettings: async (): Promise<PlatformSettings> => {
+    return await api.get('/settings');
+  },
+  saveSettings: async (settings: {
+    contactPhone: string; contactEmail: string; whatsappNumber: string;
+    instagramUrl: string; tiktokUrl: string; facebookUrl: string; youtubeUrl: string;
+  }): Promise<{ message: string }> => {
+    return await api.post('/settings', settings);
+  },
+
+  // --- Users (admin "Utilisateurs & rôles") ---
+  getUsers: async (): Promise<AdminUser[]> => {
+    return await api.get('/users');
+  },
+  saveUser: async (user: { id?: number; username: string; email: string; password?: string; role: 'user' | 'admin' }): Promise<{ id: number; message: string }> => {
+    return await api.post('/users', user);
+  },
+  deleteUser: async (id: number | string): Promise<void> => {
+    await api.delete(`/users/${id}`);
+  },
+
+  // --- Coaches ---
+  getCoaches: async (): Promise<Coach[]> => {
+    const coaches = await api.get('/coaches');
+    return coaches.map(mapCoach);
+  },
+  saveCoach: async (coach: { id?: number; name: string; email?: string | null; phone?: string | null; specialty?: string | null; status?: 'active' | 'inactive' }): Promise<{ id: number; message: string }> => {
+    return await api.post('/coaches', coach);
+  },
+  deleteCoach: async (id: number | string): Promise<void> => {
+    await api.delete(`/coaches/${id}`);
+  },
+  getCoachesOverview: async (): Promise<CoachOverviewRow[]> => {
+    const rows = await api.get('/admin/coaches-overview');
+    return rows.map(mapCoachOverview);
   },
 
   // --- Appointments ---
@@ -302,10 +387,6 @@ export const dataManager = {
     await api.delete(`/habits/${id}`);
   },
 
-  getErrorLog: async (studentId?: string): Promise<any[]> => {
-    return await api.get(`/error-log${studentId ? `?studentId=${studentId}` : ''}`);
-  },
-
   getCheckIns: async (studentId?: string): Promise<any[]> => {
     return await api.get(`/checkins${studentId ? `?studentId=${studentId}` : ''}`);
   },
@@ -357,6 +438,15 @@ export const dataManager = {
   },
   saveCourseModuleVideo: async (id: number | string, body: { videoUrl: string | null; videoSource: 'link' | 'upload' | null }): Promise<void> => {
     await api.post(`/course-modules/${id}`, body);
+  },
+  createCourseModule: async (body: { title: string; description?: string }): Promise<any> => {
+    return await api.post('/course-modules', body);
+  },
+  updateCourseModuleDetails: async (id: number | string, body: { title: string; description?: string }): Promise<void> => {
+    await api.post(`/course-modules/${id}/details`, body);
+  },
+  deleteCourseModule: async (id: number | string): Promise<void> => {
+    await api.delete(`/course-modules/${id}`);
   },
 
   // --- Library resources (documents) ---

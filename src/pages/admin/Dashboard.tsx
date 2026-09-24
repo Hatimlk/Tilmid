@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Layers, CalendarClock, Clock, AlertCircle, UserPlus,
@@ -9,7 +9,8 @@ import { useAdminData } from '../../context/AdminDataContext';
 import {
   AdminCard, AdminPageHeader, KpiCard, AdminEmptyState, AdminErrorState,
 } from '../../components/admin/primitives';
-import { MouwakabaPackage } from '../../types';
+import { MouwakabaPackage, CoachOverviewRow } from '../../types';
+import { dataManager } from '../../utils/dataManager';
 
 const PACKAGE_LABEL: Record<MouwakabaPackage, string> = { essentiel: 'Essentiel', boost: 'Boost', premium: 'Premium' };
 
@@ -46,6 +47,11 @@ export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { students, appointments, messages, activity } = useAdminData();
   const [distributionView, setDistributionView] = useState<DistributionView>('formule');
+  const [coachesOverview, setCoachesOverview] = useState<CoachOverviewRow[] | null>(null);
+
+  useEffect(() => {
+    dataManager.getCoachesOverview().then(setCoachesOverview).catch(() => setCoachesOverview([]));
+  }, []);
 
   const anyLoading = students.loading || appointments.loading;
   const anyError = students.error || appointments.error;
@@ -175,12 +181,36 @@ export const AdminDashboard: React.FC = () => {
           )}
         </AdminCard>
 
-        {/* Coaching workload — not built this phase */}
+        {/* Coaching workload */}
         <AdminCard className="p-5 flex flex-col">
-          <h2 className="font-black text-slate-900 text-[15px] mb-4">Charge coaching</h2>
-          <div className="flex-1 flex items-center justify-center py-6">
-            <AdminEmptyState icon={Presentation} title="Module Coaching à venir" description="La charge par coach s'affichera ici une fois le module Coaching connecté." />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-black text-slate-900 text-[15px]">Charge coaching</h2>
+            <button onClick={() => navigate('/admin/coaches')} className="text-[12.5px] font-bold text-primary hover:underline">Gérer les coachs →</button>
           </div>
+          {coachesOverview === null ? (
+            <div className="space-y-2 flex-1">{[1, 2].map((i) => <div key={i} className="h-10 rounded-xl bg-slate-50 animate-pulse" />)}</div>
+          ) : coachesOverview.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center py-6">
+              <AdminEmptyState icon={Presentation} title="Aucun coach pour le moment" description="Ajoutez un coach pour voir sa charge de travail ici." cta={{ label: 'Ajouter un coach', onClick: () => navigate('/admin/coaches') }} />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {coachesOverview.slice(0, 5).map((c) => {
+                const maxStudents = Math.max(1, ...coachesOverview.map((x) => x.studentCount));
+                return (
+                  <div key={c.coachId}>
+                    <div className="flex justify-between text-[12.5px] font-bold text-slate-600 mb-1">
+                      <span className="truncate">{c.name}</span>
+                      <span>{c.studentCount} étudiant{c.studentCount > 1 ? 's' : ''} · {c.sessionsLast30d} séance{c.sessionsLast30d > 1 ? 's' : ''}/30j</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${(c.studentCount / maxStudents) * 100}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </AdminCard>
       </div>
 

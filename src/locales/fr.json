@@ -88,7 +88,7 @@
     ],
     "studentsBadge": "+2K étudiants accompagnés",
     "programsEyebrow": "Nos programmes",
-    "programsTitle": "Trois piliers pour construire ton parcours",
+    "programsTitle": "Deux piliers pour construire ton parcours",
     "programNumber1": "01",
     "programCategory1": "Orientation",
     "programNumber2": "02",
@@ -864,6 +864,117 @@
       "accessPlaceholder": "Niveau d'accès",
       "typePlaceholder": "Type d'établissement",
       "resetButton": "Réinitialiser"
+    }
+  },
+  "bacSimulator": {
+    "invalidGrade": "Note invalide — saisissez une note comprise entre 0 et 20.",
+    "averageTitle": "10/20 — moyenne",
+    "status": {
+      "alreadyMet": {
+        "label": "Objectif déjà mathématiquement atteint",
+        "text": "Même avec 0/20 au national, vos notes actuelles permettent déjà d'atteindre cet objectif selon la formule utilisée."
+      },
+      "alreadySecured": {
+        "label": "Vous êtes bien positionné",
+        "text": "Une note modeste au national suffit déjà à atteindre une moyenne de {{target}}/20. Vous partez avec une bonne avance."
+      },
+      "accessible": {
+        "label": "Objectif accessible",
+        "text": "Avec une préparation régulière, cet objectif reste atteignable."
+      },
+      "ambitious": {
+        "label": "Objectif ambitieux",
+        "text": "Vous aurez besoin d'une excellente performance au national. Une préparation structurée sera importante."
+      },
+      "impossible": {
+        "label": "Objectif mathématiquement impossible",
+        "text": "Même avec 20/20 au national, la moyenne souhaitée ne peut pas être atteinte avec les données saisies."
+      }
+    },
+    "result": {
+      "yourResult": "Votre résultat",
+      "youMustGet": "Vous devez obtenir",
+      "toReachAverage": "à l'examen national pour atteindre une moyenne générale de",
+      "maxPossible": "Moyenne maximale possible avec vos notes actuelles : {{max}}/20",
+      "yourGoal": "Votre objectif",
+      "withNational": "Avec {{score}} au national"
+    },
+    "slider": {
+      "simulateNational": "Simulez votre note au national",
+      "moveSlider": "Déplacez le curseur pour voir la moyenne obtenue.",
+      "ariaLabel": "Note simulée à l'examen national",
+      "yourAverage": "Votre moyenne générale"
+    },
+    "formula": {
+      "howItWorks": "Comment ça marche ?",
+      "howIsCalculated": "Comment la moyenne est-elle calculée ?",
+      "continuous": "Contrôle continu",
+      "regional": "Examen régional",
+      "national": "Examen national",
+      "equation": "Moyenne = (Contrôle continu × {{continuous}}) + (Régional × {{regional}}) + (National × {{national}})",
+      "explanation": "Le simulateur inverse cette formule pour calculer la note nécessaire au national selon votre objectif."
+    },
+    "tips": {
+      "nextSteps": "Prochaines étapes",
+      "howToIncrease": "Comment augmenter vos chances d'atteindre cet objectif ?",
+      "tip1Title": "Organisez vos révisions",
+      "tip1Text": "Construisez un programme adapté au temps restant avant l'examen.",
+      "tip2Title": "Travaillez vos priorités",
+      "tip2Text": "Identifiez les matières où chaque point peut avoir le plus d'impact.",
+      "tip3Title": "Mesurez votre progression",
+      "tip3Text": "Simulez régulièrement vos résultats pour ajuster votre objectif.",
+      "needPlan": "Besoin d'un plan pour atteindre votre objectif ?",
+      "mouwakabaHelp": "Mouwakaba vous aide à structurer vos révisions, suivre votre progression et construire une méthode de travail adaptée à votre situation.",
+      "discoverCoaching": "Découvrir l'accompagnement"
+    },
+    "afterBac": {
+      "title": "Et après le BAC ?",
+      "text": "Explorez les écoles supérieures et les parcours qui correspondent à votre projet.",
+      "exploreSchools": "Explorer les écoles"
+    },
+    "faq": {
+      "eyebrow": "Questions fréquentes",
+      "title": "Tout savoir sur le simulateur BAC",
+      "q1": "Comment fonctionne le simulateur ?",
+      "a1": "Saisissez vos notes disponibles ainsi que votre moyenne cible. Le simulateur utilise les coefficients configurés pour déterminer la note nécessaire à l'examen national.",
+      "q2": "Puis-je utiliser des notes avec des décimales ?",
+      "a2": "Oui. Vous pouvez saisir des notes décimales avec une virgule ou un point, par exemple 14,5 ou 14.5.",
+      "q3": "Pourquoi le simulateur indique-t-il que mon objectif est impossible ?",
+      "a3": "Cela signifie que la note nécessaire au national dépasserait 20/20 avec les valeurs saisies. Le simulateur affiche alors la moyenne maximale théoriquement atteignable.",
+      "q4": "Puis-je modifier mon objectif ?",
+      "a4": "Oui. Changez simplement votre moyenne cible et relancez la simulation.",
+      "q5": "Les résultats sont-ils officiels ?",
+      "a5": "Le simulateur est un outil d'estimation basé sur les coefficients configurés dans la plateforme. Les résultats doivent être considérés comme indicatifs et vérifiés selon les règles applicables à votre situation.",
+      "q6": "Mes notes sont-elles enregistrées ?",
+      "a6": "Non. Le calcul se fait entièrement dans votre navigateur : vos notes ne sont ni envoyées ni conservées par Tilmid."
+    },
+    "finalCta": {
+      "eyebrow": "Objectif bac",
+      "title": "Maintenant que vous connaissez votre objectif, construisez votre plan pour l'atteindre.",
+      "text": "Transformez votre note cible en actions concrètes grâce à une méthode de travail structurée.",
+      "discoverMouwakaba": "Découvrir Mouwakaba",
+      "exploreSchools": "Explorer les écoles"
+    },
+    "hero": {
+      "seoTitle": "Simulateur BAC Maroc — Calculez votre moyenne",
+      "seoDesc": "Calculez la note nécessaire à l'examen national pour atteindre votre moyenne cible au BAC et testez différents scénarios avec le simulateur Tilmid.",
+      "badge": "Simulateur BAC 2026",
+      "title1": "Quelle note devez-vous obtenir",
+      "title2": "au national ?",
+      "subtitle": "Entrez vos notes actuelles et la moyenne que vous souhaitez obtenir. Tilmid calcule instantanément la note nécessaire à l'examen national pour atteindre votre objectif."
+    },
+    "calculator": {
+      "eyebrow": "Votre simulation",
+      "title": "Calculez la note dont vous avez besoin",
+      "subtitle": "Renseignez vos résultats actuels puis indiquez votre moyenne cible.",
+      "continuousLabel": "Contrôle continu",
+      "continuousHelper": "Votre moyenne du contrôle continu",
+      "regionalLabel": "Examen régional",
+      "regionalHelper": "Votre note à l'examen régional",
+      "targetLabel": "Moyenne souhaitée",
+      "targetHelper": "L'objectif que vous souhaitez atteindre",
+      "submit": "Calculer ma note au national",
+      "reset": "Réinitialiser"
     }
   }
 }

@@ -16,7 +16,6 @@ import { StudentTab, StudentSidebar, StudentMobileNav } from '../components/stud
 import { StudentHeader } from '../components/student/StudentHeader';
 import { useTimetable } from '../hooks/useStudentData';
 import { DashboardHome } from './student/DashboardHome';
-import { MonParcours } from './student/MonParcours';
 import { MonPlan } from './student/MonPlan';
 import { Planning } from './student/Planning';
 import { Progression } from './student/Progression';
@@ -348,12 +347,11 @@ export const StudentArea: React.FC = () => {
         <main className="flex-1 min-w-0 p-4 lg:p-8 pb-24 lg:pb-8">
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardHome student={user} entitlements={entitlements} timetable={timetable} onNavigate={setActiveTab} />}
-            {activeTab === 'parcours' && <MonParcours student={user} entitlements={entitlements} />}
             {activeTab === 'plan' && <MonPlan student={user} entitlements={entitlements} onNavigate={setActiveTab} />}
             {activeTab === 'planning' && <Planning timetable={timetable} onAdd={addTimetableItem} onRemove={removeTimetableItem} />}
             {activeTab === 'progression' && <Progression student={user} timetable={timetable} />}
             {activeTab === 'contenus' && <MesContenus entitlements={entitlements} />}
-            {activeTab === 'bibliotheque' && <Bibliotheque entitlements={entitlements} resources={resources} onNavigate={setActiveTab} />}
+            {activeTab === 'bibliotheque' && <Bibliotheque entitlements={entitlements} resources={resources} />}
             {activeTab === 'outils' && <MesOutils student={user} entitlements={entitlements} />}
             {activeTab === 'coaching' && <Coaching entitlements={entitlements} />}
             {activeTab === 'checkins' && <CheckIns student={user} entitlements={entitlements} />}

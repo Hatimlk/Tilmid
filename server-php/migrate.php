@@ -178,21 +178,6 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS habits (
 )");
 $log[] = 'habits table ensured';
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS error_log_entries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    subject VARCHAR(100) NOT NULL,
-    topic VARCHAR(255),
-    mistake TEXT NOT NULL,
-    reason TEXT,
-    correct_method TEXT,
-    review_date VARCHAR(50),
-    status VARCHAR(30) DEFAULT 'a_revoir',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-)");
-$log[] = 'error_log_entries table ensured';
-
 $pdo->exec("CREATE TABLE IF NOT EXISTS checkins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
@@ -301,5 +286,81 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS collective_session_registrations (
     UNIQUE KEY uniq_session_student (session_id, student_id)
 )");
 $log[] = 'collective_session_registrations table ensured';
+
+// 15. coaches table + students.coach_id link (admin "Coachs" module)
+$pdo->exec("CREATE TABLE IF NOT EXISTS coaches (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    specialty VARCHAR(255),
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+$log[] = 'coaches table ensured';
+
+$studentCols = $pdo->query("SHOW COLUMNS FROM students")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('coach_id', $studentCols, true)) {
+    $pdo->exec("ALTER TABLE students ADD COLUMN coach_id INT DEFAULT NULL");
+    $pdo->exec("ALTER TABLE students ADD CONSTRAINT fk_students_coach FOREIGN KEY (coach_id) REFERENCES coaches(id) ON DELETE SET NULL");
+    $log[] = 'added students.coach_id column + FK';
+} else {
+    $log[] = 'students.coach_id already present';
+}
+
+// 16. platform_settings table (admin "Paramètres" module)
+$pdo->exec("CREATE TABLE IF NOT EXISTS platform_settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    contact_phone VARCHAR(50),
+    contact_email VARCHAR(255),
+    whatsapp_number VARCHAR(50),
+    instagram_url VARCHAR(255),
+    tiktok_url VARCHAR(255),
+    facebook_url VARCHAR(255),
+    youtube_url VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)");
+$pdo->exec("INSERT IGNORE INTO platform_settings (id) VALUES (1)");
+$log[] = 'platform_settings table ensured';
+
+// 17. tool_options table (admin "Outils" module) — replaces two previously
+// hardcoded, slightly-diverged const arrays (subjects/techniques) in the
+// student-facing MesOutils.tsx and Planning.tsx.
+$pdo->exec("CREATE TABLE IF NOT EXISTS tool_options (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category ENUM('subject', 'technique') NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    position INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+$pdo->exec("INSERT IGNORE INTO tool_options (id, category, label, position) VALUES
+    (1, 'subject', 'Mathématiques', 1),
+    (2, 'subject', 'Physique-Chimie', 2),
+    (3, 'subject', 'SVT', 3),
+    (4, 'subject', 'Français', 4),
+    (5, 'subject', 'Philosophie', 5),
+    (6, 'subject', 'Langues', 6),
+    (7, 'subject', 'Autre', 7),
+    (8, 'technique', 'Rappel actif', 1),
+    (9, 'technique', 'Questions', 2),
+    (10, 'technique', 'Flashcards', 3),
+    (11, 'technique', 'Exercices', 4),
+    (12, 'technique', 'Feynman', 5),
+    (13, 'technique', 'Révision espacée', 6),
+    (14, 'technique', 'Fiches de synthèse', 7)");
+$log[] = 'tool_options table ensured + seeded';
+
+// 18. notifications table (admin "Notifications" module) — one row per
+// recipient; a broadcast is fanned out to N rows at creation time.
+$pdo->exec("CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP DEFAULT NULL,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+)");
+$log[] = 'notifications table ensured';
 
 echo json_encode(['message' => 'Migration complete', 'log' => $log, 'next_step' => 'Delete this file from the server now.']);

@@ -4,7 +4,7 @@ import {
   Edit, CalendarPlus, MoreHorizontal, Ban, Unlock, Archive, Check, Minus,
   Compass, Target, CalendarClock, Presentation, CheckSquare, TrendingUp,
   PlayCircle, Wrench, Activity as ActivityIcon, UserCog, RefreshCw,
-  ListChecks, AlertOctagon, BookOpen, Clock, MessageSquare, FileText, Send,
+  ListChecks, BookOpen, Clock, MessageSquare, FileText, Send,
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useAdminOutletContext } from '../../components/admin/AdminLayout';
@@ -17,7 +17,7 @@ import { getEntitlements } from '../../utils/entitlements';
 import { computeProgressDimensions } from '../../utils/progress';
 import { dataManager } from '../../utils/dataManager';
 import { TimetableTask, Appointment, FeedbackEntry, Student } from '../../types';
-import { Goal, Habit, ErrorLogEntry, RevisionSession, CheckIn, SelfGuidedPlan } from '../../hooks/useStudentData';
+import { Goal, Habit, RevisionSession, CheckIn, SelfGuidedPlan } from '../../hooks/useStudentData';
 
 /* -------------------------------------------------------------------------- */
 /* Live student-module data — polled while this page is open so the admin    */
@@ -31,14 +31,13 @@ interface StudentModules {
   goals: Goal[];
   revisions: RevisionSession[];
   habits: Habit[];
-  errorLog: ErrorLogEntry[];
   checkins: CheckIn[];
   timetable: TimetableTask[];
   coachingSessions: Appointment[];
   feedback: FeedbackEntry[];
 }
 
-const EMPTY_MODULES: StudentModules = { plan: null, goals: [], revisions: [], habits: [], errorLog: [], checkins: [], timetable: [], coachingSessions: [], feedback: [] };
+const EMPTY_MODULES: StudentModules = { plan: null, goals: [], revisions: [], habits: [], checkins: [], timetable: [], coachingSessions: [], feedback: [] };
 
 function useStudentModules(studentId: string | undefined) {
   const [data, setData] = useState<StudentModules>(EMPTY_MODULES);
@@ -49,12 +48,11 @@ function useStudentModules(studentId: string | undefined) {
   const load = useCallback(async () => {
     if (!studentId) return;
     try {
-      const [plan, goals, revisions, habits, errorLog, checkins, timetable, coachingSessions, feedback] = await Promise.all([
+      const [plan, goals, revisions, habits, checkins, timetable, coachingSessions, feedback] = await Promise.all([
         dataManager.getPlan(studentId),
         dataManager.getGoals(studentId),
         dataManager.getRevisions(studentId),
         dataManager.getHabits(studentId),
-        dataManager.getErrorLog(studentId),
         dataManager.getCheckIns(studentId),
         dataManager.getTimetable(studentId),
         dataManager.getCoachingSessions(studentId),
@@ -65,7 +63,6 @@ function useStudentModules(studentId: string | undefined) {
         goals: goals.map((r: any) => ({ id: String(r.id), title: r.title, category: r.category, targetDate: r.target_date || '', progress: r.progress, status: r.status, nextAction: r.next_action || '' })),
         revisions: revisions.map((r: any) => ({ id: String(r.id), subject: r.subject, chapter: r.chapter || '', durationMin: r.duration_min, technique: r.technique || '', understanding: r.understanding, date: r.session_date })),
         habits: habits.map((r: any) => ({ id: String(r.id), name: r.name, days: r.days })),
-        errorLog: errorLog.map((r: any) => ({ id: String(r.id), subject: r.subject, topic: r.topic || '', mistake: r.mistake, reason: r.reason || '', correctMethod: r.correct_method || '', reviewDate: r.review_date || '', status: r.status, createdAt: r.created_at })),
         checkins: checkins.map((r: any) => ({ id: String(r.id), date: r.created_at, adherence: r.adherence, daysRespected: r.days_respected, obstacle: r.obstacle || '', concentration: r.concentration, success: r.success || '', needsAdjustment: !!r.needs_adjustment })),
         timetable: timetable.map((r: any) => ({ id: String(r.id), subject: r.subject, day: r.day, startTime: r.start_time, endTime: r.end_time })),
         coachingSessions,
@@ -660,13 +657,19 @@ const AdminProgressTab: React.FC<{ modules: StudentModules }> = ({ modules }) =>
 /* Tools — read-only preview of Habits / Error Log / Objectifs / Révisions    */
 /* -------------------------------------------------------------------------- */
 
-const ERROR_STATUS_LABEL: Record<string, string> = { a_revoir: 'À revoir', en_cours: 'En cours', maitrise: 'Maîtrisé' };
 const GOAL_STATUS_LABEL: Record<string, string> = { a_demarrer: 'À démarrer', en_cours: 'En cours', a_revoir: 'À revoir', atteint: 'Atteint' };
+const GOAL_CATEGORY_LABEL: Record<string, string> = { academique: 'Académique', organisation: 'Organisation', methode: 'Méthode de travail', habitudes: 'Habitudes', examens: 'Préparation aux examens', personnel: 'Personnel' };
 const DAYS_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
+const fmtDate = (iso: string) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString('fr-FR');
+};
+
 const AdminToolsTab: React.FC<{ modules: StudentModules }> = ({ modules }) => {
-  const { habits, errorLog, goals, revisions } = modules;
-  const anyData = habits.length > 0 || errorLog.length > 0 || goals.length > 0 || revisions.length > 0;
+  const { habits, goals, revisions } = modules;
+  const anyData = habits.length > 0 || goals.length > 0 || revisions.length > 0;
   if (!anyData) {
     return <AdminCard><AdminEmptyState icon={Wrench} title="Aucun outil utilisé" description="Un aperçu en lecture seule des outils pratiques de l'étudiant (habitudes, erreurs, objectifs, révisions) apparaîtra ici." /></AdminCard>;
   }
@@ -696,32 +699,25 @@ const AdminToolsTab: React.FC<{ modules: StudentModules }> = ({ modules }) => {
       </AdminCard>
 
       <AdminCard className="p-5">
-        <h3 className="font-black text-slate-900 text-[14px] mb-3 flex items-center gap-2"><AlertOctagon size={16} className="text-primary" /> Error Log</h3>
-        {errorLog.length === 0 ? <p className="text-slate-400 text-[13px] font-medium">Aucune erreur enregistrée.</p> : (
-          <div className="space-y-2">
-            {errorLog.map((e) => (
-              <div key={e.id} className="p-3 rounded-xl bg-slate-50">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-black text-slate-800 text-[13px]">{e.subject}{e.topic ? ` · ${e.topic}` : ''}</p>
-                  <span className="px-2 py-0.5 rounded-full text-[10.5px] font-black bg-white text-slate-500">{ERROR_STATUS_LABEL[e.status] || e.status}</span>
-                </div>
-                <p className="text-slate-500 text-[12.5px] font-medium">{e.mistake}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </AdminCard>
-
-      <AdminCard className="p-5">
         <h3 className="font-black text-slate-900 text-[14px] mb-3 flex items-center gap-2"><Target size={16} className="text-primary" /> Objectifs</h3>
         {goals.length === 0 ? <p className="text-slate-400 text-[13px] font-medium">Aucun objectif défini.</p> : (
-          <div className="space-y-2">
-            {goals.map((g) => (
-              <div key={g.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50">
-                <p className="font-bold text-slate-700 text-[13px]">{g.title}</p>
-                <span className="px-2 py-0.5 rounded-full text-[10.5px] font-black bg-white text-slate-500 shrink-0">{GOAL_STATUS_LABEL[g.status] || g.status}</span>
-              </div>
-            ))}
+          <div className="space-y-2.5">
+            {goals.map((g) => {
+              const targetDate = fmtDate(g.targetDate);
+              return (
+                <div key={g.id} className="p-3.5 rounded-xl bg-slate-50">
+                  <div className="flex items-start justify-between gap-3 mb-1.5">
+                    <div className="min-w-0">
+                      <p className="font-black text-slate-800 text-[13px]">{g.title}</p>
+                      <p className="text-slate-400 text-[11.5px] font-bold">{GOAL_CATEGORY_LABEL[g.category] || g.category}{targetDate ? ` · Échéance ${targetDate}` : ''}</p>
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-black bg-white text-slate-500">{GOAL_STATUS_LABEL[g.status] || g.status}</span>
+                  </div>
+                  <ProgressBar value={g.progress} />
+                  {g.nextAction && <p className="text-slate-500 text-[12px] font-medium mt-1.5"><span className="font-bold text-slate-400">Prochaine action — </span>{g.nextAction}</p>}
+                </div>
+              );
+            })}
           </div>
         )}
       </AdminCard>
@@ -730,12 +726,18 @@ const AdminToolsTab: React.FC<{ modules: StudentModules }> = ({ modules }) => {
         <h3 className="font-black text-slate-900 text-[14px] mb-3 flex items-center gap-2"><BookOpen size={16} className="text-primary" /> Suivi des révisions</h3>
         {revisions.length === 0 ? <p className="text-slate-400 text-[13px] font-medium">Aucune session enregistrée.</p> : (
           <div className="space-y-2">
-            {revisions.map((r) => (
-              <div key={r.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50">
-                <p className="font-bold text-slate-700 text-[13px]">{r.subject}{r.chapter ? ` · ${r.chapter}` : ''}</p>
-                <span className="text-[11.5px] font-bold text-slate-400 shrink-0">{r.durationMin} min · {r.technique}</span>
-              </div>
-            ))}
+            {revisions.map((r) => {
+              const date = fmtDate(r.date);
+              return (
+                <div key={r.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-700 text-[13px]">{r.subject}{r.chapter ? ` · ${r.chapter}` : ''}</p>
+                    {date && <p className="text-slate-400 text-[11.5px] font-bold mt-0.5">{date}</p>}
+                  </div>
+                  <span className="text-[11.5px] font-bold text-slate-400 shrink-0 text-end">{r.durationMin} min · {r.technique}<br />Compréhension {r.understanding}/5</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </AdminCard>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, Save, UserPlus, Edit, Copy, CheckCircle2 } from 'lucide-react';
-import { Student, StudentStatus, MouwakabaPackage } from '../../types';
+import { Student, StudentStatus, MouwakabaPackage, Coach } from '../../types';
 import { dataManager } from '../../utils/dataManager';
 
 const GRADES = ['Tronc commun', '1ère Bac', '2ème Bac', 'Enseignement supérieur'];
@@ -13,7 +13,7 @@ const STATUS_OPTIONS: { value: StudentStatus; label: string }[] = [
 ];
 
 const emptyForm = (): Partial<Student> & { password?: string } => ({
-  name: '', username: '', email: '', grade: GRADES[2], status: 'pending_activation', package: null, coachName: '',
+  name: '', username: '', email: '', grade: GRADES[2], status: 'pending_activation', package: null, coachId: null,
 });
 
 export const StudentFormModal: React.FC<{
@@ -27,6 +27,7 @@ export const StudentFormModal: React.FC<{
   const [error, setError] = useState('');
   const [created, setCreated] = useState<Student | null>(null);
   const [copied, setCopied] = useState(false);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -34,6 +35,7 @@ export const StudentFormModal: React.FC<{
       setError('');
       setCreated(null);
       setCopied(false);
+      dataManager.getCoaches().then(setCoaches).catch(() => setCoaches([]));
     }
   }, [open, student]);
 
@@ -155,7 +157,10 @@ export const StudentFormModal: React.FC<{
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Coach</label>
-                  <input value={form.coachName || ''} onChange={(e) => setForm({ ...form, coachName: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px]" placeholder="Non affecté" />
+                  <select value={form.coachId ?? ''} onChange={(e) => setForm({ ...form, coachId: e.target.value ? Number(e.target.value) : null })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white">
+                    <option value="">Non affecté</option>
+                    {coaches.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
                 </div>
               </div>
 

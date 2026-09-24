@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
-  LayoutGrid, Compass, Target, CalendarDays, TrendingUp, PlayCircle, Library,
+  LayoutGrid, Target, CalendarDays, TrendingUp, PlayCircle, Library,
   Wrench, Users, CheckSquare, MessageSquare, LifeBuoy, Lock, X, Menu
 } from 'lucide-react';
 import { Entitlements } from '../../utils/entitlements';
 
 export type StudentTab =
-  | 'dashboard' | 'parcours' | 'plan' | 'planning' | 'progression'
+  | 'dashboard' | 'plan' | 'planning' | 'progression'
   | 'contenus' | 'bibliotheque' | 'outils'
   | 'coaching' | 'checkins' | 'feedback'
   | 'support' | 'profil';
@@ -28,7 +28,6 @@ export const getNavSections = (entitlements: Entitlements): NavSection[] => [
   {
     title: 'Mon parcours',
     items: [
-      { id: 'parcours', label: 'Mon parcours', icon: Compass },
       { id: 'plan', label: 'Mon plan', icon: Target },
       { id: 'planning', label: 'Planning', icon: CalendarDays },
       { id: 'progression', label: 'Progression', icon: TrendingUp },

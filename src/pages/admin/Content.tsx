@@ -1,11 +1,76 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PlayCircle, Link as LinkIcon, UploadCloud, Loader2, X, CheckCircle2, Trash2 } from 'lucide-react';
-import { AdminCard, AdminPageHeader, AdminEmptyState, AdminErrorState } from '../../components/admin/primitives';
+import { PlayCircle, Link as LinkIcon, UploadCloud, Loader2, X, CheckCircle2, Trash2, Plus, Pencil } from 'lucide-react';
+import { AdminCard, AdminPageHeader, AdminEmptyState, AdminErrorState, ConfirmDialog } from '../../components/admin/primitives';
 import { CourseModule } from '../../types';
 import { dataManager } from '../../utils/dataManager';
 import { resolveFileUrl } from '../../lib/api';
 
 type VideoTab = 'link' | 'upload';
+
+const ModuleDetailsModal: React.FC<{ module: CourseModule | null; onClose: () => void; onSaved: () => void }> = ({ module, onClose, onSaved }) => {
+  const [title, setTitle] = useState(module?.title || '');
+  const [description, setDescription] = useState(module?.description || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) { setError('Le titre est obligatoire.'); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      if (module) {
+        await dataManager.updateCourseModuleDetails(module.id, { title: title.trim(), description: description.trim() });
+      } else {
+        await dataManager.createCourseModule({ title: title.trim(), description: description.trim() });
+      }
+      onSaved();
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Échec de l'enregistrement.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-[20px] w-full max-w-lg shadow-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-black text-slate-900 text-[16px]">{module ? 'Modifier le module' : 'Nouveau module'}</h3>
+          <button onClick={onClose} aria-label="Fermer" className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100"><X size={16} /></button>
+        </div>
+
+        <form onSubmit={submit} className="space-y-3">
+          <div>
+            <label className="text-[13px] font-bold text-slate-700 block mb-1.5">Titre</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex. Préparer les examens & gérer la pression"
+              className="w-full h-11 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[13.5px]"
+            />
+          </div>
+          <div>
+            <label className="text-[13px] font-bold text-slate-700 block mb-1.5">Description (optionnel)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Courte description affichée sous le titre."
+              rows={3}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[13.5px] resize-none"
+            />
+          </div>
+          {error && <p className="text-[13px] font-bold text-rose-600">{error}</p>}
+          <button type="submit" disabled={saving} className="w-full h-11 rounded-xl bg-slate-900 text-white font-bold text-[13.5px] hover:bg-primary transition-colors disabled:opacity-70 flex items-center justify-center gap-2">
+            {saving ? <><Loader2 size={16} className="animate-spin" /> Enregistrement...</> : <><CheckCircle2 size={16} /> Enregistrer</>}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const VideoModal: React.FC<{ module: CourseModule; onClose: () => void; onSaved: () => void }> = ({ module, onClose, onSaved }) => {
   const [tab, setTab] = useState<VideoTab>(module.videoSource === 'upload' ? 'upload' : 'link');
@@ -110,7 +175,11 @@ export const AdminContent: React.FC = () => {
   const [modules, setModules] = useState<CourseModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [editing, setEditing] = useState<CourseModule | null>(null);
+  const [editingVideo, setEditingVideo] = useState<CourseModule | null>(null);
+  const [editingDetails, setEditingDetails] = useState<CourseModule | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<CourseModule | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -131,12 +200,31 @@ export const AdminContent: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    setDeleteBusy(true);
+    try {
+      await dataManager.deleteCourseModule(deleting.id);
+      setDeleting(null);
+      await load();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
   return (
     <div>
       <AdminPageHeader
         title="Modules & vidéos"
         breadcrumb="Administration / Contenu"
-        description="Attachez une vidéo (lien externe ou fichier) à chacun des 5 modules affichés dans « Mes contenus »."
+        description="Créez les modules affichés dans « Mes contenus » et attachez-leur une vidéo (lien externe ou fichier)."
+        action={
+          <button onClick={() => setCreating(true)} className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-slate-900 text-white font-bold text-[13px] hover:bg-slate-800 transition-colors">
+            <Plus size={15} /> Ajouter un module
+          </button>
+        }
       />
 
       {error ? (
@@ -144,7 +232,7 @@ export const AdminContent: React.FC = () => {
       ) : loading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-24 rounded-xl bg-slate-50 animate-pulse" />)}</div>
       ) : modules.length === 0 ? (
-        <AdminCard><AdminEmptyState icon={PlayCircle} title="Aucun module" description="Exécutez la migration serveur pour initialiser les 5 modules." /></AdminCard>
+        <AdminCard><AdminEmptyState icon={PlayCircle} title="Aucun module" description="Ajoutez votre premier module pour commencer." cta={{ label: 'Ajouter un module', onClick: () => setCreating(true) }} /></AdminCard>
       ) : (
         <div className="space-y-3">
           {modules.map((m) => (
@@ -161,15 +249,37 @@ export const AdminContent: React.FC = () => {
               ) : (
                 <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black bg-slate-100 text-slate-400">Aucune vidéo</span>
               )}
-              <button onClick={() => setEditing(m)} className="shrink-0 h-10 px-3.5 rounded-xl border border-slate-200 font-bold text-[13px] text-slate-600 hover:bg-slate-50">
-                {m.videoUrl ? 'Modifier' : 'Ajouter'}
+              <button onClick={() => setEditingDetails(m)} aria-label="Modifier le titre" className="shrink-0 w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
+                <Pencil size={15} />
+              </button>
+              <button onClick={() => setEditingVideo(m)} className="shrink-0 h-10 px-3.5 rounded-xl border border-slate-200 font-bold text-[13px] text-slate-600 hover:bg-slate-50">
+                {m.videoUrl ? 'Vidéo' : 'Ajouter vidéo'}
+              </button>
+              <button onClick={() => setDeleting(m)} aria-label="Supprimer le module" className="shrink-0 w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-rose-500 hover:bg-rose-50">
+                <Trash2 size={15} />
               </button>
             </AdminCard>
           ))}
         </div>
       )}
 
-      {editing && <VideoModal module={editing} onClose={() => setEditing(null)} onSaved={load} />}
+      {editingVideo && <VideoModal module={editingVideo} onClose={() => setEditingVideo(null)} onSaved={load} />}
+      {(creating || editingDetails) && (
+        <ModuleDetailsModal
+          module={editingDetails}
+          onClose={() => { setCreating(false); setEditingDetails(null); }}
+          onSaved={load}
+        />
+      )}
+      <ConfirmDialog
+        open={!!deleting}
+        title="Supprimer ce module ?"
+        description={`« ${deleting?.title} » sera définitivement supprimé et n'apparaîtra plus dans « Mes contenus ».`}
+        confirmLabel={deleteBusy ? 'Suppression...' : 'Supprimer'}
+        tone="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleting(null)}
+      />
     </div>
   );
 };

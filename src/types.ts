@@ -95,8 +95,10 @@ export interface Student {
   status: StudentStatus;
   /** Active Mouwakaba coaching pack. Absent/null = no coaching pack purchased. */
   package?: MouwakabaPackage | null;
-  /** Plain-text coach label. No Coach entity yet — see admin `/coaches` module. */
+  /** Denormalized coach label, kept in sync with coachId. */
   coachName?: string | null;
+  /** Real link to the coaches table (admin `/coaches` module). Null = unassigned. */
+  coachId?: number | null;
   stats?: {
     studyHours: number;
     commitmentRate: number;
@@ -166,6 +168,68 @@ export interface ProgressOverviewRow {
   revisionsLast7d: number;
   habitCount: number;
   habitConsistencyPct: number | null;
+}
+
+export interface StudentNotification {
+  id: number;
+  student_id: number;
+  title: string;
+  message: string;
+  created_at: string;
+  read_at: string | null;
+}
+
+export interface NotificationSummary {
+  title: string;
+  message: string;
+  created_at: string;
+  recipient_count: number;
+  read_count: number;
+}
+
+export interface ToolOption {
+  id: number;
+  category: 'subject' | 'technique';
+  label: string;
+  position: number;
+}
+
+export interface PlatformSettings {
+  contact_phone: string;
+  contact_email: string;
+  whatsapp_number: string;
+  instagram_url: string;
+  tiktok_url: string;
+  facebook_url: string;
+  youtube_url: string;
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  email: string;
+  role: 'user' | 'admin';
+  created_at: string;
+}
+
+export interface Coach {
+  id: number;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  specialty: string | null;
+  status: 'active' | 'inactive';
+  studentCount: number;
+  createdAt: string;
+}
+
+export interface CoachOverviewRow {
+  coachId: number;
+  name: string;
+  specialty: string | null;
+  status: 'active' | 'inactive';
+  studentCount: number;
+  sessionsLast30d: number;
 }
 
 export interface CollectiveSession {

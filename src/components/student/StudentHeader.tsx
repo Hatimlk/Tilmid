@@ -1,9 +1,88 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, User, Package, LogOut, Menu } from 'lucide-react';
-import { Student } from '../../types';
+import { ChevronDown, User, Package, LogOut, Menu, Bell } from 'lucide-react';
+import { Student, StudentNotification } from '../../types';
 import { Entitlements, PACKAGE_TONE } from '../../utils/entitlements';
 import { PackageBadge } from './primitives';
 import { StudentTab } from './navigation';
+import { dataManager } from '../../utils/dataManager';
+
+const NOTIF_POLL_MS = 30000;
+
+const timeAgo = (iso: string) => {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "à l'instant";
+  if (mins < 60) return `il y a ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `il y a ${hours} h`;
+  return `il y a ${Math.floor(hours / 24)} j`;
+};
+
+const NotificationBell: React.FC = () => {
+  const [notifications, setNotifications] = useState<StudentNotification[]>([]);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const load = () => {
+    dataManager.getNotifications().then(setNotifications).catch(() => { /* keep previous */ });
+  };
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, NOTIF_POLL_MS);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  const unreadCount = notifications.filter((n) => !n.read_at).length;
+
+  const markRead = async (n: StudentNotification) => {
+    if (n.read_at) return;
+    await dataManager.markNotificationRead(n.id);
+    setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)));
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-label="Notifications" className="relative w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500">
+        <Bell size={17} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute end-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-slate-100 shadow-[0_18px_44px_rgba(15,23,42,0.12)] p-2 z-40 max-h-[70vh] overflow-y-auto">
+          {notifications.length === 0 ? (
+            <p className="text-center text-[12.5px] font-medium text-slate-400 py-6">Aucune notification</p>
+          ) : (
+            notifications.map((n) => (
+              <button key={n.id} onClick={() => markRead(n)} className={`w-full text-start p-3 rounded-xl hover:bg-slate-50 ${!n.read_at ? 'bg-blue-50/50' : ''}`}>
+                <div className="flex items-start gap-2">
+                  {!n.read_at && <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-slate-800 text-[12.5px]">{n.title}</p>
+                    <p className="text-[12px] font-medium text-slate-500 mt-0.5">{n.message}</p>
+                    <p className="text-[11px] font-bold text-slate-400 mt-1">{timeAgo(n.created_at)}</p>
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const StudentHeader: React.FC<{
   student: Student;
@@ -37,6 +116,8 @@ export const StudentHeader: React.FC<{
         </div>
       </div>
 
+      <div className="flex items-center gap-2">
+      <NotificationBell />
       <div className="relative" ref={menuRef}>
         <button onClick={() => setMenuOpen((v) => !v)} aria-expanded={menuOpen} className="flex items-center gap-3 pe-1">
           <div className="hidden sm:block text-end">
@@ -71,6 +152,7 @@ export const StudentHeader: React.FC<{
             </button>
           </div>
         )}
+      </div>
       </div>
     </header>
   );

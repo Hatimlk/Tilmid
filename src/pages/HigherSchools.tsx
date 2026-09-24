@@ -74,6 +74,33 @@ const FIELD_ICONS: Record<string, any> = {
   'Économie & Statistique': Calculator,
 };
 
+const LOCALIZED_SCHOOL_FAMILIES = [
+  'ENSAM', 'FSJES', 'ENCG', 'ENSA', 'FST', 'EST', 'FMP', 'FLSH',
+  'ESEF', 'ENA', 'ENS', 'FEG', 'FP', 'FS',
+];
+
+const getLocalizedSchoolLabel = (
+  school: School,
+  language: string,
+  t: ReturnType<typeof useTranslation>['t'],
+) => {
+  if (!language.startsWith('ar')) {
+    return { name: school.name, acronym: school.acronym };
+  }
+
+  const city = t(`higherSchools.cities.${school.city}`, { defaultValue: school.city });
+  const family = LOCALIZED_SCHOOL_FAMILIES.find((key) =>
+    school.acronym === key || school.acronym?.startsWith(`${key} `),
+  );
+
+  if (!family) return { name: school.name, acronym: school.acronym };
+
+  return {
+    name: `${t(`higherSchools.schoolFamilies.${family}`)} ${city}`,
+    acronym: `${family} ${city}`,
+  };
+};
+
 /* -------------------------------------------------------------------------- */
 /* School logo / badge / chips                                               */
 /* -------------------------------------------------------------------------- */
@@ -110,8 +137,9 @@ const SchoolCard: React.FC<{
   compareDisabled: boolean;
   match?: MatchResult | null;
 }> = ({ school, isFavorite, onToggleFavorite, isCompared, onToggleCompare, compareDisabled, match }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const extraFields = Math.max(0, school.fields.length - 2);
+  const schoolLabel = getLocalizedSchoolLabel(school, i18n.language, t);
   return (
     <div className="group relative bg-white border border-slate-200 rounded-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_42px_rgba(15,23,42,0.09)] hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col h-full">
       <div className="flex items-start justify-between mb-4">
@@ -132,8 +160,8 @@ const SchoolCard: React.FC<{
         </button>
       </div>
 
-      <h3 className="text-[17px] font-black text-slate-900 mb-1.5 leading-snug line-clamp-2">{school.name}</h3>
-      {school.acronym && <p className="text-xs font-bold text-primary mb-3">{school.acronym}</p>}
+      <h3 className="text-[17px] font-black text-slate-900 mb-1.5 leading-snug line-clamp-2">{schoolLabel.name}</h3>
+      {schoolLabel.acronym && <p className="text-xs font-bold text-primary mb-3">{schoolLabel.acronym}</p>}
 
       <div className="flex items-center gap-1.5 text-slate-500 text-[13px] font-semibold mb-4">
         <MapPin size={14} className="text-slate-400" />
@@ -193,7 +221,7 @@ const SchoolsHero: React.FC<{
   onSubmit: () => void;
   onQuickFilter: (chip: string) => void;
 }> = ({ query, onQueryChange, onSubmit, onQuickFilter }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [focused, setFocused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -256,7 +284,7 @@ const SchoolsHero: React.FC<{
       <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
         <Reveal className="inline-flex items-center gap-2 mb-7 px-4 py-2 rounded-full bg-white border border-blue-100 shadow-sm text-[13px] font-bold text-slate-700">
           <Compass size={14} className="text-primary" />
-          <span>{t('higherSchools.hero.badge')}</span>
+          <span>{t('higherSchools.hero.guide')}</span>
         </Reveal>
 
         <Reveal delay={80}>
@@ -267,7 +295,7 @@ const SchoolsHero: React.FC<{
 
         <Reveal delay={140}>
           <p className="text-[17px] md:text-lg text-slate-500 max-w-[650px] mx-auto leading-[1.65] font-medium mb-10">
-            {t('higherSchools.hero.subtitle')}
+            {t('higherSchools.hero.description')}
           </p>
         </Reveal>
 
@@ -289,7 +317,7 @@ const SchoolsHero: React.FC<{
                 className="flex-1 min-w-0 h-11 outline-none text-slate-900 font-medium placeholder:text-slate-400 bg-transparent"
               />
               {query && (
-                <button onClick={() => { onQueryChange(''); inputRef.current?.focus(); }} aria-label="Effacer la recherche" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 shrink-0">
+                <button onClick={() => { onQueryChange(''); inputRef.current?.focus(); }} aria-label={t('higherSchools.hero.searchClear')} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 shrink-0">
                   <X size={16} />
                 </button>
               )}
@@ -297,7 +325,7 @@ const SchoolsHero: React.FC<{
                 onClick={() => { setFocused(false); onSubmit(); }}
                 className="h-11 px-6 bg-primary text-white rounded-xl font-bold text-sm hover:bg-[#0875E8] transition-all shrink-0 hidden sm:flex items-center"
               >
-                {t('higherSchools.hero.searchButton')}
+                {t('higherSchools.hero.searchBtn')}
               </button>
             </div>
 
@@ -305,13 +333,14 @@ const SchoolsHero: React.FC<{
               <div className="absolute top-full inset-x-0 mt-2 bg-white rounded-2xl border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.12)] p-3 text-start z-30 max-h-80 overflow-y-auto" role="listbox">
                 {suggestions.schools.length > 0 && (
                   <div className="mb-2">
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.schoolsTitle')}</p>
+                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.searchSchools')}</p>
                     {suggestions.schools.map((s) => {
                       const idx = flatSuggestions.findIndex((f) => f.type === 'school' && f.slug === s.slug);
+                      const schoolLabel = getLocalizedSchoolLabel(s, i18n.language, t);
                       return (
                         <button key={s.id} role="option" aria-selected={activeIndex === idx} onClick={() => selectSuggestion(flatSuggestions[idx])} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start ${activeIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
                           <SchoolLogo school={s} size="sm" />
-                          <span className="text-sm font-bold text-slate-700 truncate">{s.name}</span>
+                          <span className="text-sm font-bold text-slate-700 truncate">{schoolLabel.name}</span>
                         </button>
                       );
                     })}
@@ -319,7 +348,7 @@ const SchoolsHero: React.FC<{
                 )}
                 {suggestions.fields.length > 0 && (
                   <div className="mb-2">
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.fieldsTitle')}</p>
+                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.searchFields')}</p>
                     {suggestions.fields.map((f) => {
                       const idx = flatSuggestions.findIndex((x) => x.type === 'field' && x.value === f);
                       return (
@@ -332,7 +361,7 @@ const SchoolsHero: React.FC<{
                 )}
                 {suggestions.cities.length > 0 && (
                   <div>
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.citiesTitle')}</p>
+                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.searchCities')}</p>
                     {suggestions.cities.map((c) => {
                       const idx = flatSuggestions.findIndex((x) => x.type === 'city' && x.value === c);
                       return (
@@ -352,7 +381,7 @@ const SchoolsHero: React.FC<{
             onClick={() => { setFocused(false); onSubmit(); }}
             className="sm:hidden w-full mt-3 h-12 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2"
           >
-            <Search size={17} /> {t('higherSchools.hero.searchButton')}
+            <Search size={17} /> {t('higherSchools.hero.searchBtn')}
           </button>
         </Reveal>
 
@@ -373,9 +402,9 @@ const SchoolsHero: React.FC<{
 
         <Reveal delay={320} className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {[
-            { icon: Building2, id: 'types' },
+            { icon: Building2, id: 'publicPrivate' },
             { icon: MapPin, id: 'cities' },
-            { icon: GraduationCap, id: 'access' },
+            { icon: GraduationCap, id: 'fields' },
           ].map((item) => (
             <span key={item.id} className="flex items-center gap-2 text-[13px] font-bold text-slate-500">
               <item.icon size={16} className="text-primary" />
@@ -466,15 +495,15 @@ const FilterPanelContent: React.FC<{ filters: SchoolFilters; setFilters: (f: Sch
   return (
     <div>
       <FilterCheckboxGroup
-        title={t('higherSchools.filters.types')}
+        title={t('higherSchools.filters.type')}
         options={['public', 'private']}
         selected={filters.types}
         onToggle={(v) => toggleIn('types', v)}
         counts={new Map([['public', SCHOOLS.filter(s => s.type === 'public').length], ['private', SCHOOLS.filter(s => s.type === 'private').length]])}
         labels={{ public: t('higherSchools.card.public'), private: t('higherSchools.card.private') }}
       />
-      <FilterCheckboxGroup title={t('higherSchools.filters.cities')} options={CITIES} selected={filters.cities} onToggle={(v) => toggleIn('cities', v)} counts={cityCounts} labels={Object.fromEntries(CITIES.map(c => [c, t(`higherSchools.cities.${c}`, c)]))} />
-      <FilterCheckboxGroup title={t('higherSchools.filters.fields')} options={FIELDS as unknown as string[]} selected={filters.fields} onToggle={(v) => toggleIn('fields', v)} counts={fieldCounts} labels={Object.fromEntries(FIELDS.map(f => [f, t(`higherSchools.fields.${f}`, f)]))} />
+      <FilterCheckboxGroup title={t('higherSchools.filters.city')} options={CITIES} selected={filters.cities} onToggle={(v) => toggleIn('cities', v)} counts={cityCounts} labels={Object.fromEntries(CITIES.map(c => [c, t(`higherSchools.cities.${c}`, c)]))} />
+      <FilterCheckboxGroup title={t('higherSchools.filters.field')} options={FIELDS as unknown as string[]} selected={filters.fields} onToggle={(v) => toggleIn('fields', v)} counts={fieldCounts} labels={Object.fromEntries(FIELDS.map(f => [f, t(`higherSchools.fields.${f}`, f)]))} />
       <FilterCheckboxGroup title={t('higherSchools.filters.accessLevel')} options={ACCESS_LEVELS as unknown as string[]} selected={filters.accessLevels} onToggle={(v) => toggleIn('accessLevels', v)} labels={Object.fromEntries(ACCESS_LEVELS.map(a => [a, t(`higherSchools.access.${a}`, a)]))} />
       <FilterCheckboxGroup title={t('higherSchools.filters.admissionMethod')} options={ADMISSION_METHODS as unknown as string[]} selected={filters.admissionMethods} onToggle={(v) => toggleIn('admissionMethods', v)} labels={Object.fromEntries(ADMISSION_METHODS.map(a => [a, t(`higherSchools.admission.${a}`, a)]))} />
     </div>
@@ -561,11 +590,11 @@ const EmptyState: React.FC<{ onReset: () => void }> = ({ onReset }) => {
       <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center mx-auto mb-5">
         <Frown size={28} />
       </div>
-      <h3 className="text-xl font-black text-slate-900 mb-2">{t('higherSchools.explorer.emptyTitle')}</h3>
-      <p className="text-slate-500 font-medium max-w-md mx-auto mb-7">{t('higherSchools.explorer.emptySubtitle')}</p>
+      <h3 className="text-xl font-black text-slate-900 mb-2">{t('higherSchools.empty.title')}</h3>
+      <p className="text-slate-500 font-medium max-w-md mx-auto mb-7">{t('higherSchools.empty.description')}</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <button onClick={onReset} className="px-6 py-3 min-h-[44px] bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">{t('higherSchools.explorer.resetButton')}</button>
-        <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">{t('higherSchools.explorer.contactAdvisor')}</a>
+        <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">{t('higherSchools.empty.contactButton')}</a>
       </div>
     </div>
   );
@@ -724,7 +753,7 @@ const StudyFieldsExplorer: React.FC<{ onSelectField: (field: string) => void }> 
                 <h3 className="text-[14px] font-black text-slate-900 mb-3 leading-tight">{t(`higherSchools.fields.${field}`, field)}</h3>
                 <span className="flex items-center gap-1 text-[12px] font-bold text-primary">
                   {count} {count !== 1 ? t('higherSchools.exploreFields.schoolsPlural') : t('higherSchools.exploreFields.schools')}
-                  <ArrowLeft size={13} className="transform ltr:rotate-180 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowLeft size={13} className="transform ltr:rotate-180 ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-transform" />
                 </span>
               </button>
             </Reveal>
@@ -1002,7 +1031,7 @@ const FinalCTA: React.FC = () => {
   return (
     <Reveal>
       <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] border border-white/5 shadow-2xl p-10 md:p-16 text-center max-w-5xl mx-auto">
-        <div className="absolute top-0 start-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute top-0 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="relative z-10 max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-primary/10 text-blue-300 ring-1 ring-primary/20 mb-6">
             <GraduationCap size={12} />
@@ -1070,6 +1099,7 @@ const paramsFromFilters = (filters: SchoolFilters): URLSearchParams => {
 /* -------------------------------------------------------------------------- */
 
 export const HigherSchools: React.FC = () => {
+  const { i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFiltersState] = useState<SchoolFilters>(() => filtersFromParams(searchParams));
   const [heroQuery, setHeroQuery] = useState(filters.query);
@@ -1098,7 +1128,11 @@ export const HigherSchools: React.FC = () => {
   const selectType = (type: 'public' | 'private') => { setFilters({ ...EMPTY_FILTERS, types: [type] }); document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' }); };
 
   return (
-    <div dir="ltr" lang="fr" className="min-h-screen bg-slate-50 pb-4 overflow-x-hidden font-sans w-full max-w-full text-start">
+    <div
+      dir={i18n.dir()}
+      lang={i18n.language.startsWith('ar') ? 'ar' : 'fr'}
+      className="min-h-screen bg-slate-50 pb-4 overflow-x-hidden font-sans w-full max-w-full text-start"
+    >
       <SEO
         title="Écoles Supérieures au Maroc"
         description="Découvrez les écoles supérieures au Maroc, explorez leurs filières, villes et conditions d'accès et comparez les établissements qui correspondent à votre projet."
@@ -1119,9 +1153,7 @@ export const HigherSchools: React.FC = () => {
           profileDimensionCount={profileDimensionCount}
         />
         <StudyFieldsExplorer onSelectField={selectField} />
-        <CitiesExplorer onSelectCity={selectCity} />
         <PublicPrivateGuide onSelectType={selectType} />
-        <ComparisonCTA onOpen={() => setCompareModalOpen(true)} />
         <OrientationCTA />
         <SchoolsFAQ />
         <FinalCTA />

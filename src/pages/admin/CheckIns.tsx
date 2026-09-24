@@ -53,7 +53,7 @@ export const AdminCheckIns: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[12.5px] mb-2">
                 <div><span className="text-slate-400 font-bold">Adhérence</span><p className="font-black text-slate-800">{c.adherence ?? '—'}/10</p></div>
                 <div><span className="text-slate-400 font-bold">Jours respectés</span><p className="font-black text-slate-800">{c.daysRespected ?? '—'}</p></div>
-                <div><span className="text-slate-400 font-bold">Concentration</span><p className="font-black text-slate-800">{c.concentration ?? '—'}/10</p></div>
+                <div><span className="text-slate-400 font-bold">Concentration</span><p className="font-black text-slate-800">{c.concentration ?? '—'}/5</p></div>
               </div>
               {c.obstacle && <p className="text-[13px] text-slate-600"><span className="font-bold text-slate-400">Obstacle : </span>{c.obstacle}</p>}
               {c.success && <p className="text-[13px] text-slate-600 mt-1"><span className="font-bold text-slate-400">Réussite : </span>{c.success}</p>}

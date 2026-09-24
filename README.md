@@ -49,7 +49,7 @@ To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
 
-*   **Node.js** (v20.16+ required by the current PDF.js dependency)
+*   **Node.js** (v20.16+)
 *   **npm** or **yarn**
 
 ### Installation

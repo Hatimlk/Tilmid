@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, X, ListChecks, BookOpen, Target, Check } from 'lucide-react';
 import { Student } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
@@ -7,6 +7,7 @@ import {
   useHabitTracker, useRevisionTracker, useGoals,
   GoalStatus, GoalCategory
 } from '../../hooks/useStudentData';
+import { dataManager } from '../../utils/dataManager';
 
 const DAYS_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 type ToolId = 'habitudes' | 'revisions' | 'objectifs';
@@ -90,18 +91,28 @@ const HabitTrackerPanel: React.FC<{ username: string }> = ({ username }) => {
 /* Revision tracker                                                          */
 /* -------------------------------------------------------------------------- */
 
-const TECHNIQUES = ['Rappel actif', 'Questions', 'Flashcards', 'Exercices', 'Feynman', 'Révision espacée'];
+const FALLBACK_TECHNIQUES = ['Rappel actif', 'Questions', 'Flashcards', 'Exercices', 'Feynman', 'Révision espacée'];
 
 const RevisionTrackerPanel: React.FC<{ username: string }> = ({ username }) => {
   const { items, add, remove } = useRevisionTracker(username);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ subject: '', chapter: '', durationMin: 30, technique: TECHNIQUES[0], understanding: 3 });
+  const [techniques, setTechniques] = useState<string[]>(FALLBACK_TECHNIQUES);
+  const [form, setForm] = useState({ subject: '', chapter: '', durationMin: 30, technique: FALLBACK_TECHNIQUES[0], understanding: 3 });
+
+  useEffect(() => {
+    dataManager.getToolOptions()
+      .then((opts) => {
+        const list = opts.filter((o) => o.category === 'technique').sort((a, b) => a.position - b.position).map((o) => o.label);
+        if (list.length > 0) setTechniques(list);
+      })
+      .catch(() => { /* keep fallback */ });
+  }, []);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.subject.trim()) return;
     add({ id: Date.now().toString(), ...form, date: new Date().toISOString() });
-    setForm({ subject: '', chapter: '', durationMin: 30, technique: TECHNIQUES[0], understanding: 3 });
+    setForm({ subject: '', chapter: '', durationMin: 30, technique: techniques[0], understanding: 3 });
     setShowForm(false);
   };
 
@@ -125,7 +136,7 @@ const RevisionTrackerPanel: React.FC<{ username: string }> = ({ username }) => {
               <div>
                 <label className="text-[12px] font-bold text-slate-500 mb-1 block">Technique</label>
                 <select value={form.technique} onChange={(e) => setForm({ ...form, technique: e.target.value })} className="w-full h-11 px-3 rounded-xl border border-slate-200 text-[13.5px] font-bold bg-white outline-none focus:border-primary">
-                  {TECHNIQUES.map((t) => <option key={t}>{t}</option>)}
+                  {techniques.map((t) => <option key={t}>{t}</option>)}
                 </select>
               </div>
             </div>

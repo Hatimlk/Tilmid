@@ -1,12 +1,34 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Instagram, Youtube, Mail, Phone, Facebook, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../constants/images';
 import { useTranslation } from 'react-i18next';
+import { dataManager } from '../utils/dataManager';
+import { PlatformSettings } from '../types';
+
+// Hardcoded fallback — used until /api/settings resolves, and if it fails,
+// so the footer is never blank. Kept in sync with the admin "Paramètres" module.
+const FALLBACK_SETTINGS: PlatformSettings = {
+  contact_phone: '+2127 7810 4220',
+  contact_email: 'contact@tilmide.ma',
+  whatsapp_number: 'https://wa.me/message/GN4XKUOMHNHGO1',
+  instagram_url: 'https://www.instagram.com/tilmid.official/',
+  tiktok_url: 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc',
+  facebook_url: 'https://web.facebook.com/profile.php?id=61568646044886',
+  youtube_url: 'https://www.youtube.com/@tilmid.official',
+};
 
 export const Footer: React.FC = () => {
   const { t } = useTranslation();
+  const [settings, setSettings] = useState<PlatformSettings>(FALLBACK_SETTINGS);
+
+  useEffect(() => {
+    dataManager.getSettings()
+      .then((s) => setSettings({ ...FALLBACK_SETTINGS, ...s }))
+      .catch(() => { /* keep fallback */ });
+  }, []);
+
   return (
     <footer className="bg-white pt-24 border-t border-slate-100">
       <div className="container mx-auto px-4 lg:px-8">
@@ -63,23 +85,23 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-6">
               <li>
-                <a href="tel:+212778104220" className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors dir-ltr text-lg font-bold">
+                <a href={`tel:${settings.contact_phone}`} className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors dir-ltr text-lg font-bold">
                   <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <Phone size={18} />
                   </div>
-                  <span dir="ltr">+2127 7810 4220</span>
+                  <span dir="ltr">{settings.contact_phone}</span>
                 </a>
               </li>
               <li>
-                <a href="mailto:contact@tilmide.ma" className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors text-lg font-bold">
+                <a href={`mailto:${settings.contact_email}`} className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors text-lg font-bold">
                   <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <Mail size={18} />
                   </div>
-                  <span className="truncate">contact@tilmide.ma</span>
+                  <span className="truncate">{settings.contact_email}</span>
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors text-lg font-bold">
+                <a href={settings.whatsapp_number} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors text-lg font-bold">
                   <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <MessageCircle size={18} />
                   </div>
@@ -97,14 +119,14 @@ export const Footer: React.FC = () => {
             </h4>
             <div className="flex gap-4">
               {[
-                { icon: Instagram, href: 'https://www.instagram.com/tilmid.official/', label: 'Instagram' },
+                { icon: Instagram, href: settings.instagram_url, label: 'Instagram' },
                 {
                   icon: ({ size }: { size: number }) => (
                     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" /></svg>
-                  ), href: 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc', label: 'TikTok'
+                  ), href: settings.tiktok_url, label: 'TikTok'
                 },
-                { icon: Facebook, href: 'https://web.facebook.com/profile.php?id=61568646044886', label: 'Facebook' },
-                { icon: Youtube, href: 'https://www.youtube.com/@tilmid.official', label: 'YouTube' }
+                { icon: Facebook, href: settings.facebook_url, label: 'Facebook' },
+                { icon: Youtube, href: settings.youtube_url, label: 'YouTube' }
               ].map((social) => (
                 <a
                   key={social.label}

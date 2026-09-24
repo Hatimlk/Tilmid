@@ -33,6 +33,19 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Coaches Table — real coach entity (admin "Coachs" module). Students link to
+-- one via coach_id below; coach_name is kept as a denormalized label for any
+-- reader that hasn't been updated to the FK yet.
+CREATE TABLE IF NOT EXISTS coaches (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    specialty VARCHAR(255),
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Students Table
 -- NOTE: password_hash stores a bcrypt/password_hash() digest, never plaintext.
 -- Existing installs: run server-php/migrate.php once to rename the old
@@ -55,10 +68,13 @@ CREATE TABLE IF NOT EXISTS students (
     -- area only, e.g. a Tilmid/Talib-program student not enrolled in Mouwakaba).
     -- Existing installs: ALTER TABLE students ADD COLUMN package ENUM('essentiel','boost','premium') DEFAULT NULL;
     package ENUM('essentiel', 'boost', 'premium') DEFAULT NULL,
-    -- Free-text coach name. No coaches table yet (single-admin-team scale) —
-    -- kept as a plain label until a real Coach entity is introduced.
+    -- Denormalized coach label, kept in sync with coach_id below on every save.
     -- Existing installs: ALTER TABLE students ADD COLUMN coach_name VARCHAR(255) DEFAULT NULL;
-    coach_name VARCHAR(255) DEFAULT NULL
+    coach_name VARCHAR(255) DEFAULT NULL,
+    -- Real coach link (admin "Coachs" module). NULL = unassigned.
+    -- Existing installs: ALTER TABLE students ADD COLUMN coach_id INT DEFAULT NULL, ADD CONSTRAINT fk_students_coach FOREIGN KEY (coach_id) REFERENCES coaches(id) ON DELETE SET NULL;
+    coach_id INT DEFAULT NULL,
+    FOREIGN KEY (coach_id) REFERENCES coaches(id) ON DELETE SET NULL
 );
 
 -- Appointments Table
@@ -216,21 +232,6 @@ CREATE TABLE IF NOT EXISTS habits (
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
--- Error log Table (Mon Error Log, in Mes outils)
-CREATE TABLE IF NOT EXISTS error_log_entries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    subject VARCHAR(100) NOT NULL,
-    topic VARCHAR(255),
-    mistake TEXT NOT NULL,
-    reason TEXT,
-    correct_method TEXT,
-    review_date VARCHAR(50),
-    status VARCHAR(30) DEFAULT 'a_revoir',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-);
-
 -- Check-ins Table (self-log, Boost/Premium)
 CREATE TABLE IF NOT EXISTS checkins (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -306,6 +307,61 @@ CREATE TABLE IF NOT EXISTS collective_session_registrations (
     FOREIGN KEY (session_id) REFERENCES collective_sessions(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     UNIQUE KEY uniq_session_student (session_id, student_id)
+);
+
+-- Tool Options Table — admin-editable reference lists for "Mes outils" (used by
+-- the revision tracker's subject/technique dropdowns). Replaces two previously
+-- hardcoded, slightly-diverged const arrays in MesOutils.tsx and Planning.tsx.
+CREATE TABLE IF NOT EXISTS tool_options (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category ENUM('subject', 'technique') NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    position INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO tool_options (id, category, label, position) VALUES
+    (1, 'subject', 'Mathématiques', 1),
+    (2, 'subject', 'Physique-Chimie', 2),
+    (3, 'subject', 'SVT', 3),
+    (4, 'subject', 'Français', 4),
+    (5, 'subject', 'Philosophie', 5),
+    (6, 'subject', 'Langues', 6),
+    (7, 'subject', 'Autre', 7),
+    (8, 'technique', 'Rappel actif', 1),
+    (9, 'technique', 'Questions', 2),
+    (10, 'technique', 'Flashcards', 3),
+    (11, 'technique', 'Exercices', 4),
+    (12, 'technique', 'Feynman', 5),
+    (13, 'technique', 'Révision espacée', 6),
+    (14, 'technique', 'Fiches de synthèse', 7);
+
+-- Platform Settings Table — single row (id=1), admin "Paramètres" module.
+-- Read publicly (Footer needs it for unauthenticated visitors); written admin-only.
+CREATE TABLE IF NOT EXISTS platform_settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    contact_phone VARCHAR(50),
+    contact_email VARCHAR(255),
+    whatsapp_number VARCHAR(50),
+    instagram_url VARCHAR(255),
+    tiktok_url VARCHAR(255),
+    facebook_url VARCHAR(255),
+    youtube_url VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+INSERT IGNORE INTO platform_settings (id) VALUES (1);
+
+-- Notifications Table — in-app student notifications (admin "Notifications"
+-- module). One row per recipient; a broadcast is fanned out to N rows at
+-- creation time (see /api/notifications POST).
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP DEFAULT NULL,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
 -- Login Attempts Table (basic rate limiting for /api/auth/login and /api/students/login)

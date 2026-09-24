@@ -11,8 +11,17 @@ const INCLUDED_BY_PACKAGE: Record<string, string[]> = {
   Premium: ['Plateforme', 'Contenus & outils', 'Accompagnement collectif', '3 coachings individuels', 'Plan 90 jours', 'Check-ins toutes les 2 semaines', 'Rapport final'],
 };
 
+const STATUS_DISPLAY: Record<Student['status'], { label: string; dot: string; text: string }> = {
+  active: { label: 'Actif', dot: 'bg-emerald-500', text: 'text-emerald-600' },
+  pending_activation: { label: "En attente d'activation", dot: 'bg-amber-500', text: 'text-amber-600' },
+  suspended: { label: 'Suspendu', dot: 'bg-red-500', text: 'text-red-600' },
+  completed: { label: 'Programme terminé', dot: 'bg-blue-500', text: 'text-blue-600' },
+  archived: { label: 'Archivé', dot: 'bg-slate-400', text: 'text-slate-500' },
+};
+
 export const Profil: React.FC<{ student: Student; entitlements: Entitlements; onLogout: () => void }> = ({ student, entitlements, onLogout }) => {
   const tone = student.package ? PACKAGE_TONE[student.package] : null;
+  const statusDisplay = STATUS_DISPLAY[student.status] ?? STATUS_DISPLAY.active;
 
   return (
     <div>
@@ -37,7 +46,7 @@ export const Profil: React.FC<{ student: Student; entitlements: Entitlements; on
           </div>
           <dl className="space-y-3">
             <div className="flex justify-between"><dt className="text-slate-400 text-[13px] font-semibold">Niveau</dt><dd className="text-slate-800 text-[13px] font-bold">{student.grade}</dd></div>
-            <div className="flex justify-between"><dt className="text-slate-400 text-[13px] font-semibold">Statut</dt><dd className="text-emerald-600 text-[13px] font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Actif</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-400 text-[13px] font-semibold">Statut</dt><dd className={`${statusDisplay.text} text-[13px] font-bold flex items-center gap-1.5`}><span className={`w-1.5 h-1.5 rounded-full ${statusDisplay.dot}`} />{statusDisplay.label}</dd></div>
           </dl>
         </Card>
 

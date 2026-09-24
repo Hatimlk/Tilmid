@@ -140,6 +140,52 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+/* ---------------- PLATFORM SETTINGS (admin "Paramètres" module) ---------------- */
+// Public GET: the public Footer needs this on every page load, unauthenticated
+// visitors included. Falls back to the current hardcoded values if the row is
+// somehow missing so the footer is never blank.
+const SETTINGS_DEFAULTS = {
+    contact_phone: '+212778104220',
+    contact_email: 'contact@tilmide.ma',
+    whatsapp_number: 'https://wa.me/message/GN4XKUOMHNHGO1',
+    instagram_url: 'https://www.instagram.com/tilmid.official/',
+    tiktok_url: 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc',
+    facebook_url: 'https://web.facebook.com/profile.php?id=61568646044886',
+    youtube_url: 'https://www.youtube.com/@tilmid.official',
+};
+
+app.get('/api/settings', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM platform_settings WHERE id = 1');
+        res.json({ ...SETTINGS_DEFAULTS, ...(rows[0] || {}) });
+    } catch (err) {
+        console.error(err);
+        res.json(SETTINGS_DEFAULTS);
+    }
+});
+
+app.post('/api/settings', requireAdmin, async (req, res) => {
+    const {
+        contactPhone, contactEmail, whatsappNumber,
+        instagramUrl, tiktokUrl, facebookUrl, youtubeUrl,
+    } = req.body;
+    try {
+        await db.query(
+            `INSERT INTO platform_settings (id, contact_phone, contact_email, whatsapp_number, instagram_url, tiktok_url, facebook_url, youtube_url)
+             VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE contact_phone=VALUES(contact_phone), contact_email=VALUES(contact_email),
+               whatsapp_number=VALUES(whatsapp_number), instagram_url=VALUES(instagram_url), tiktok_url=VALUES(tiktok_url),
+               facebook_url=VALUES(facebook_url), youtube_url=VALUES(youtube_url)`,
+            [contactPhone || null, contactEmail || null, whatsappNumber || null, instagramUrl || null, tiktokUrl || null, facebookUrl || null, youtubeUrl || null]
+        );
+        await logActivity(req.user.id, 'settings_updated', 'settings', 'Paramètres de la plateforme', {});
+        res.json({ message: 'Settings saved' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 /* ---------------- AUTH ROUTES ---------------- */
 
 // Register
@@ -250,6 +296,75 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
         const [rows] = await db.query('SELECT id, username, email, role FROM users WHERE id = ?', [req.user.id]);
         if (!rows[0]) return res.status(401).json({ message: 'Unauthorized' });
         res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- USERS ROUTES (admin "Utilisateurs & rôles" module) ---------------- */
+app.get('/api/users', requireAdmin, async (req, res) => {
+    try {
+        const [users] = await db.query('SELECT id, username, email, role, created_at FROM users ORDER BY created_at ASC');
+        res.json(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/users', requireAdmin, async (req, res) => {
+    const { id, username, email, password, role } = req.body;
+    const isUpdate = id && /^\d+$/.test(String(id));
+    const nextRole = role === 'admin' ? 'admin' : 'user';
+
+    if (!isUpdate && (!username || !email || !password)) {
+        return res.status(400).json({ message: 'Username, email and password are required' });
+    }
+
+    try {
+        if (isUpdate) {
+            if (nextRole !== 'admin') {
+                const [[{ adminCount }]] = await db.query("SELECT COUNT(*) AS adminCount FROM users WHERE role = 'admin'");
+                const [[current]] = await db.query('SELECT role FROM users WHERE id = ?', [id]);
+                if (current?.role === 'admin' && adminCount <= 1) {
+                    return res.status(400).json({ message: 'Impossible de rétrograder le dernier administrateur' });
+                }
+            }
+            if (password) {
+                const hash = await bcrypt.hash(password, 10);
+                await db.query('UPDATE users SET username=?, email=?, password_hash=?, role=? WHERE id=?', [username, email, hash, nextRole, id]);
+            } else {
+                await db.query('UPDATE users SET username=?, email=?, role=? WHERE id=?', [username, email, nextRole, id]);
+            }
+            await logActivity(req.user.id, 'user_updated', 'user', username || email, { role: nextRole });
+            res.json({ id: Number(id), message: 'User updated' });
+        } else {
+            const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+            if (existing.length > 0) return res.status(400).json({ message: 'Email already exists' });
+            const hash = await bcrypt.hash(password, 10);
+            const [result] = await db.query(
+                'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                [username, email, hash, nextRole]
+            );
+            await logActivity(req.user.id, 'user_created', 'user', username, { role: nextRole });
+            res.status(201).json({ id: result.insertId, message: 'User created' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/users/:id', requireAdmin, async (req, res) => {
+    try {
+        const [[target]] = await db.query('SELECT role FROM users WHERE id = ?', [req.params.id]);
+        if (target?.role === 'admin') {
+            const [[{ adminCount }]] = await db.query("SELECT COUNT(*) AS adminCount FROM users WHERE role = 'admin'");
+            if (adminCount <= 1) return res.status(400).json({ message: 'Impossible de supprimer le dernier administrateur' });
+        }
+        await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+        res.json({ message: 'User deleted' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -374,26 +489,40 @@ app.get('/api/students', requireAdmin, async (req, res) => {
 const VALID_PACKAGES = ['essentiel', 'boost', 'premium'];
 const normalizePackage = (pkg) => (VALID_PACKAGES.includes(pkg) ? pkg : null);
 
+// Resolves a coachId into {coachId, coachName}: coach_name is kept as a
+// denormalized label for any reader still on the free-text field. A missing/
+// unknown coachId clears the assignment; coachId omitted entirely leaves the
+// legacy coachName body field as a fallback (back-compat with old callers).
+async function resolveCoach(coachId, fallbackName) {
+    if (coachId === undefined) return { coachId: undefined, coachName: fallbackName || null };
+    if (!coachId) return { coachId: null, coachName: null };
+    const [rows] = await db.query('SELECT id, name FROM coaches WHERE id = ?', [coachId]);
+    if (!rows[0]) return { coachId: null, coachName: null };
+    return { coachId: rows[0].id, coachName: rows[0].name };
+}
+
 app.post('/api/students', requireAdmin, async (req, res) => {
-    const { id, name, username, email, grade, status, avatar, password, coachName } = req.body;
+    const { id, name, username, email, grade, status, avatar, password } = req.body;
     const pkg = normalizePackage(req.body.package);
     const isUpdate = id && /^\d+$/.test(String(id));
+    const { coachId, coachName } = await resolveCoach(req.body.coachId, req.body.coachName);
 
     try {
         if (isUpdate) {
-            const [existingRows] = await db.query('SELECT status, package FROM students WHERE id = ?', [id]);
+            const [existingRows] = await db.query('SELECT status, package, coach_id FROM students WHERE id = ?', [id]);
             const existing = existingRows[0];
+            const nextCoachId = coachId === undefined ? existing?.coach_id ?? null : coachId;
 
             if (password) {
                 const hash = await bcrypt.hash(password, 10);
                 await db.query(
-                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=? WHERE id=?',
-                    [name, username, email, grade, status, avatar, hash, pkg, coachName || null, id]
+                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=?, coach_id=? WHERE id=?',
+                    [name, username, email, grade, status, avatar, hash, pkg, coachName, nextCoachId, id]
                 );
             } else {
                 await db.query(
-                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, package=?, coach_name=? WHERE id=?',
-                    [name, username, email, grade, status, avatar, pkg, coachName || null, id]
+                    'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, package=?, coach_name=?, coach_id=? WHERE id=?',
+                    [name, username, email, grade, status, avatar, pkg, coachName, nextCoachId, id]
                 );
             }
 
@@ -408,12 +537,192 @@ app.post('/api/students', requireAdmin, async (req, res) => {
         } else {
             const hash = password ? await bcrypt.hash(password, 10) : null;
             const [result] = await db.query(
-                'INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash, package, coach_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [name, username, email, grade, status, avatar, hash, pkg, coachName || null]
+                'INSERT INTO students (name, username, email, grade, status, avatar_url, password_hash, package, coach_name, coach_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [name, username, email, grade, status, avatar, hash, pkg, coachName, coachId ?? null]
             );
             await logActivity(req.user.id, 'student_created', 'student', name, { package: pkg });
             res.status(201).json({ id: result.insertId, message: 'Student created' });
         }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- NOTIFICATIONS ROUTES (admin "Notifications" module) ---------------- */
+// One row per recipient; a broadcast is fanned out to N rows at creation time.
+app.post('/api/notifications', requireAdmin, async (req, res) => {
+    const title = (req.body.title || '').trim();
+    const message = (req.body.message || '').trim();
+    const target = req.body.target || {};
+    if (!title || !message) return res.status(400).json({ message: 'Title and message are required' });
+
+    try {
+        let studentIds = [];
+        if (target.studentId) {
+            studentIds = [Number(target.studentId)];
+        } else if (target.package) {
+            const [rows] = await db.query("SELECT id FROM students WHERE status = 'active' AND package = ?", [target.package]);
+            studentIds = rows.map((r) => r.id);
+        } else if (target.all) {
+            const [rows] = await db.query("SELECT id FROM students WHERE status = 'active'");
+            studentIds = rows.map((r) => r.id);
+        }
+        if (studentIds.length === 0) return res.status(400).json({ message: 'No matching recipients' });
+
+        const values = studentIds.map((id) => [id, title, message]);
+        await db.query('INSERT INTO notifications (student_id, title, message) VALUES ?', [values]);
+        await logActivity(req.user.id, 'notification_sent', 'notification', title, { recipients: studentIds.length });
+        res.status(201).json({ message: 'Notification sent', recipients: studentIds.length });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/notifications', requireStudent, async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM notifications WHERE student_id = ? ORDER BY created_at DESC LIMIT 50', [req.user.id]);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/notifications/:id/read', requireStudent, async (req, res) => {
+    try {
+        await db.query('UPDATE notifications SET read_at = NOW() WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        res.json({ message: 'Marked as read' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/admin/notifications', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT title, message, created_at, COUNT(*) AS recipient_count, SUM(read_at IS NOT NULL) AS read_count
+             FROM notifications GROUP BY title, message, created_at ORDER BY created_at DESC LIMIT 50`
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- TOOL OPTIONS ROUTES (admin "Outils" module) ---------------- */
+app.get('/api/tool-options', authenticate, async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM tool_options ORDER BY category ASC, position ASC, id ASC');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/tool-options', requireAdmin, async (req, res) => {
+    const { id, category, label, position = 0 } = req.body;
+    const isUpdate = id && /^\d+$/.test(String(id));
+    if (!['subject', 'technique'].includes(category) || !label || !String(label).trim()) {
+        return res.status(400).json({ message: 'Category and label are required' });
+    }
+
+    try {
+        if (isUpdate) {
+            await db.query('UPDATE tool_options SET category=?, label=?, position=? WHERE id=?', [category, label, position, id]);
+            res.json({ id: Number(id), message: 'Tool option updated' });
+        } else {
+            const [result] = await db.query(
+                'INSERT INTO tool_options (category, label, position) VALUES (?, ?, ?)',
+                [category, label, position]
+            );
+            res.status(201).json({ id: result.insertId, message: 'Tool option created' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/tool-options/:id', requireAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM tool_options WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Tool option deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/* ---------------- COACHES ROUTES ---------------- */
+app.get('/api/coaches', authenticate, async (req, res) => {
+    try {
+        const [coaches] = await db.query(
+            `SELECT c.*, COUNT(s.id) AS student_count
+             FROM coaches c LEFT JOIN students s ON s.coach_id = c.id AND s.status = 'active'
+             GROUP BY c.id ORDER BY c.name ASC`
+        );
+        res.json(coaches);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/coaches', requireAdmin, async (req, res) => {
+    const { id, name, email, phone, specialty, status = 'active' } = req.body;
+    const isUpdate = id && /^\d+$/.test(String(id));
+    if (!name || !String(name).trim()) return res.status(400).json({ message: 'Name required' });
+
+    try {
+        if (isUpdate) {
+            await db.query(
+                'UPDATE coaches SET name=?, email=?, phone=?, specialty=?, status=? WHERE id=?',
+                [name, email || null, phone || null, specialty || null, status, id]
+            );
+            // Keep the denormalized students.coach_name label in sync.
+            await db.query('UPDATE students SET coach_name = ? WHERE coach_id = ?', [name, id]);
+            res.json({ id: Number(id), message: 'Coach updated' });
+        } else {
+            const [result] = await db.query(
+                'INSERT INTO coaches (name, email, phone, specialty, status) VALUES (?, ?, ?, ?, ?)',
+                [name, email || null, phone || null, specialty || null, status]
+            );
+            await logActivity(req.user.id, 'coach_created', 'coach', name, {});
+            res.status(201).json({ id: result.insertId, message: 'Coach created' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/coaches/:id', requireAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM coaches WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Coach deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/admin/coaches-overview', requireAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT c.id AS coach_id, c.name, c.specialty, c.status,
+                COUNT(DISTINCT s.id) AS student_count,
+                COUNT(DISTINCT CASE WHEN a.category = 'coaching' AND a.date > (NOW() - INTERVAL 30 DAY) THEN a.id END) AS sessions_last_30d
+             FROM coaches c
+             LEFT JOIN students s ON s.coach_id = c.id AND s.status = 'active'
+             LEFT JOIN appointments a ON a.student_id = s.id
+             GROUP BY c.id ORDER BY c.name ASC`
+        );
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -467,10 +776,13 @@ app.post('/api/appointments', requireAdmin, async (req, res) => {
             const time = req.body.time ?? existing.time;
             const status = req.body.status ?? existing.status;
             const type = req.body.type ?? existing.type;
+            const studentId = 'studentId' in req.body ? req.body.studentId : existing.student_id;
+            const category = 'category' in req.body ? req.body.category : existing.category;
+            const notes = 'notes' in req.body ? req.body.notes : existing.notes;
 
             await db.query(
-                'UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=? WHERE id=?',
-                [studentName, title, date, time, status, type, id]
+                'UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=?, student_id=?, category=?, notes=? WHERE id=?',
+                [studentName, title, date, time, status, type, studentId || null, category || null, notes, id]
             );
             if (existing.status !== status) {
                 await logActivity(req.user.id, 'appointment_status_changed', 'appointment', title, { student: studentName, from: existing.status, to: status });
@@ -478,10 +790,10 @@ app.post('/api/appointments', requireAdmin, async (req, res) => {
             return res.json({ id: Number(id), message: 'Appointment updated' });
         }
 
-        const { studentName, title, date, time, status = 'confirmed', type = 'live' } = req.body;
+        const { studentName, title, date, time, status = 'confirmed', type = 'live', studentId = null, category = null, notes = null } = req.body;
         const [result] = await db.query(
-            'INSERT INTO appointments (student_name, title, date, time, status, type) VALUES (?, ?, ?, ?, ?, ?)',
-            [studentName, title, date, time, status, type]
+            'INSERT INTO appointments (student_name, title, date, time, status, type, student_id, category, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [studentName, title, date, time, status, type, studentId || null, category || null, notes]
         );
         await logActivity(req.user.id, 'appointment_created', 'appointment', title, { student: studentName, date, time });
         res.status(201).json({ id: result.insertId, message: 'Appointment created' });
@@ -757,19 +1069,6 @@ app.delete('/api/habits/:id', requireStudent, async (req, res) => {
     }
 });
 
-/* ---------------- ERROR LOG ROUTES (Mon Error Log) ---------------- */
-app.get('/api/error-log', requireStudentOrAdmin, async (req, res) => {
-    const studentId = resolveStudentId(req, res);
-    if (studentId === null) return;
-    try {
-        const [rows] = await db.query('SELECT * FROM error_log_entries WHERE student_id = ? ORDER BY created_at DESC', [studentId]);
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
 /* ---------------- CHECK-INS ROUTES ---------------- */
 app.get('/api/checkins', requireStudentOrAdmin, async (req, res) => {
     const studentId = resolveStudentId(req, res);
@@ -888,6 +1187,55 @@ app.post('/api/course-modules/:id', requireAdmin, async (req, res) => {
     try {
         await db.query('UPDATE course_modules SET video_url = ?, video_source = ? WHERE id = ?', [videoUrl || null, videoSource, req.params.id]);
         res.json({ id: Number(req.params.id), message: 'Module updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Admin creates a new module (title + description); slug is derived from the
+// insert id so it stays unique without the admin having to pick one.
+app.post('/api/course-modules', requireAdmin, async (req, res) => {
+    const title = (req.body.title || '').trim();
+    const description = req.body.description || null;
+    if (!title) return res.status(400).json({ message: 'Title required' });
+    try {
+        const [maxRows] = await db.query('SELECT COALESCE(MAX(position), 0) AS maxPos FROM course_modules');
+        const position = (maxRows[0]?.maxPos || 0) + 1;
+        const tempSlug = `custom-${Date.now()}`;
+        const [result] = await db.query(
+            'INSERT INTO course_modules (slug, title, description, position) VALUES (?, ?, ?, ?)',
+            [tempSlug, title, description, position]
+        );
+        const slug = `custom-${result.insertId}`;
+        await db.query('UPDATE course_modules SET slug = ? WHERE id = ?', [slug, result.insertId]);
+        res.status(201).json({
+            id: result.insertId, slug, title, description, position,
+            video_url: null, video_source: null, message: 'Module created',
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/course-modules/:id/details', requireAdmin, async (req, res) => {
+    const title = (req.body.title || '').trim();
+    const description = req.body.description || null;
+    if (!title) return res.status(400).json({ message: 'Title required' });
+    try {
+        await db.query('UPDATE course_modules SET title = ?, description = ? WHERE id = ?', [title, description, req.params.id]);
+        res.json({ id: Number(req.params.id), message: 'Module updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/course-modules/:id', requireAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM course_modules WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Module deleted' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

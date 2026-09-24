@@ -182,24 +182,6 @@ export const useHabitTracker = (username: string) =>
   );
 
 /* -------------------------------------------------------------------------- */
-/* Error log                                                                  */
-/* -------------------------------------------------------------------------- */
-
-export type ErrorLogStatus = 'a_revoir' | 'en_cours' | 'maitrise';
-
-export interface ErrorLogEntry {
-  id: string;
-  subject: string;
-  topic: string;
-  mistake: string;
-  reason: string;
-  correctMethod: string;
-  reviewDate: string;
-  status: ErrorLogStatus;
-  createdAt: string;
-}
-
-/* -------------------------------------------------------------------------- */
 /* Revision tracker                                                           */
 /* -------------------------------------------------------------------------- */
 

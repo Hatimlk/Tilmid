@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import {
   Student, Appointment, ContactMessage, SuccessStory, ActivityEntry, StudyResource,
-  PlanOverviewRow, CheckInOverviewRow, ProgressOverviewRow, FeedbackEntry, CollectiveSession,
+  PlanOverviewRow, CheckInOverviewRow, ProgressOverviewRow, FeedbackEntry, CollectiveSession, Coach,
 } from '../types';
 import { dataManager } from '../utils/dataManager';
 
@@ -24,6 +24,8 @@ interface AdminDataContextType {
   feedback: Resource<FeedbackEntry[]>;
   collectiveSessions: Resource<CollectiveSession[]>;
   coachingSessions: Resource<Appointment[]>;
+  coaches: Resource<Coach[]>;
+  refreshCoaches: () => Promise<void>;
   refreshStudents: () => Promise<void>;
   refreshAppointments: () => Promise<void>;
   refreshMessages: () => Promise<void>;
@@ -73,14 +75,15 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [feedback, refreshFeedback] = useResource<FeedbackEntry[]>([], dataManager.getAdminFeedback);
   const [collectiveSessions, refreshCollectiveSessions] = useResource<CollectiveSession[]>([], dataManager.getCollectiveSessions);
   const [coachingSessions, refreshCoachingSessions] = useResource<Appointment[]>([], () => dataManager.getCoachingSessions());
+  const [coaches, refreshCoaches] = useResource<Coach[]>([], dataManager.getCoaches);
 
   return (
     <AdminDataContext.Provider
       value={{
         students, appointments, messages, stories, activity, libraryResources,
-        plans, checkins, progressOverview, feedback, collectiveSessions, coachingSessions,
+        plans, checkins, progressOverview, feedback, collectiveSessions, coachingSessions, coaches,
         refreshStudents, refreshAppointments, refreshMessages, refreshStories, refreshActivity, refreshLibraryResources,
-        refreshPlans, refreshCheckins, refreshProgressOverview, refreshFeedback, refreshCollectiveSessions, refreshCoachingSessions,
+        refreshPlans, refreshCheckins, refreshProgressOverview, refreshFeedback, refreshCollectiveSessions, refreshCoachingSessions, refreshCoaches,
       }}
     >
       {children}

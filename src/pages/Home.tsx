@@ -395,7 +395,7 @@ export const Home: React.FC = () => {
   const nationalDate = useMemo(() => getExamDate(5, 4), []);
   const regionalDate = useMemo(() => getExamDate(5, 1), []);
 
-  const stats = (t('home.stats', { returnObjects: true }) as unknown as { value: string; label: string }[]) || [];
+
   const steps = (t('home.howItWorksSteps', { returnObjects: true }) as unknown as { title: string; desc: string }[]) || [];
   const stepIcons = [Target, BookOpen, GraduationCap];
 
@@ -490,20 +490,6 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ========================== TRUST METRICS ========================== */}
-      <section className="relative z-20 -mt-16 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <Reveal>
-            <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_-20px_rgba(15,23,42,0.15)] ring-1 ring-slate-100 py-8 px-6 lg:px-12 grid grid-cols-2 lg:grid-cols-4 gap-y-8">
-              {stats.map((stat, i) => (
-                <div key={i} className="border-slate-100 [&:nth-child(odd)]:border-e lg:[&:nth-child(odd)]:border-e-0 lg:[&:not(:last-child)]:border-e">
-                  <StatItem value={stat.value} label={stat.label} />
-                </div>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ============================ PROGRAMS ============================= */}
       <section className="relative z-10 pt-14 pb-4 px-4">
@@ -513,7 +499,7 @@ export const Home: React.FC = () => {
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('home.programsTitle')}</h2>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             <Reveal delay={0}>
               <ProgramCard
                 data={TAWJIH_DATA}
@@ -536,18 +522,6 @@ export const Home: React.FC = () => {
                 number={t('home.programNumber2')}
                 category={t('home.programCategory2')}
                 ctaLabel={t('home.exploreCoaching')}
-              />
-            </Reveal>
-            <Reveal delay={240}>
-              <ProgramCard
-                data={{ title: 'programs.higherSchools.title', subtitle: 'programs.higherSchools.subtitle' }}
-                icon={Building2}
-                tone="purple"
-                link="/higher-schools"
-                t={t}
-                number={t('home.programNumber3')}
-                category={t('home.programCategory3')}
-                ctaLabel={t('home.exploreSchools')}
               />
             </Reveal>
           </div>

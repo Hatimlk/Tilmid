@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, X, Clock, CalendarDays, List, Grid3x3 } from 'lucide-react';
 import { TimetableTask } from '../../types';
 import { PageHeader, Card, EmptyState } from '../../components/student/primitives';
+import { dataManager } from '../../utils/dataManager';
 
 const DAYS_FR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-const SUBJECTS = ['Mathématiques', 'Physique-Chimie', 'SVT', 'Français', 'Philosophie', 'Langues', 'Autre'];
-const TECHNIQUES = ['Rappel actif', 'Exercices', 'Flashcards', 'Fiches de synthèse', 'Révision espacée'];
+const FALLBACK_SUBJECTS = ['Mathématiques', 'Physique-Chimie', 'SVT', 'Français', 'Philosophie', 'Langues', 'Autre'];
+const FALLBACK_TECHNIQUES = ['Rappel actif', 'Exercices', 'Flashcards', 'Fiches de synthèse', 'Révision espacée'];
 
 const SUBJECT_COLORS: Record<string, string> = {
   'Mathématiques': 'bg-blue-50 text-blue-700 border-blue-100',
@@ -24,7 +25,22 @@ export const Planning: React.FC<{
 }> = ({ timetable, onAdd, onRemove }) => {
   const [view, setView] = useState<'semaine' | 'liste'>('semaine');
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ subject: SUBJECTS[0], topic: '', day: DAYS_FR[0], startTime: '18:00', endTime: '19:00', technique: TECHNIQUES[0] });
+  const [subjects, setSubjects] = useState<string[]>(FALLBACK_SUBJECTS);
+  const [techniques, setTechniques] = useState<string[]>(FALLBACK_TECHNIQUES);
+  const [form, setForm] = useState({ subject: FALLBACK_SUBJECTS[0], topic: '', day: DAYS_FR[0], startTime: '18:00', endTime: '19:00', technique: FALLBACK_TECHNIQUES[0] });
+
+  useEffect(() => {
+    dataManager.getToolOptions()
+      .then((opts) => {
+        const byCategory = (cat: 'subject' | 'technique') =>
+          opts.filter((o) => o.category === cat).sort((a, b) => a.position - b.position).map((o) => o.label);
+        const nextSubjects = byCategory('subject');
+        const nextTechniques = byCategory('technique');
+        if (nextSubjects.length > 0) { setSubjects(nextSubjects); setForm((f) => ({ ...f, subject: nextSubjects[0] })); }
+        if (nextTechniques.length > 0) { setTechniques(nextTechniques); setForm((f) => ({ ...f, technique: nextTechniques[0] })); }
+      })
+      .catch(() => { /* keep fallback */ });
+  }, []);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +127,7 @@ export const Planning: React.FC<{
               <div>
                 <label className="text-[13px] font-bold text-slate-600 mb-1.5 block">Matière</label>
                 <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="w-full h-12 px-3 rounded-xl border border-slate-200 font-bold text-[14px] bg-white outline-none focus:border-primary">
-                  {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
+                  {subjects.map((s) => <option key={s}>{s}</option>)}
                 </select>
               </div>
               <div>
@@ -137,7 +153,7 @@ export const Planning: React.FC<{
               <div>
                 <label className="text-[13px] font-bold text-slate-600 mb-1.5 block">Technique</label>
                 <select value={form.technique} onChange={(e) => setForm({ ...form, technique: e.target.value })} className="w-full h-12 px-3 rounded-xl border border-slate-200 font-bold text-[14px] bg-white outline-none focus:border-primary">
-                  {TECHNIQUES.map((t) => <option key={t}>{t}</option>)}
+                  {techniques.map((t) => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <button type="submit" className="w-full h-[52px] bg-primary text-white rounded-2xl font-black hover:bg-[#0875E8] transition-all">Ajouter au planning</button>

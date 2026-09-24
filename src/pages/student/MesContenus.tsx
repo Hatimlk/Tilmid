@@ -80,7 +80,7 @@ export const MesContenus: React.FC<{ entitlements: Entitlements }> = ({ entitlem
 
   return (
     <div>
-      <PageHeader title="Mes contenus" subtitle="Votre programme est organisé en 5 modules, dans l'ordre recommandé." />
+      <PageHeader title="Mes contenus" subtitle="Votre programme est organisé en modules, dans l'ordre recommandé." />
       <div className="space-y-3">
         {loading ? (
           [1, 2, 3].map((i) => <div key={i} className="h-[76px] rounded-2xl bg-slate-50 animate-pulse" />)

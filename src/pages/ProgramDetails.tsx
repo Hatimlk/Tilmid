@@ -4,7 +4,7 @@ import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TAWJIH_DATA, TILMID_DATA, TALIB_DATA } from '../constants';
 import { ORIENTATION_PACKS, OrientationPackDef } from '../constants/orientationPacks';
-import { IMAGES } from '../constants/images';
+import orientationHero from '../assets/orientation-hero.jpeg';
 import { ProgramData, SuccessStory } from '../types';
 import { dataManager } from '../utils/dataManager';
 import {
@@ -518,6 +518,7 @@ const TIER_LABEL: Record<OrientationPackDef['tier'], string> = {
 };
 
 const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; onChoose: (name: string) => void }> = ({ pack, index, onChoose }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const Icon = pack.icon;
   const isFeatured = Boolean(pack.badge);
@@ -540,15 +541,15 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
               <Icon size={22} strokeWidth={2.2} />
             </div>
             <div className="text-end">
-              <span className="block text-2xl font-black text-slate-900 tracking-tight tabular-nums leading-none">{pack.price}</span>
-              <span className="block text-[11px] font-bold text-slate-400 mt-1">Paiement unique</span>
+              <span dir="ltr" className="block text-2xl font-black text-slate-900 tracking-tight tabular-nums leading-none">{pack.price}</span>
+              <span className="block text-[11px] font-bold text-slate-400 mt-1">{t('orientationPage.packs.payment', 'Paiement unique')}</span>
             </div>
           </div>
 
           <h3 className="text-lg font-black text-slate-900 tracking-tight mb-2">{pack.name}</h3>
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
-            <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full ${pack.tier === 'complet' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{TIER_LABEL[pack.tier]}</span>
-            <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">{pack.audience}</span>
+            <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full ${pack.tier === 'complet' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{t(`orientationPage.packs.tiers.${pack.tier}`, TIER_LABEL[pack.tier])}</span>
+            <span dir="auto" className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">{pack.audience}</span>
           </div>
           {pack.idealFor && <p className="text-slate-500 text-[13px] leading-relaxed font-medium">{pack.idealFor}</p>}
         </div>
@@ -568,7 +569,7 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
               onClick={() => setExpanded((v) => !v)}
               className="flex items-center gap-1.5 text-[12px] font-black text-blue-600 hover:text-blue-700 mb-5 transition-colors"
             >
-              <span>{expanded ? 'Voir moins' : `Voir les ${pack.features.length} avantages`}</span>
+              <span>{expanded ? t('orientationPage.packs.showLess', 'Voir moins') : t('orientationPage.packs.showBenefits', { count: pack.features.length, defaultValue: `Voir les ${pack.features.length} avantages` })}</span>
               <ChevronDown size={14} className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
             </button>
           )}
@@ -577,11 +578,11 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
 
           <button
             type="button"
-            onClick={() => onChoose(pack.name)}
+            onClick={() => onChoose((pack as OrientationPackDef & { sourceName?: string }).sourceName || pack.name)}
             className={`mt-auto w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isFeatured ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/25' : 'bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-100'}`}
           >
-            <span>Choisir ce pack</span>
-            <ArrowLeft size={16} className="transform ltr:rotate-180 group-hover:-translate-x-1 rtl:group-hover:translate-x-1 transition-transform" />
+            <span>{t('orientationPage.packs.choosePack', 'Choisir ce pack')}</span>
+            <ArrowLeft size={16} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
           </button>
         </div>
       </div>
@@ -590,6 +591,7 @@ const OrientationPackCard: React.FC<{ pack: OrientationPackDef; index: number; o
 };
 
 const OrientationInfoBanner: React.FC<{ pack: OrientationPackDef; onChoose: (name: string) => void }> = ({ pack, onChoose }) => {
+  const { t } = useTranslation();
   const Icon = pack.icon;
   const highlights = pack.features.slice(0, 4);
 
@@ -601,7 +603,7 @@ const OrientationInfoBanner: React.FC<{ pack: OrientationPackDef; onChoose: (nam
             <Icon size={26} strokeWidth={2.2} />
           </div>
           <div>
-            <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 mb-1.5">{TIER_LABEL[pack.tier]}</span>
+            <span className="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 mb-1.5">{t(`orientationPage.packs.tiers.${pack.tier}`, TIER_LABEL[pack.tier])}</span>
             <h3 className="text-lg font-black text-slate-900 tracking-tight">{pack.name}</h3>
           </div>
         </div>
@@ -617,15 +619,15 @@ const OrientationInfoBanner: React.FC<{ pack: OrientationPackDef; onChoose: (nam
 
         <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-3 md:w-44 shrink-0 md:border-s md:border-slate-100 md:ps-7">
           <div className="text-start md:text-end">
-            <span className="block text-2xl font-black text-slate-900 tracking-tight tabular-nums leading-none">{pack.price}</span>
-            <span className="block text-[11px] font-bold text-slate-400 mt-1">{pack.audience}</span>
+            <span dir="ltr" className="block text-2xl font-black text-slate-900 tracking-tight tabular-nums leading-none">{pack.price}</span>
+            <span dir="auto" className="block text-[11px] font-bold text-slate-400 mt-1">{pack.audience}</span>
           </div>
           <button
             type="button"
-            onClick={() => onChoose(pack.name)}
+            onClick={() => onChoose((pack as OrientationPackDef & { sourceName?: string }).sourceName || pack.name)}
             className="shrink-0 px-5 py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-100 whitespace-nowrap"
           >
-            <span>Choisir</span>
+            <span>{t('orientationPage.packs.choose', 'Choisir')}</span>
             <ArrowLeft size={16} className="transform ltr:rotate-180" />
           </button>
         </div>
@@ -634,37 +636,40 @@ const OrientationInfoBanner: React.FC<{ pack: OrientationPackDef; onChoose: (nam
   );
 };
 
-const ORIENTATION_TRACK_TABS: { key: 'all' | 'science' | 'eco'; label: string }[] = [
-  { key: 'all', label: 'Toutes les filières' },
-  { key: 'science', label: 'Scientifique & Technique' },
-  { key: 'eco', label: 'Économie & Commerce' },
-];
+const ORIENTATION_TRACK_TABS: ('all' | 'science' | 'eco')[] = ['all', 'science', 'eco'];
 
 const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onChoose }) => {
+  const { t, i18n } = useTranslation();
   const [track, setTrack] = useState<'all' | 'science' | 'eco'>('all');
 
-  const infoPack = ORIENTATION_PACKS.find((p) => p.track === 'universal')!;
-  const sciencePacks = ORIENTATION_PACKS.filter((p) => p.track === 'science');
-  const ecoPacks = ORIENTATION_PACKS.filter((p) => p.track === 'eco');
+  const packs = ORIENTATION_PACKS.map((pack) => {
+    if (!i18n.language.startsWith('ar')) return pack;
+    const localized = t(`orientationPage.packs.items.${pack.name}`, { returnObjects: true }) as Partial<OrientationPackDef>;
+    return { ...pack, ...localized, sourceName: pack.name };
+  });
+
+  const infoPack = packs.find((p) => p.track === 'universal')!;
+  const sciencePacks = packs.filter((p) => p.track === 'science');
+  const ecoPacks = packs.filter((p) => p.track === 'eco');
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-20 scroll-mt-24" id="formules">
       <Reveal className="text-center max-w-2xl mx-auto mb-10 space-y-4">
-        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">Toutes les formules</SectionEyebrow>
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">Cinq packs, une seule mission</h2>
-        <p className="text-slate-500 text-lg font-medium leading-relaxed max-w-xl mx-auto">Comparez les formules et choisissez celle qui correspond à votre filière et à votre niveau d'autonomie.</p>
+        <SectionEyebrow tone="text-blue-600" toneBg="bg-blue-50">{t('orientationPage.packs.eyebrow', 'Toutes les formules')}</SectionEyebrow>
+        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{t('orientationPage.packs.title', 'Cinq packs, une seule mission')}</h2>
+        <p className="text-slate-500 text-lg font-medium leading-relaxed max-w-xl mx-auto">{t('orientationPage.packs.description', "Comparez les formules et choisissez celle qui correspond à votre filière et à votre niveau d'autonomie.")}</p>
       </Reveal>
 
       <Reveal className="flex justify-center mb-14">
         <div className="inline-flex flex-wrap justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-100">
           {ORIENTATION_TRACK_TABS.map((tab) => (
             <button
-              key={tab.key}
+              key={tab}
               type="button"
-              onClick={() => setTrack(tab.key)}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${track === tab.key ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              onClick={() => setTrack(tab)}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${track === tab ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              {tab.label}
+              {t(`orientationPage.packs.tabs.${tab}`, tab === 'all' ? 'Toutes les filières' : tab === 'science' ? 'Scientifique & Technique' : 'Économie & Commerce')}
             </button>
           ))}
         </div>
@@ -679,8 +684,8 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
               <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                 <FlaskConical size={18} />
               </div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">Filière Scientifique &amp; Technique</h3>
-              <span className="text-[13px] font-semibold text-slate-400">PC · SM · SVT · STE · STM…</span>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">{t('orientationPage.packs.groups.science', 'Filière Scientifique & Technique')}</h3>
+              <span dir="ltr" className="text-[13px] font-semibold text-slate-400">PC · SM · SVT · STE · STM…</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {sciencePacks.map((pack, i) => (
@@ -696,8 +701,8 @@ const OrientationPacks: React.FC<{ onChoose: (name: string) => void }> = ({ onCh
               <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                 <TrendingUp size={18} />
               </div>
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">Filière Économie &amp; Commerce</h3>
-              <span className="text-[13px] font-semibold text-slate-400">ECO · SGC…</span>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">{t('orientationPage.packs.groups.eco', 'Filière Économie & Commerce')}</h3>
+              <span dir="ltr" className="text-[13px] font-semibold text-slate-400">ECO · SGC…</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {ecoPacks.map((pack, i) => (
@@ -839,7 +844,7 @@ const OrientationHero: React.FC<{
             <Reveal delay={120}>
               <div className="relative rounded-[1.75rem] overflow-hidden bg-slate-100 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.25)] ring-1 ring-slate-100 aspect-[4/5] lg:aspect-[3/4]">
                 <img
-                  src={IMAGES.HERO.HOME_MAIN}
+                  src={orientationHero}
                   alt="Élève accompagné dans son orientation scolaire par un conseiller Tilmid"
                   className="w-full h-full object-cover"
                   loading="eager"
@@ -1047,7 +1052,7 @@ const OrientationFinalCTA: React.FC = () => {
 /* -------------------------------------------------------------------------- */
 
 export const ProgramDetails: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { pathname } = window.location;
   const basePath = pathname.replace('/', '');
   const [activeTab, setActiveTab] = useState<'tilmid' | 'talib'>('tilmid');
@@ -1191,7 +1196,11 @@ export const ProgramDetails: React.FC = () => {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30">
+    <div
+      dir={i18n.dir()}
+      lang={i18n.language.startsWith('ar') ? 'ar' : 'fr'}
+      className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans selection:bg-primary/30"
+    >
       <SEO
         title={`${t(data.title)} - Tilmid`}
         description={t(data.subtitle)}

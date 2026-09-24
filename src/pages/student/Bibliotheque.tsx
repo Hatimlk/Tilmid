@@ -1,21 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { Search, FileText, DownloadCloud, CalendarDays, ClipboardList, ListChecks, GraduationCap, Library } from 'lucide-react';
+import { Search, FileText, DownloadCloud, Library } from 'lucide-react';
 import { StudyResource } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
 import { PageHeader, Card, LockedState, EmptyState } from '../../components/student/primitives';
-import { StudentTab } from '../../components/student/navigation';
 import { resolveFileUrl } from '../../lib/api';
-
-const TOOL_CARDS = [
-  { icon: CalendarDays, title: 'Programme hebdomadaire', desc: 'Organisez votre semaine selon vos priorités et disponibilités.', tab: 'planning' as StudentTab },
-  { icon: ListChecks, title: 'Tableau de suivi des révisions', desc: 'Consignez vos sessions de révision et suivez votre régularité.', tab: 'outils' as StudentTab },
-  { icon: ClipboardList, title: 'Habit Tracker', desc: 'Suivez vos habitudes de travail au quotidien.', tab: 'outils' as StudentTab },
-  { icon: GraduationCap, title: 'Plan de préparation aux examens', desc: 'Organisez votre révision à l\'approche des examens.', tab: 'outils' as StudentTab },
-];
 
 const FILTERS = ['Tous', 'Organisation', 'Révision', 'Examens', 'Productivité', 'Méthodes'];
 
-export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: StudyResource[]; onNavigate: (tab: StudentTab) => void }> = ({ entitlements, resources, onNavigate }) => {
+export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: StudyResource[] }> = ({ entitlements, resources }) => {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('Tous');
 
@@ -48,19 +40,6 @@ export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: Stu
           <button key={f} onClick={() => setFilter(f)} className={`px-3.5 py-1.5 min-h-[36px] rounded-full text-[12.5px] font-bold border transition-all ${filter === f ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-slate-200 text-slate-500'}`}>
             {f}
           </button>
-        ))}
-      </div>
-
-      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Outils Mouwakaba</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {TOOL_CARDS.map((t) => (
-          <Card key={t.title} className="p-5">
-            <span className="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center mb-3"><t.icon size={18} /></span>
-            <p className="font-black text-slate-900 text-[13.5px] mb-1">{t.title}</p>
-            <p className="text-slate-400 text-[12px] font-medium mb-3 leading-relaxed">{t.desc}</p>
-            <span className="text-[11px] font-black text-slate-300 uppercase tracking-wide mb-3 block">Outil interactif</span>
-            <button onClick={() => onNavigate(t.tab)} className="text-[12.5px] font-bold text-primary hover:underline">Utiliser</button>
-          </Card>
         ))}
       </div>
 
