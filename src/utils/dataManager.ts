@@ -54,17 +54,29 @@ const mapFeedback = (f: any): FeedbackEntry => ({
   studentName: f.name,
   studentUsername: f.username,
   appointmentId: f.appointment_id,
+  checkinId: f.checkin_id,
   message: f.message,
   authorName: f.author_name,
   createdAt: f.created_at,
 });
+
+const parseArray = <T,>(value: unknown): T[] => {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === 'string') {
+    try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+  }
+  return [];
+};
 
 const mapPlanOverview = (p: any): PlanOverviewRow => ({
   studentId: p.student_id,
   name: p.name,
   username: p.username,
   objective: p.objective || '',
-  actions: p.actions || [],
+  actions: parseArray(p.actions),
+  habits: parseArray(p.habits),
+  obstacles: p.obstacles || '',
+  startDate: p.start_date || null,
   updatedAt: p.updated_at,
 });
 
@@ -242,7 +254,7 @@ export const dataManager = {
     const entries = await api.get('/admin/feedback');
     return entries.map(mapFeedback);
   },
-  saveFeedback: async (feedback: { studentId: number | string; message: string; appointmentId?: number | null }): Promise<{ id: number; message: string }> => {
+  saveFeedback: async (feedback: { studentId: number | string; message: string; appointmentId?: number | null; checkinId?: number | null }): Promise<{ id: number; message: string }> => {
     return await api.post('/feedback', feedback);
   },
 
@@ -255,6 +267,8 @@ export const dataManager = {
     const rows = await api.get('/admin/checkins');
     return rows.map(mapCheckInOverview);
   },
+  saveAdminPlan: async (studentId: number, plan: { objective: string; startDate: string; obstacles: string; actions: any[]; habits: string[] }): Promise<any> =>
+    api.post(`/admin/plans/${studentId}`, plan),
   getAdminProgressOverview: async (): Promise<ProgressOverviewRow[]> => {
     const rows = await api.get('/admin/progress-overview');
     return rows.map(mapProgressOverview);

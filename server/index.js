@@ -780,6 +780,14 @@ app.post('/api/appointments', requireAdmin, async (req, res) => {
             const category = 'category' in req.body ? req.body.category : existing.category;
             const notes = 'notes' in req.body ? req.body.notes : existing.notes;
 
+            if (category === 'coaching' && studentId && (existing.category !== 'coaching' || Number(existing.student_id) !== Number(studentId))) {
+                const [eligible] = await db.query("SELECT package FROM students WHERE id = ? AND package IN ('boost', 'premium')", [studentId]);
+                if (!eligible.length) return res.status(403).json({ message: 'Individual coaching requires Boost or Premium' });
+                const limit = eligible[0].package === 'premium' ? 3 : 1;
+                const [counts] = await db.query("SELECT COUNT(*) AS total FROM appointments WHERE category='coaching' AND student_id=? AND status!='cancelled' AND id!=?", [studentId, id]);
+                if (Number(counts[0].total) >= limit) return res.status(409).json({ message: `This package includes ${limit} coaching session(s)` });
+            }
+
             await db.query(
                 'UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=?, student_id=?, category=?, notes=? WHERE id=?',
                 [studentName, title, date, time, status, type, studentId || null, category || null, notes, id]
@@ -791,6 +799,13 @@ app.post('/api/appointments', requireAdmin, async (req, res) => {
         }
 
         const { studentName, title, date, time, status = 'confirmed', type = 'live', studentId = null, category = null, notes = null } = req.body;
+        if (category === 'coaching') {
+            const [eligible] = await db.query("SELECT package FROM students WHERE id = ? AND package IN ('boost', 'premium')", [studentId]);
+            if (!eligible.length) return res.status(403).json({ message: 'Individual coaching requires Boost or Premium' });
+            const limit = eligible[0].package === 'premium' ? 3 : 1;
+            const [counts] = await db.query("SELECT COUNT(*) AS total FROM appointments WHERE category='coaching' AND student_id=? AND status!='cancelled'", [studentId]);
+            if (Number(counts[0].total) >= limit) return res.status(409).json({ message: `This package includes ${limit} coaching session(s)` });
+        }
         const [result] = await db.query(
             'INSERT INTO appointments (student_name, title, date, time, status, type, student_id, category, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [studentName, title, date, time, status, type, studentId || null, category || null, notes]
@@ -1085,6 +1100,24 @@ app.get('/api/checkins', requireStudentOrAdmin, async (req, res) => {
 app.post('/api/checkins', requireStudent, async (req, res) => {
     const { adherence, daysRespected, obstacle, concentration, success, needsAdjustment } = req.body;
     try {
+        const [students] = await db.query('SELECT package FROM students WHERE id = ?', [req.user.id]);
+        const pkg = students[0]?.package;
+        if (pkg !== 'boost' && pkg !== 'premium') {
+            return res.status(403).json({ message: 'Check-ins are only available with Boost or Premium' });
+        }
+        if (!Number.isInteger(Number(adherence)) || Number(adherence) < 1 || Number(adherence) > 10 ||
+            !Number.isInteger(Number(daysRespected)) || Number(daysRespected) < 0 || Number(daysRespected) > 7 ||
+            !Number.isInteger(Number(concentration)) || Number(concentration) < 1 || Number(concentration) > 5) {
+            return res.status(400).json({ message: 'Invalid check-in values' });
+        }
+        const [previous] = await db.query('SELECT created_at FROM checkins WHERE student_id = ? ORDER BY created_at DESC', [req.user.id]);
+        if (pkg === 'boost' && previous.length >= 1) {
+            return res.status(409).json({ message: 'Boost includes one check-in' });
+        }
+        if (pkg === 'premium' && previous.length > 0) {
+            const elapsedDays = (Date.now() - new Date(previous[0].created_at).getTime()) / 86400000;
+            if (elapsedDays < 14) return res.status(409).json({ message: 'The next check-in is available after 14 days' });
+        }
         const [result] = await db.query(
             'INSERT INTO checkins (student_id, adherence, days_respected, obstacle, concentration, success, needs_adjustment) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [req.user.id, adherence, daysRespected, obstacle || null, concentration, success || null, !!needsAdjustment]
@@ -1283,7 +1316,7 @@ app.get('/api/feedback', requireStudentOrAdmin, async (req, res) => {
 });
 
 app.post('/api/feedback', requireAdmin, async (req, res) => {
-    const { studentId, appointmentId } = req.body;
+    const { studentId, appointmentId, checkinId } = req.body;
     const message = (req.body.message || '').trim();
     if (!studentId || message === '') {
         return res.status(400).json({ message: 'studentId and message are required' });
@@ -1293,14 +1326,19 @@ app.post('/api/feedback', requireAdmin, async (req, res) => {
         const studentName = students[0]?.name;
         if (!studentName) return res.status(404).json({ message: 'Student not found' });
 
+        if (checkinId) {
+            const [checkins] = await db.query('SELECT id FROM checkins WHERE id = ? AND student_id = ?', [checkinId, studentId]);
+            if (!checkins.length) return res.status(400).json({ message: 'Check-in does not belong to this student' });
+        }
+
         const [users] = await db.query('SELECT username FROM users WHERE id = ?', [req.user.id]);
         const authorName = users[0]?.username || 'Admin';
 
         const [result] = await db.query(
-            'INSERT INTO feedback (student_id, appointment_id, message, author_name) VALUES (?, ?, ?, ?)',
-            [studentId, appointmentId || null, message, authorName]
+            'INSERT INTO feedback (student_id, appointment_id, checkin_id, message, author_name) VALUES (?, ?, ?, ?, ?)',
+            [studentId, appointmentId || null, checkinId || null, message, authorName]
         );
-        await logActivity(req.user.id, 'feedback_sent', 'feedback', studentName, { message: message.slice(0, 120) });
+        await logActivity(req.user.id, 'feedback_sent', 'feedback', studentName, { checkinId: checkinId || null, message: message.slice(0, 120) });
         res.status(201).json({ id: result.insertId, message: 'Feedback sent' });
     } catch (err) {
         console.error(err);
@@ -1332,6 +1370,27 @@ app.get('/api/admin/plans', requireAdmin, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/admin/plans/:studentId', requireAdmin, async (req, res) => {
+    const studentId = Number(req.params.studentId);
+    const { objective, startDate, obstacles, actions, habits } = req.body;
+    if (!studentId || !String(objective || '').trim() || !Array.isArray(actions) || actions.length === 0) {
+        return res.status(400).json({ message: 'Objective and at least one action are required' });
+    }
+    try {
+        const [students] = await db.query("SELECT name, package FROM students WHERE id = ? AND package IN ('boost', 'premium')", [studentId]);
+        if (!students.length) return res.status(403).json({ message: 'A Boost or Premium package is required' });
+        await db.query(
+            `INSERT INTO self_guided_plans (student_id, objective, start_date, obstacles, actions, habits)
+             VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE objective=VALUES(objective), start_date=VALUES(start_date), obstacles=VALUES(obstacles), actions=VALUES(actions), habits=VALUES(habits)`,
+            [studentId, String(objective).trim(), startDate || null, obstacles || null, JSON.stringify(actions), JSON.stringify(habits || [])]
+        );
+        await logActivity(req.user.id, 'plan_saved', 'plan', students[0].name, { studentId });
+        res.json({ message: 'Plan saved' });
+    } catch (err) {
+        console.error(err); res.status(500).json({ message: 'Server error' });
     }
 });
 
@@ -1484,6 +1543,10 @@ app.get('/api/collective-sessions/:id/registrations', requireAdmin, async (req, 
 app.post('/api/collective-sessions/:id/register', requireStudent, async (req, res) => {
     const sessionId = Number(req.params.id);
     try {
+        const [students] = await db.query('SELECT package FROM students WHERE id = ?', [req.user.id]);
+        if (!['essentiel', 'boost', 'premium'].includes(students[0]?.package)) {
+            return res.status(403).json({ message: 'An active Mouwakaba package is required' });
+        }
         const [sessions] = await db.query(
             `SELECT capacity, (SELECT COUNT(*) FROM collective_session_registrations WHERE session_id = ?) AS registered
              FROM collective_sessions WHERE id = ?`,

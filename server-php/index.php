@@ -98,6 +98,18 @@ function resolveStudentId(array $user): int {
     return $studentId;
 }
 
+function enforceCoachingQuota(PDO $pdo, int $studentId, ?int $excludeId = null): void {
+    $stmt = $pdo->prepare("SELECT package FROM students WHERE id = ? AND package IN ('boost', 'premium')");
+    $stmt->execute([$studentId]);
+    $package = $stmt->fetch()['package'] ?? null;
+    if (!$package) { http_response_code(403); echo json_encode(['message' => 'Individual coaching requires Boost or Premium']); exit; }
+    $limit = $package === 'premium' ? 3 : 1;
+    $sql = "SELECT COUNT(*) FROM appointments WHERE category='coaching' AND student_id=? AND status!='cancelled'" . ($excludeId ? " AND id!=?" : "");
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($excludeId ? [$studentId, $excludeId] : [$studentId]);
+    if ((int)$stmt->fetchColumn() >= $limit) { http_response_code(409); echo json_encode(['message' => "This package includes $limit coaching session(s)"]); exit; }
+}
+
 /* ---------------- ACTIVITY LOG ---------------- */
 // Best-effort: a logging failure (e.g. migration not run yet) must never break
 // the underlying student/appointment action, so failures are swallowed.
@@ -853,6 +865,10 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
         $category = array_key_exists('category', $input) ? $input['category'] : $existing['category'];
         $notes = array_key_exists('notes', $input) ? $input['notes'] : $existing['notes'];
 
+        if ($category === 'coaching' && $studentId && ($existing['category'] !== 'coaching' || (int)$existing['student_id'] !== (int)$studentId)) {
+            enforceCoachingQuota($pdo, (int)$studentId, (int)$id);
+        }
+
         try {
             $stmt = $pdo->prepare("UPDATE appointments SET student_name=?, title=?, date=?, time=?, status=?, type=?, student_id=?, category=?, notes=? WHERE id=?");
             $stmt->execute([$studentName, $title, $date, $time, $status, $type, $studentId ?: null, $category ?: null, $notes, $id]);
@@ -877,6 +893,8 @@ if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
     $studentId = $input['studentId'] ?? null;
     $category = $input['category'] ?? null;
     $notes = $input['notes'] ?? null;
+
+    if ($category === 'coaching') enforceCoachingQuota($pdo, (int)$studentId);
 
     try {
         $stmt = $pdo->prepare("INSERT INTO appointments (student_name, title, date, time, status, type, student_id, category, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -1186,6 +1204,25 @@ if ($request_uri === '/api/checkins' && $method == 'POST') {
     $success = $input['success'] ?? null;
     $needsAdjustment = !empty($input['needsAdjustment']) ? 1 : 0;
 
+    $stmt = $pdo->prepare("SELECT package FROM students WHERE id = ?");
+    $stmt->execute([$user['id']]);
+    $package = $stmt->fetch()['package'] ?? null;
+    if (!in_array($package, ['boost', 'premium'], true)) {
+        http_response_code(403); echo json_encode(['message' => 'Check-ins are only available with Boost or Premium']); exit;
+    }
+    if (!is_numeric($adherence) || (int)$adherence < 1 || (int)$adherence > 10 || !is_numeric($daysRespected) || (int)$daysRespected < 0 || (int)$daysRespected > 7 || !is_numeric($concentration) || (int)$concentration < 1 || (int)$concentration > 5) {
+        http_response_code(400); echo json_encode(['message' => 'Invalid check-in values']); exit;
+    }
+    $stmt = $pdo->prepare("SELECT created_at FROM checkins WHERE student_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$user['id']]);
+    $previous = $stmt->fetchAll();
+    if ($package === 'boost' && count($previous) >= 1) {
+        http_response_code(409); echo json_encode(['message' => 'Boost includes one check-in']); exit;
+    }
+    if ($package === 'premium' && count($previous) > 0 && time() - strtotime($previous[0]['created_at']) < 14 * 86400) {
+        http_response_code(409); echo json_encode(['message' => 'The next check-in is available after 14 days']); exit;
+    }
+
     try {
         $stmt = $pdo->prepare("INSERT INTO checkins (student_id, adherence, days_respected, obstacle, concentration, success, needs_adjustment) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$user['id'], $adherence, $daysRespected, $obstacle, $concentration, $success, $needsAdjustment]);
@@ -1452,6 +1489,24 @@ if ($request_uri === '/api/admin/plans' && $method == 'GET') {
     exit;
 }
 
+if (preg_match('#^/api/admin/plans/(\d+)$#', $request_uri, $matches) && $method == 'POST') {
+    $admin = requireAdmin($secret_key);
+    $studentId = (int)$matches[1];
+    $objective = trim((string)($input['objective'] ?? ''));
+    $actions = $input['actions'] ?? [];
+    if ($objective === '' || !is_array($actions) || count($actions) === 0) {
+        http_response_code(400); echo json_encode(['message' => 'Objective and at least one action are required']); exit;
+    }
+    $stmt = $pdo->prepare("SELECT name FROM students WHERE id = ? AND package IN ('boost', 'premium')");
+    $stmt->execute([$studentId]);
+    $student = $stmt->fetch();
+    if (!$student) { http_response_code(403); echo json_encode(['message' => 'A Boost or Premium package is required']); exit; }
+    $stmt = $pdo->prepare("INSERT INTO self_guided_plans (student_id, objective, start_date, obstacles, actions, habits) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE objective=VALUES(objective), start_date=VALUES(start_date), obstacles=VALUES(obstacles), actions=VALUES(actions), habits=VALUES(habits)");
+    $stmt->execute([$studentId, $objective, $input['startDate'] ?: null, $input['obstacles'] ?: null, json_encode($actions), json_encode($input['habits'] ?? [])]);
+    logActivity($pdo, $admin, 'plan_saved', 'plan', $student['name'], ['studentId' => $studentId]);
+    echo json_encode(['message' => 'Plan saved']); exit;
+}
+
 if ($request_uri === '/api/admin/checkins' && $method == 'GET') {
     requireAdmin($secret_key);
     $stmt = $pdo->query("SELECT c.*, s.name, s.username FROM checkins c JOIN students s ON c.student_id = s.id ORDER BY c.created_at DESC LIMIT 200");
@@ -1527,6 +1582,7 @@ if ($request_uri === '/api/feedback' && $method == 'POST') {
     $studentId = $input['studentId'] ?? null;
     $message = trim($input['message'] ?? '');
     $appointmentId = $input['appointmentId'] ?? null;
+    $checkinId = $input['checkinId'] ?? null;
 
     if (!$studentId || $message === '') {
         http_response_code(400);
@@ -1543,15 +1599,25 @@ if ($request_uri === '/api/feedback' && $method == 'POST') {
         exit;
     }
 
+    if ($checkinId) {
+        $stmt = $pdo->prepare("SELECT id FROM checkins WHERE id = ? AND student_id = ?");
+        $stmt->execute([$checkinId, $studentId]);
+        if (!$stmt->fetch()) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Check-in does not belong to this student']);
+            exit;
+        }
+    }
+
     $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
     $stmt->execute([$admin['id']]);
     $authorName = $stmt->fetch()['username'] ?? 'Admin';
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO feedback (student_id, appointment_id, message, author_name) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$studentId, $appointmentId ?: null, $message, $authorName]);
+        $stmt = $pdo->prepare("INSERT INTO feedback (student_id, appointment_id, checkin_id, message, author_name) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$studentId, $appointmentId ?: null, $checkinId ?: null, $message, $authorName]);
         $newId = $pdo->lastInsertId();
-        logActivity($pdo, $admin, 'feedback_sent', 'feedback', $studentName, ['message' => mb_substr($message, 0, 120)]);
+        logActivity($pdo, $admin, 'feedback_sent', 'feedback', $studentName, ['checkinId' => $checkinId ?: null, 'message' => mb_substr($message, 0, 120)]);
         http_response_code(201);
         echo json_encode(['id' => $newId, 'message' => 'Feedback sent']);
     } catch (PDOException $e) {
@@ -1638,6 +1704,13 @@ if (preg_match('#^/api/collective-sessions/(\d+)/registrations$#', $request_uri,
 if (preg_match('#^/api/collective-sessions/(\d+)/register$#', $request_uri, $matches) && $method == 'POST') {
     $user = requireStudent($secret_key);
     $sessionId = (int)$matches[1];
+
+    $stmt = $pdo->prepare("SELECT package FROM students WHERE id = ?");
+    $stmt->execute([$user['id']]);
+    $package = $stmt->fetch()['package'] ?? null;
+    if (!in_array($package, ['essentiel', 'boost', 'premium'], true)) {
+        http_response_code(403); echo json_encode(['message' => 'An active Mouwakaba package is required']); exit;
+    }
 
     $stmt = $pdo->prepare("SELECT capacity, (SELECT COUNT(*) FROM collective_session_registrations WHERE session_id = ?) AS registered FROM collective_sessions WHERE id = ?");
     $stmt->execute([$sessionId, $sessionId]);

@@ -7,9 +7,10 @@ export const FeedbackFormModal: React.FC<{
   open: boolean;
   students: Student[];
   studentId?: number | string | null;
+  checkinId?: number | null;
   onClose: () => void;
   onSaved: () => void;
-}> = ({ open, students, studentId, onClose, onSaved }) => {
+}> = ({ open, students, studentId, checkinId, onClose, onSaved }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
@@ -34,7 +35,7 @@ export const FeedbackFormModal: React.FC<{
     setSaving(true);
     setError('');
     try {
-      await dataManager.saveFeedback({ studentId: selectedStudentId, message: message.trim() });
+      await dataManager.saveFeedback({ studentId: selectedStudentId, checkinId, message: message.trim() });
       onSaved();
       onClose();
     } catch (err) {
@@ -57,10 +58,11 @@ export const FeedbackFormModal: React.FC<{
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && <p className="text-[12.5px] font-bold text-rose-600 bg-rose-50 rounded-xl px-3 py-2.5">{error}</p>}
+          {checkinId && <p className="text-[12.5px] font-bold text-blue-700 bg-blue-50 rounded-xl px-3 py-2.5">Ce feedback sera rattaché au check-in #{checkinId}.</p>}
 
           <div>
             <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Étudiant</label>
-            <select required value={selectedStudentId} onChange={(e) => setSelectedStudentId(e.target.value)} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white">
+            <select required disabled={!!checkinId} value={selectedStudentId} onChange={(e) => setSelectedStudentId(e.target.value)} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white disabled:bg-slate-50 disabled:text-slate-500">
               <option value="">Choisir un étudiant...</option>
               {students.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>)}
             </select>

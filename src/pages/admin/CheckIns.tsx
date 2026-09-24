@@ -45,7 +45,7 @@ export const AdminCheckIns: React.FC = () => {
                   {c.needsAdjustment && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-50 text-amber-700"><AlertTriangle size={12} /> À ajuster</span>
                   )}
-                  <button onClick={() => openFeedbackModal(c.studentId)} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 text-[12.5px] font-bold">
+                  <button onClick={() => openFeedbackModal(c.studentId, c.id)} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 text-[12.5px] font-bold">
                     <MessageSquare size={13} /> Répondre
                   </button>
                 </div>
@@ -61,6 +61,7 @@ export const AdminCheckIns: React.FC = () => {
           ))}
         </div>
       )}
+
     </div>
   );
 };

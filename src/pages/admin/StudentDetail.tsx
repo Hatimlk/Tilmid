@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Edit, CalendarPlus, MoreHorizontal, Ban, Unlock, Archive, Check, Minus,
-  Compass, Target, CalendarClock, Presentation, CheckSquare, TrendingUp,
+  Target, CalendarClock, Presentation, CheckSquare, TrendingUp,
   PlayCircle, Wrench, Activity as ActivityIcon, UserCog, RefreshCw,
   ListChecks, BookOpen, Clock, MessageSquare, FileText, Send,
 } from 'lucide-react';
@@ -12,7 +12,7 @@ import {
   AdminCard, StudentStatusBadge, PackageBadge, Avatar, AdminEmptyState,
   AdminErrorState, ModuleComingSoon, ConfirmDialog, AppointmentStatusBadge,
 } from '../../components/admin/primitives';
-import { ProgressBar, JourneyTimeline, JourneyStepDef } from '../../components/student/primitives';
+import { ProgressBar } from '../../components/student/primitives';
 import { getEntitlements } from '../../utils/entitlements';
 import { computeProgressDimensions } from '../../utils/progress';
 import { dataManager } from '../../utils/dataManager';
@@ -98,11 +98,10 @@ const LiveIndicator: React.FC<{ lastUpdated: Date | null; onRefresh: () => void 
   </div>
 );
 
-type Tab = 'overview' | 'parcours' | 'plan' | 'planning' | 'coaching' | 'checkins' | 'feedback' | 'progress' | 'content' | 'tools' | 'activity' | 'account';
+type Tab = 'overview' | 'plan' | 'planning' | 'coaching' | 'checkins' | 'feedback' | 'progress' | 'content' | 'tools' | 'activity' | 'account';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: "Vue d'ensemble" },
-  { id: 'parcours', label: 'Parcours' },
   { id: 'plan', label: 'Plan' },
   { id: 'planning', label: 'Planning' },
   { id: 'coaching', label: 'Coaching' },
@@ -148,7 +147,7 @@ export const AdminStudentDetail: React.FC = () => {
   if (!student) return <AdminCard><AdminEmptyState title="Étudiant introuvable" description="Ce dossier n'existe pas ou a été supprimé." cta={{ label: 'Retour à la liste', onClick: () => navigate('/admin/students') }} /></AdminCard>;
 
   const entitlements = getEntitlements(student.package);
-  const isLiveTab = tab === 'parcours' || tab === 'plan' || tab === 'planning' || tab === 'coaching' || tab === 'checkins' || tab === 'feedback' || tab === 'progress' || tab === 'tools';
+  const isLiveTab = tab === 'plan' || tab === 'planning' || tab === 'coaching' || tab === 'checkins' || tab === 'feedback' || tab === 'progress' || tab === 'tools';
 
   const changeStatus = async (status: typeof student.status) => {
     await dataManager.saveStudent({ ...student, status });
@@ -234,11 +233,6 @@ export const AdminStudentDetail: React.FC = () => {
 
       {isLiveTab && <LiveIndicator lastUpdated={modules.lastUpdated} onRefresh={modules.refresh} />}
 
-      {tab === 'parcours' && (
-        modules.error ? <AdminCard><AdminErrorState onRetry={modules.refresh} /></AdminCard> :
-        modules.loading ? <AdminCard className="p-8"><div className="h-40 rounded-xl bg-slate-50 animate-pulse" /></AdminCard> :
-        <AdminParcoursTab entitlements={entitlements} plan={modules.data.plan} checkins={modules.data.checkins} />
-      )}
       {tab === 'plan' && (
         modules.error ? <AdminCard><AdminErrorState onRetry={modules.refresh} /></AdminCard> :
         modules.loading ? <AdminCard className="p-8"><div className="h-40 rounded-xl bg-slate-50 animate-pulse" /></AdminCard> :
@@ -324,62 +318,6 @@ const StudentActivity: React.FC<{ name: string }> = ({ name }) => {
         </div>
       ))}
     </div>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Parcours — mirrors the journey-step logic shown to the student itself      */
-/* -------------------------------------------------------------------------- */
-
-const AdminParcoursTab: React.FC<{ entitlements: ReturnType<typeof getEntitlements>; plan: SelfGuidedPlan | null; checkins: CheckIn[] }> = ({ entitlements, plan, checkins }) => {
-  if (!entitlements.hasCoachingPack) {
-    return <AdminCard><AdminEmptyState icon={Compass} title="Aucun parcours Mouwakaba actif" description="Le parcours s'affichera ici une fois une formule Mouwakaba activée sur le compte de l'étudiant." /></AdminCard>;
-  }
-
-  const hasPlan = !!plan && plan.actions.length > 0;
-  const planDone = plan ? plan.actions.filter((a) => a.done).length : 0;
-  const planTotal = plan ? plan.actions.length : 0;
-  const planApplied = planTotal > 0 && planDone === planTotal;
-
-  let steps: JourneyStepDef[] = [];
-  if (entitlements.label === 'Essentiel') {
-    steps = [
-      { label: 'Diagnostic personnel', state: hasPlan ? 'done' : 'active' },
-      { label: 'Module Organisation', state: hasPlan ? 'active' : 'upcoming' },
-      { label: 'Programme hebdomadaire', state: 'upcoming' },
-      { label: 'Techniques de révision', state: 'upcoming' },
-      { label: 'Gestion de la procrastination', state: 'upcoming' },
-      { label: 'Préparation aux examens', state: 'upcoming' },
-      { label: 'Bilan personnel', state: 'upcoming' },
-    ];
-  } else if (entitlements.label === 'Boost') {
-    steps = [
-      { label: 'Diagnostic', state: 'done' },
-      { label: 'Coaching individuel', state: 'active' },
-      { label: 'Plan 30 jours', state: hasPlan ? (planApplied ? 'done' : 'active') : 'upcoming' },
-      { label: 'Check-in J+14', state: checkins.length > 0 ? 'done' : 'upcoming' },
-      { label: 'Feedback', state: 'upcoming' },
-      { label: 'Bilan personnel', state: 'upcoming' },
-    ];
-  } else {
-    steps = [
-      { label: 'Diagnostic initial', state: 'done' },
-      { label: 'Séance 01 — Construction du système', state: 'active' },
-      { label: "Phase d'application", state: hasPlan ? 'active' : 'upcoming' },
-      { label: 'Check-in', state: checkins.length > 0 ? 'done' : 'upcoming' },
-      { label: 'Séance 02 — Ajustements', state: 'upcoming' },
-      { label: 'Check-in', state: 'upcoming' },
-      { label: 'Phase de consolidation', state: 'upcoming' },
-      { label: 'Check-in', state: 'upcoming' },
-      { label: 'Séance 03 — Bilan & autonomie', state: 'upcoming' },
-      { label: 'Rapport final', state: 'upcoming' },
-    ];
-  }
-
-  return (
-    <AdminCard className="p-6 md:p-8 max-w-2xl">
-      <JourneyTimeline steps={steps} />
-    </AdminCard>
   );
 };
 

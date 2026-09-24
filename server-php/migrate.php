@@ -253,13 +253,24 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     appointment_id INT DEFAULT NULL,
+    checkin_id INT DEFAULT NULL,
     message TEXT NOT NULL,
     author_name VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL,
+    FOREIGN KEY (checkin_id) REFERENCES checkins(id) ON DELETE SET NULL
 )");
 $log[] = 'feedback table ensured';
+
+$feedbackCols = $pdo->query("SHOW COLUMNS FROM feedback")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('checkin_id', $feedbackCols, true)) {
+    $pdo->exec("ALTER TABLE feedback ADD COLUMN checkin_id INT DEFAULT NULL");
+    $pdo->exec("ALTER TABLE feedback ADD CONSTRAINT fk_feedback_checkin FOREIGN KEY (checkin_id) REFERENCES checkins(id) ON DELETE SET NULL");
+    $log[] = 'added feedback.checkin_id column + FK';
+} else {
+    $log[] = 'feedback.checkin_id already present';
+}
 
 // 14. collective sessions + registrations (Sessions collectives)
 $pdo->exec("CREATE TABLE IF NOT EXISTS collective_sessions (
@@ -358,7 +369,7 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS notifications (
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    read_at TIMESTAMP DEFAULT NULL,
+    read_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 )");
 $log[] = 'notifications table ensured';

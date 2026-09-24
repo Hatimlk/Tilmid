@@ -9,9 +9,16 @@ export const CheckIns: React.FC<{ student: Student; entitlements: Entitlements }
   const { items, add } = useCheckIns(student.username);
   const [showForm, setShowForm] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ adherence: 5, daysRespected: 4, obstacle: '', concentration: 3, success: '', needsAdjustment: false });
 
   const isCheckInFeature = !!(entitlements.checkInCount || entitlements.checkInFrequencyDays);
+  const lastCheckIn = items[0];
+  const daysSinceLast = lastCheckIn ? Math.floor((Date.now() - new Date(lastCheckIn.date).getTime()) / 86400000) : null;
+  const quotaReached = entitlements.checkInCount !== null && items.length >= entitlements.checkInCount;
+  const intervalPending = !!entitlements.checkInFrequencyDays && daysSinceLast !== null && daysSinceLast < entitlements.checkInFrequencyDays;
+  const canSubmit = !quotaReached && !intervalPending;
 
   if (!isCheckInFeature) {
     return (
@@ -22,13 +29,22 @@ export const CheckIns: React.FC<{ student: Student; entitlements: Entitlements }
     );
   }
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    add({ id: Date.now().toString(), date: new Date().toISOString(), ...form });
-    setForm({ adherence: 5, daysRespected: 4, obstacle: '', concentration: 3, success: '', needsAdjustment: false });
-    setShowForm(false);
-    setSent(true);
-    setTimeout(() => setSent(false), 4000);
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await add({ id: Date.now().toString(), date: new Date().toISOString(), ...form });
+      setForm({ adherence: 5, daysRespected: 4, obstacle: '', concentration: 3, success: '', needsAdjustment: false });
+      setShowForm(false);
+      setSent(true);
+      setTimeout(() => setSent(false), 4000);
+    } catch {
+      setError("Le check-in n'a pas pu être envoyé. Vérifiez votre formule ou la date du dernier check-in.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -36,8 +52,16 @@ export const CheckIns: React.FC<{ student: Student; entitlements: Entitlements }
       <PageHeader
         title="Mes Check-ins"
         subtitle="Prenez quelques minutes pour faire le point sur votre progression et permettre à votre coach d'ajuster votre accompagnement."
-        action={!showForm && <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-primary text-white rounded-xl font-bold text-[13px]"><CheckSquare size={15} /> Faire mon Check-in</button>}
+        action={!showForm && canSubmit && <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-primary text-white rounded-xl font-bold text-[13px]"><CheckSquare size={15} /> Faire mon Check-in</button>}
       />
+
+      {!canSubmit && (
+        <Card className="p-4 mb-5 bg-blue-50 border-blue-100">
+          <p className="text-[13px] font-bold text-blue-700">
+            {quotaReached ? 'Le check-in inclus dans votre formule Boost a déjà été utilisé.' : `Votre prochain check-in sera disponible dans ${Math.max(1, (entitlements.checkInFrequencyDays || 14) - (daysSinceLast || 0))} jour(s).`}
+          </p>
+        </Card>
+      )}
 
       {sent && (
         <Card className="p-5 mb-5 bg-emerald-50 border-emerald-100">
@@ -49,6 +73,7 @@ export const CheckIns: React.FC<{ student: Student; entitlements: Entitlements }
       {showForm && (
         <Card className="p-6 mb-6 max-w-xl">
           <form onSubmit={submit} className="space-y-5">
+            {error && <p className="text-[12.5px] font-bold text-rose-600 bg-rose-50 rounded-xl px-3 py-2.5">{error}</p>}
             <div>
               <label className="text-[13px] font-bold text-slate-700 mb-1 block">Cette semaine, à quel point avez-vous suivi votre plan ? ({form.adherence}/10)</label>
               <input type="range" min={1} max={10} value={form.adherence} onChange={(e) => setForm({ ...form, adherence: Number(e.target.value) })} className="w-full accent-primary" />
@@ -75,7 +100,7 @@ export const CheckIns: React.FC<{ student: Student; entitlements: Entitlements }
             </label>
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={() => setShowForm(false)} className="flex-1 h-12 rounded-xl border border-slate-200 font-bold text-[13px] text-slate-600">Annuler</button>
-              <button type="submit" className="flex-[2] h-12 rounded-xl bg-primary text-white font-bold text-[13px]">Envoyer mon Check-in</button>
+              <button type="submit" disabled={submitting} className="flex-[2] h-12 rounded-xl bg-primary text-white font-bold text-[13px] disabled:opacity-60">{submitting ? 'Envoi…' : 'Envoyer mon Check-in'}</button>
             </div>
           </form>
         </Card>

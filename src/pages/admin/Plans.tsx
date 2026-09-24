@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { Search, Target, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Search, Target, Edit } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { AdminCard, AdminPageHeader, AdminEmptyState, AdminErrorState } from '../../components/admin/primitives';
 import { ProgressBar } from '../../components/student/primitives';
+import { PlanOverviewRow } from '../../types';
+import { PlanFormModal } from '../../components/admin/PlanFormModal';
 
 export const AdminPlans: React.FC = () => {
-  const { plans } = useAdminData();
-  const navigate = useNavigate();
+  const { plans, refreshPlans, students } = useAdminData();
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<PlanOverviewRow | null>(null);
 
-  const list = plans.data.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()) || p.username.toLowerCase().includes(search.toLowerCase()));
+  const list = plans.data.filter((p) => {
+    const student = students.data.find((s) => Number(s.id) === p.studentId);
+    return (student?.package === 'boost' || student?.package === 'premium') && (p.name.toLowerCase().includes(search.toLowerCase()) || p.username.toLowerCase().includes(search.toLowerCase()));
+  });
 
   return (
     <div>
@@ -40,7 +44,7 @@ export const AdminPlans: React.FC = () => {
             const done = p.actions.filter((a) => a.done).length;
             const hasPlan = total > 0 || !!p.objective;
             return (
-              <div key={p.studentId} onClick={() => navigate(`/admin/students/${p.studentId}`)} className="cursor-pointer">
+              <div key={p.studentId}>
                 <AdminCard className="p-4 hover:shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition-shadow">
                   <div className="flex items-center gap-4">
                     <div className="flex-1 min-w-0">
@@ -56,7 +60,7 @@ export const AdminPlans: React.FC = () => {
                         <ProgressBar value={(done / total) * 100} label={`${done} / ${total} actions`} />
                       </div>
                     )}
-                    <ArrowRight size={16} className="text-slate-300 shrink-0" />
+                    <button onClick={() => setSelected(p)} className="h-9 px-3 rounded-lg bg-blue-50 text-primary font-bold text-[12.5px] flex items-center gap-1.5"><Edit size={14} /> {hasPlan ? 'Modifier' : 'Créer le plan'}</button>
                   </div>
                 </AdminCard>
               </div>
@@ -64,6 +68,7 @@ export const AdminPlans: React.FC = () => {
           })}
         </div>
       )}
+      <PlanFormModal open={!!selected} plan={selected} onClose={() => setSelected(null)} onSaved={refreshPlans} />
     </div>
   );
 };

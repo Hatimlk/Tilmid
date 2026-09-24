@@ -24,11 +24,14 @@ export const MonPlan: React.FC<{ student: Student; entitlements: Entitlements; o
   const title = entitlements.label === 'Premium' ? 'Plan 90 jours' : entitlements.label === 'Boost' ? 'Plan 30 jours' : 'Mon plan personnel';
 
   if (entitlements.label !== 'Essentiel') {
-    const hasCoachPlan = false; // no coach-authored plan backend exists yet — honest empty state
+    const hasCoachPlan = !!record.objective || record.actions.length > 0 || record.habits.length > 0;
+    const completed = record.actions.filter((action) => action.done).length;
     return (
       <div>
         <PageHeader title="Mon Plan" subtitle={title} />
-        {hasCoachPlan ? null : (
+        {!loaded ? (
+          <Card className="p-8"><div className="h-32 rounded-xl bg-slate-50 animate-pulse" /></Card>
+        ) : !hasCoachPlan ? (
           <Card className="p-8 max-w-lg">
             <EmptyState
               icon={Target}
@@ -37,6 +40,26 @@ export const MonPlan: React.FC<{ student: Student; entitlements: Entitlements; o
               cta={{ label: 'Voir mes séances', onClick: () => onNavigate('coaching') }}
             />
           </Card>
+        ) : (
+          <div className="space-y-5">
+            <Card emphasis className="p-6">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Objectif principal</p>
+              <p className="font-black text-slate-900 text-[17px]">{record.objective}</p>
+              {record.startDate && <p className="text-[12px] font-bold text-slate-400 mt-2">Début : {record.startDate}</p>}
+              {record.actions.length > 0 && <div className="mt-5"><ProgressBar value={(completed / record.actions.length) * 100} label={`${completed} / ${record.actions.length} étapes réalisées`} /></div>}
+            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <Card className="p-6">
+                <p className="font-black text-slate-900 text-[15px] mb-4">Étapes pratiques</p>
+                <div className="space-y-3">{record.actions.map((action) => <div key={action.id} className="flex items-center gap-3"><span className={`w-6 h-6 rounded-lg flex items-center justify-center ${action.done ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{action.done && <Check size={13} />}</span><span className={`text-[13.5px] font-semibold ${action.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{action.text}</span></div>)}</div>
+              </Card>
+              <Card className="p-6">
+                <p className="font-black text-slate-900 text-[15px] mb-4">Habitudes recommandées</p>
+                <div className="flex flex-wrap gap-2">{record.habits.map((habit) => <span key={habit} className="px-3 py-1.5 rounded-full bg-blue-50 text-primary text-[12.5px] font-bold">{habit}</span>)}</div>
+                {record.obstacles && <><p className="font-black text-slate-900 text-[14px] mt-6 mb-2">Obstacles identifiés</p><p className="text-[13.5px] text-slate-600 whitespace-pre-line">{record.obstacles}</p></>}
+              </Card>
+            </div>
+          </div>
         )}
       </div>
     );

@@ -69,7 +69,7 @@ function useApiList<T extends { id: string }>(
   const add = useCallback(
     (item: T) => {
       setItems((prev) => [item, ...prev]);
-      create(mapToApiForCreate(item))
+      return create(mapToApiForCreate(item))
         .then((res) => {
           if (res?.id != null) {
             const realId = String(res.id);
@@ -79,6 +79,7 @@ function useApiList<T extends { id: string }>(
         .catch((err) => {
           console.error(err);
           setItems((prev) => prev.filter((it) => it.id !== item.id));
+          throw err;
         });
     },
     [mapToApiForCreate]

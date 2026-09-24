@@ -227,7 +227,6 @@ const COACHING_AR: Record<string, string> = {
   'Tableau de suivi des révisions': 'جدول متابعة المراجعة',
   'Habit Tracker': 'متتبع العادات',
   'Plan de préparation aux examens': 'خطة التحضير للامتحانات',
-  'Groupe WhatsApp privé': 'مجموعة واتساب خاصة',
   'Deux créneaux hebdomadaires pour les questions collectives': 'فترتان أسبوعيتان للأسئلة الجماعية',
   'Une session collective de 60 minutes consacrée aux questions et à l’orientation': 'حصة جماعية لمدة 60 دقيقة مخصصة للأسئلة والتوجيه',
   '1 séance de coaching individuelle à distance': 'حصة تدريب فردية واحدة عن بعد',
@@ -247,13 +246,6 @@ const COACHING_AR: Record<string, string> = {
   'Session 01': 'الحصة 01',
   'Session 02': 'الحصة 02',
   'Session 03': 'الحصة 03',
-  'Rapport final de progression': 'تقرير نهائي للتقدم',
-  'Diagnostic personnalisé — identifier la priorité à travailler': 'تشخيص شخصي - تحديد الأولوية التي يجب العمل عليها',
-  'Après la séance — résumé écrit': 'بعد الحصة - ملخص مكتوب',
-  'Suivi': 'المتابعة',
-  'Le parcours en 3 séances': 'المسار في 3 حصص',
-  'Suivi entre les séances': 'المتابعة بين الحصص',
-  'Le rapport final couvre': 'يشمل التقرير النهائي',
 
   // FAQ Answers
   "Essentiel donne principalement accès à la méthode, aux contenus, aux outils et à l'accompagnement collectif. Boost ajoute un diagnostic personnel, une séance individuelle de Coaching, un plan de 30 jours et un Check-in.": "توفر باقة الأساسية بشكل أساسي الوصول إلى المنهجية والمحتوى والأدوات والمواكبة الجماعية. أما باقة Boost فتضيف تشخيصاً شخصياً، وحصة تدريب فردية، وخطة لمدة 30 يوماً ومتابعة واحدة.",

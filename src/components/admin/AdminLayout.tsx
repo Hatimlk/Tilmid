@@ -15,7 +15,7 @@ import SEO from '../SEO';
 export interface AdminOutletContext {
   openStudentModal: (student?: Student | null) => void;
   openAppointmentModal: (appointment?: Appointment | null) => void;
-  openFeedbackModal: (studentId?: number | string | null) => void;
+  openFeedbackModal: (studentId?: number | string | null, checkinId?: number | null) => void;
   openCollectiveSessionModal: (session?: CollectiveSession | null) => void;
 }
 
@@ -30,7 +30,7 @@ const AdminShell: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [studentModal, setStudentModal] = useState<{ open: boolean; student: Student | null }>({ open: false, student: null });
   const [appointmentModal, setAppointmentModal] = useState<{ open: boolean; appointment: Appointment | null }>({ open: false, appointment: null });
-  const [feedbackModal, setFeedbackModal] = useState<{ open: boolean; studentId: number | string | null }>({ open: false, studentId: null });
+  const [feedbackModal, setFeedbackModal] = useState<{ open: boolean; studentId: number | string | null; checkinId: number | null }>({ open: false, studentId: null, checkinId: null });
   const [collectiveSessionModal, setCollectiveSessionModal] = useState<{ open: boolean; session: CollectiveSession | null }>({ open: false, session: null });
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const AdminShell: React.FC = () => {
 
   const openStudentModal = (student?: Student | null) => setStudentModal({ open: true, student: student || null });
   const openAppointmentModal = (appointment?: Appointment | null) => setAppointmentModal({ open: true, appointment: appointment || null });
-  const openFeedbackModal = (studentId?: number | string | null) => setFeedbackModal({ open: true, studentId: studentId ?? null });
+  const openFeedbackModal = (studentId?: number | string | null, checkinId?: number | null) => setFeedbackModal({ open: true, studentId: studentId ?? null, checkinId: checkinId ?? null });
   const openCollectiveSessionModal = (session?: CollectiveSession | null) => setCollectiveSessionModal({ open: true, session: session || null });
 
   return (
@@ -100,7 +100,8 @@ const AdminShell: React.FC = () => {
         open={feedbackModal.open}
         students={students.data}
         studentId={feedbackModal.studentId}
-        onClose={() => setFeedbackModal({ open: false, studentId: null })}
+        checkinId={feedbackModal.checkinId}
+        onClose={() => setFeedbackModal({ open: false, studentId: null, checkinId: null })}
         onSaved={refreshFeedback}
       />
       <CollectiveSessionFormModal

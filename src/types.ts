@@ -128,6 +128,7 @@ export interface FeedbackEntry {
   studentName?: string;
   studentUsername?: string;
   appointmentId?: number | null;
+  checkinId?: number | null;
   message: string;
   authorName?: string | null;
   createdAt: string;
@@ -139,6 +140,9 @@ export interface PlanOverviewRow {
   username: string;
   objective: string;
   actions: { id: string; text: string; done: boolean }[];
+  habits: string[];
+  obstacles: string;
+  startDate: string | null;
   updatedAt: string | null;
 }
 
