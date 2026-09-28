@@ -271,7 +271,12 @@ if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') 
     $stmt->execute([$username]);
     $student = $stmt->fetch();
 
-    if ($student && $student['status'] === 'active' && !empty($student['password_hash']) && password_verify($password, $student['password_hash'])) {
+    if ($student && !empty($student['password_hash']) && password_verify($password, $student['password_hash'])) {
+        if ($student['status'] !== 'active') {
+            http_response_code(403);
+            echo json_encode(['message' => 'Student account is not active']);
+            exit;
+        }
         $payload = [
             'id' => $student['id'],
             'role' => 'student',

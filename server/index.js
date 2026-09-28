@@ -263,13 +263,16 @@ app.post('/api/students/login', loginLimiter, async (req, res) => {
         const [students] = await db.query('SELECT * FROM students WHERE username = ?', [username]);
         const student = students[0];
 
-        if (!student || student.status !== 'active' || !student.password_hash) {
+        if (!student || !student.password_hash) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, student.password_hash);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        if (student.status !== 'active') {
+            return res.status(403).json({ message: 'Student account is not active' });
         }
 
         const token = jwt.sign({ id: student.id, role: 'student' }, JWT_SECRET, { expiresIn: '1d' });

@@ -13,7 +13,7 @@ const STATUS_OPTIONS: { value: StudentStatus; label: string }[] = [
 ];
 
 const emptyForm = (): Partial<Student> & { password?: string } => ({
-  name: '', username: '', email: '', grade: GRADES[2], status: 'pending_activation', package: null, coachId: null,
+  name: '', username: '', email: '', grade: GRADES[2], status: 'active', package: null, coachId: null,
 });
 
 export const StudentFormModal: React.FC<{
@@ -87,7 +87,9 @@ export const StudentFormModal: React.FC<{
             </div>
             <h3 className="text-[19px] font-black text-slate-900 mb-1">Étudiant créé</h3>
             <p className="text-slate-500 text-[13.5px] font-medium mb-6">
-              Compte : <span className="font-black text-amber-600">En attente d'activation</span>
+              Compte : <span className={`font-black ${created.status === 'active' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                {STATUS_OPTIONS.find((option) => option.value === created.status)?.label || created.status}
+              </span>
             </p>
             <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between mb-6">
               <div className="text-start">
@@ -151,9 +153,10 @@ export const StudentFormModal: React.FC<{
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Statut</label>
-                  <select value={form.status || 'pending_activation'} onChange={(e) => setForm({ ...form, status: e.target.value as StudentStatus })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white">
+                  <select value={form.status || 'active'} onChange={(e) => setForm({ ...form, status: e.target.value as StudentStatus })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px] bg-white">
                     {STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
+                  {form.status !== 'active' && <p className="mt-1.5 text-[11px] font-bold text-amber-600">Seuls les comptes actifs peuvent se connecter.</p>}
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Coach</label>

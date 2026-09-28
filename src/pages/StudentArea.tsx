@@ -32,12 +32,13 @@ import { Profil } from './student/Profil';
 /* Login gate — shown when there is no authenticated student session          */
 /* -------------------------------------------------------------------------- */
 
-type LoginErrorKind = 'invalid' | 'network' | 'rateLimit' | null;
+type LoginErrorKind = 'invalid' | 'inactive' | 'network' | 'rateLimit' | null;
 
 const LoginAlert: React.FC<{ kind: LoginErrorKind; t: any }> = ({ kind, t }) => {
   if (!kind) return null;
   const content = {
     invalid: { title: t('studentLogin.errors.invalidTitle'), desc: t('studentLogin.errors.invalidDesc'), icon: AlertCircle, tone: 'red' },
+    inactive: { title: t('studentLogin.errors.inactiveTitle'), desc: t('studentLogin.errors.inactiveDesc'), icon: Lock, tone: 'blue' },
     network: { title: t('studentLogin.errors.networkTitle'), desc: t('studentLogin.errors.networkDesc'), icon: WifiOff, tone: 'red' },
     rateLimit: { title: t('studentLogin.errors.rateLimitTitle'), desc: t('studentLogin.errors.rateLimitDesc'), icon: Clock, tone: 'blue' },
   }[kind];
@@ -316,6 +317,7 @@ export const StudentArea: React.FC = () => {
     } catch (e) {
       const apiErr = e as ApiError;
       if (apiErr?.status === 429) setLoginErrorKind('rateLimit');
+      else if (apiErr?.status === 403) setLoginErrorKind('inactive');
       else if (apiErr?.status === 400) setLoginErrorKind('invalid');
       else setLoginErrorKind('network');
       setLoginPending(false);

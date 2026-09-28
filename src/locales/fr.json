@@ -596,6 +596,8 @@
       "emptyIdentifier": "Veuillez saisir votre identifiant.",
       "emptyPassword": "Veuillez saisir votre mot de passe.",
       "invalidTitle": "Identifiants incorrects",
+      "inactiveTitle": "Compte non actif",
+      "inactiveDesc": "Ce compte étudiant doit être activé par un administrateur avant la connexion.",
       "invalidDesc": "L'identifiant ou le mot de passe saisi est incorrect. Vérifiez vos informations et réessayez.",
       "networkTitle": "Impossible de se connecter",
       "networkDesc": "Une erreur réseau est survenue. Vérifiez votre connexion puis réessayez.",
