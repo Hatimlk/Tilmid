@@ -32,14 +32,16 @@ export const CoachingRegistration: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
-      await fetch(GOOGLE_SHEET_URL, {
+      // The database is the source of truth. The Google Sheet is only a
+      // secondary mirror and must never block a registration.
+      await dataManager.saveCoachingRequest({ name: formData.name, phone: formData.phone, grade: formData.grade });
+
+      void fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: formData.name, phone: formData.phone, grade: formData.grade, pack: selectedPack || 'Non précisé' }),
-      });
-
-      await dataManager.saveCoachingRequest({ name: formData.name, phone: formData.phone, grade: formData.grade });
+      }).catch((error) => console.warn('Google Sheets mirror failed:', error));
 
       setIsSubmitting(false);
       setIsSuccess(true);

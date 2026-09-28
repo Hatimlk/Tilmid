@@ -33,10 +33,13 @@ export const Contact = () => {
     // Save Message
     const saveMsg = async () => {
       try {
-        // 1. Send to Google Sheets (Fire and forget style with no-cors)
+        // The database is the source of truth. Google Sheets is only a
+        // secondary mirror and must never block a contact request.
+        await dataManager.saveMessage(newMessage);
+
         const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzkBJODYcRauPWXhwYPvEYjjZrKcYWijulXpSDXtpKaxW8Xf3aky8FJ82_yK0sBFP1s/exec';
 
-        await fetch(GOOGLE_SHEET_URL, {
+        void fetch(GOOGLE_SHEET_URL, {
           method: 'POST',
           mode: 'no-cors', // Important for Google Apps Script to avoid CORS errors
           headers: {
@@ -48,10 +51,7 @@ export const Contact = () => {
             goal: formState.type,
             message: formState.message
           })
-        });
-
-        // 2. Save to Internal Database (if applicable)
-        await dataManager.saveMessage(newMessage);
+        }).catch((error) => console.warn('Google Sheets mirror failed:', error));
 
         setStatus('success');
         setFormState({ name: '', phone: '', type: 'توجيه مدرسي', message: '' });
