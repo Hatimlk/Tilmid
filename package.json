@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run build",
     "server:start": "npm --prefix server start",
-    "server:db-check": "node server/test_db.js",
+    "server:db-check": "npm --prefix server run db:check",
     "server:seed-admin": "node server/seed.js"
   },
   "dependencies": {

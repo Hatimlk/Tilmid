@@ -867,7 +867,14 @@ app.get('/api/messages', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/messages', async (req, res) => {
-    const { name, email, phone, type, message } = req.body;
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim();
+    const phone = String(req.body.phone || '').trim();
+    const type = String(req.body.type || req.body.goal || 'General').trim();
+    const message = String(req.body.message || '').trim();
+    if (!name || !phone) {
+        return res.status(400).json({ message: 'Name and phone are required' });
+    }
     try {
         const [result] = await db.query(
             'INSERT INTO contact_messages (name, email, phone, type, message) VALUES (?, ?, ?, ?, ?)',
@@ -892,7 +899,12 @@ app.get('/api/coaching-requests', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/coaching-requests', async (req, res) => {
-    const { name, phone, grade } = req.body;
+    const name = String(req.body.name || '').trim();
+    const phone = String(req.body.phone || '').trim();
+    const grade = String(req.body.grade || '').trim();
+    if (!name || !phone || !grade) {
+        return res.status(400).json({ message: 'Name, phone and grade are required' });
+    }
     try {
         const [result] = await db.query(
             'INSERT INTO coaching_requests (name, phone, grade) VALUES (?, ?, ?)',
@@ -917,7 +929,17 @@ app.get('/api/orientation-requests', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/orientation-requests', async (req, res) => {
-    const { name, phone, filiere, schoolType, city, bacYear, regionalGrade, pack } = req.body;
+    const name = String(req.body.name || '').trim();
+    const phone = String(req.body.phone || '').trim();
+    const filiere = String(req.body.filiere || '').trim();
+    const schoolType = String(req.body.schoolType || '').trim();
+    const city = String(req.body.city || '').trim();
+    const bacYear = String(req.body.bacYear || '').trim();
+    const regionalGrade = String(req.body.regionalGrade || '').trim();
+    const pack = String(req.body.pack || '').trim();
+    if (!name || !phone || !filiere || !schoolType || !city || !bacYear || !pack) {
+        return res.status(400).json({ message: 'Missing required registration fields' });
+    }
     try {
         const [result] = await db.query(
             'INSERT INTO orientation_requests (name, phone, filiere, school_type, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',

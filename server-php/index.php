@@ -928,10 +928,16 @@ if (strpos($request_uri, '/api/messages') !== false) {
         exit;
     }
     if ($method == 'POST') {
-        $name = $input['name'] ?? '';
-        $phone = $input['phone'] ?? '';
-        $type = $input['type'] ?? ($input['goal'] ?? 'General');
-        $message = $input['message'] ?? '';
+        $name = trim((string)($input['name'] ?? ''));
+        $phone = trim((string)($input['phone'] ?? ''));
+        $type = trim((string)($input['type'] ?? ($input['goal'] ?? 'General')));
+        $message = trim((string)($input['message'] ?? ''));
+
+        if ($name === '' || $phone === '') {
+            http_response_code(400);
+            echo json_encode(['message' => 'Name and phone are required']);
+            exit;
+        }
 
         try {
             $stmt = $pdo->prepare("INSERT INTO contact_messages (name, phone, type, message) VALUES (?, ?, ?, ?)");
@@ -965,9 +971,15 @@ if (strpos($request_uri, '/api/coaching-requests') !== false) {
         exit;
     }
     if ($method == 'POST') {
-        $name = $input['name'] ?? '';
-        $phone = $input['phone'] ?? '';
-        $grade = $input['grade'] ?? '';
+        $name = trim((string)($input['name'] ?? ''));
+        $phone = trim((string)($input['phone'] ?? ''));
+        $grade = trim((string)($input['grade'] ?? ''));
+
+        if ($name === '' || $phone === '' || $grade === '') {
+            http_response_code(400);
+            echo json_encode(['message' => 'Name, phone and grade are required']);
+            exit;
+        }
 
         try {
             $stmt = $pdo->prepare("INSERT INTO coaching_requests (name, phone, grade) VALUES (?, ?, ?)");
@@ -993,14 +1005,20 @@ if (strpos($request_uri, '/api/orientation-requests') !== false) {
         exit;
     }
     if ($method == 'POST') {
-        $name = $input['name'] ?? '';
-        $phone = $input['phone'] ?? '';
-        $filiere = $input['filiere'] ?? '';
-        $schoolType = $input['schoolType'] ?? '';
-        $city = $input['city'] ?? '';
-        $bacYear = $input['bacYear'] ?? '';
-        $regionalGrade = $input['regionalGrade'] ?? '';
-        $pack = $input['pack'] ?? '';
+        $name = trim((string)($input['name'] ?? ''));
+        $phone = trim((string)($input['phone'] ?? ''));
+        $filiere = trim((string)($input['filiere'] ?? ''));
+        $schoolType = trim((string)($input['schoolType'] ?? ''));
+        $city = trim((string)($input['city'] ?? ''));
+        $bacYear = trim((string)($input['bacYear'] ?? ''));
+        $regionalGrade = trim((string)($input['regionalGrade'] ?? ''));
+        $pack = trim((string)($input['pack'] ?? ''));
+
+        if ($name === '' || $phone === '' || $filiere === '' || $schoolType === '' || $city === '' || $bacYear === '' || $pack === '') {
+            http_response_code(400);
+            echo json_encode(['message' => 'Missing required registration fields']);
+            exit;
+        }
 
         try {
             $stmt = $pdo->prepare("INSERT INTO orientation_requests (name, phone, filiere, school_type, city, bac_year, regional_grade, pack) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
