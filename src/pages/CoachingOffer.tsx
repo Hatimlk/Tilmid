@@ -51,6 +51,7 @@ const COACHING_AR: Record<string, string> = {
   'Des étudiants qui ont transformé leur façon de travailler': 'تلاميذ غيّروا طريقة عملهم',
   'Des progrès qui commencent par une meilleure méthode, une organisation plus claire et des actions concrètes.': 'تقدم يبدأ بمنهجية أفضل وتنظيم أوضح وخطوات عملية.',
   'Voir plus de témoignages': 'عرض المزيد من الشهادات',
+  'Faites glisser pour découvrir les témoignages': 'اسحب لاكتشاف المزيد من الشهادات',
   'Votre progression': 'تقدمك',
   'Nous vous aidons à atteindre vos objectifs sans pression inutile': 'نساعدك على تحقيق أهدافك دون ضغط غير ضروري',
   'Développez des méthodes de travail durables pour progresser plus efficacement tout au long de votre parcours scolaire.': 'طوّر أساليب عمل مستدامة لتتقدم بفعالية طوال مسارك الدراسي.',
@@ -482,8 +483,10 @@ const MouwakabaHero: React.FC<{ onPrimaryCta: () => void }> = ({ onPrimaryCta })
 /* Success stories carousel                                                    */
 /* -------------------------------------------------------------------------- */
 
-const SuccessStories: React.FC = () => (
-  <section className="py-16 bg-white rounded-[2.5rem] shadow-sm border border-slate-100">
+const SuccessStories: React.FC = () => {
+  const copy = useCoachingCopy();
+  return (
+  <section className="py-12 md:py-16 bg-white rounded-[1.75rem] md:rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
     <SectionHeader
       eyebrow="Témoignages"
       title="Des étudiants qui ont transformé leur façon de travailler"
@@ -491,14 +494,40 @@ const SuccessStories: React.FC = () => (
       className="mb-10 px-4"
     />
 
-    <div className="relative w-full">
-      <div className="absolute top-0 start-0 w-24 md:w-32 h-full bg-gradient-to-r from-white to-transparent rtl:bg-gradient-to-l z-20 pointer-events-none"></div>
-      <div className="absolute top-0 end-0 w-24 md:w-32 h-full bg-gradient-to-l from-white to-transparent rtl:bg-gradient-to-r z-20 pointer-events-none"></div>
+    {/* Mobile: manual, touch-friendly snap carousel. No auto-animation, so a
+        testimonial stays still while the student reads it. */}
+    <div className="md:hidden">
+      <div
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-5 pb-4 overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label={copy('Témoignages')}
+      >
+        {TESTIMONIALS.map((img, i) => (
+          <figure key={i} className="w-[78vw] max-w-[300px] aspect-[3/4] snap-center first:snap-start flex-none rounded-[1.4rem] overflow-hidden border border-slate-100 shadow-[0_12px_32px_rgba(15,23,42,0.09)] bg-slate-50">
+            <img
+              src={img}
+              alt={`Témoignage étudiant ${i + 1}`}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </figure>
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-2 mt-2 px-5 text-[12px] font-bold text-slate-400">
+        <ArrowLeft size={15} className="rtl:rotate-180" />
+        <span>{copy('Faites glisser pour découvrir les témoignages')}</span>
+        <ArrowLeft size={15} className="rotate-180 rtl:rotate-0" />
+      </div>
+    </div>
+
+    {/* Tablet/desktop: retain the continuous showcase used by the web layout. */}
+    <div className="relative w-full hidden md:block">
+      <div className="absolute top-0 start-0 w-32 h-full bg-gradient-to-r from-white to-transparent rtl:bg-gradient-to-l z-20 pointer-events-none"></div>
+      <div className="absolute top-0 end-0 w-32 h-full bg-gradient-to-l from-white to-transparent rtl:bg-gradient-to-r z-20 pointer-events-none"></div>
 
       <div className="flex overflow-hidden relative w-full group">
         <div className="flex gap-4 animate-scroll-rtl w-max group-hover:[animation-play-state:paused] py-2 px-4" style={{ animationDuration: '45s' }}>
           {[...TESTIMONIALS, ...TESTIMONIALS].map((img, i) => (
-            <div key={i} className="w-[200px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] relative group/card flex-shrink-0 bg-white">
+            <div key={i} className="w-[260px] aspect-[3/4] rounded-2xl overflow-hidden border border-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.06)] relative group/card flex-shrink-0 bg-white">
               <img
                 src={img}
                 alt="Témoignage d'un étudiant Mouwakaba"
@@ -518,12 +547,13 @@ const SuccessStories: React.FC = () => (
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all"
       >
-        <span>Voir plus de témoignages</span>
+        <span>{copy('Voir plus de témoignages')}</span>
         <ArrowLeft size={17} className="transform ltr:rotate-180" />
       </a>
     </div>
   </section>
-);
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Program objectives                                                         */
