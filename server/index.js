@@ -257,10 +257,13 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
 // Student login
 app.post('/api/students/login', loginLimiter, async (req, res) => {
-    const { username, password } = req.body;
+    const username = String(req.body.username || '').trim();
+    const { password } = req.body;
 
     try {
-        const [students] = await db.query('SELECT * FROM students WHERE username = ?', [username]);
+        // Match the UI's generic "identifier" field: students may use their
+        // username or the email saved on their profile.
+        const [students] = await db.query('SELECT * FROM students WHERE username = ? OR email = ? LIMIT 1', [username, username]);
         const student = students[0];
 
         if (!student || !student.password_hash) {

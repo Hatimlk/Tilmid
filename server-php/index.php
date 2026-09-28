@@ -267,8 +267,10 @@ if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') 
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM students WHERE username = ?");
-    $stmt->execute([$username]);
+    // The login field is presented as an identifier in the UI. Accept the
+    // student's username or email so administrators can share either value.
+    $stmt = $pdo->prepare("SELECT * FROM students WHERE username = ? OR email = ? LIMIT 1");
+    $stmt->execute([$username, $username]);
     $student = $stmt->fetch();
 
     if ($student && !empty($student['password_hash']) && password_verify($password, $student['password_hash'])) {
