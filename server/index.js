@@ -990,6 +990,23 @@ app.post('/api/plan', requireStudent, async (req, res) => {
     }
 });
 
+// A coached student may report execution without being able to rewrite the
+// coach-owned objective, action labels, habits or identified obstacles.
+app.post('/api/plan/progress', requireStudent, async (req, res) => {
+    const updates = Array.isArray(req.body.actions) ? req.body.actions : [];
+    const studentNote = String(req.body.studentNote || '').trim().slice(0, 2000);
+    try {
+        const [rows] = await db.query('SELECT actions FROM self_guided_plans WHERE student_id = ?', [req.user.id]);
+        if (!rows.length) return res.status(404).json({ message: 'Plan not found' });
+        const doneById = new Map(updates.map((a) => [String(a.id), Boolean(a.done)]));
+        const actions = parseJsonField(rows[0].actions, []).map((action) =>
+            doneById.has(String(action.id)) ? { ...action, done: doneById.get(String(action.id)) } : action);
+        await db.query('UPDATE self_guided_plans SET actions = ?, student_note = ? WHERE student_id = ?',
+            [JSON.stringify(actions), studentNote, req.user.id]);
+        res.json({ message: 'Plan progress saved', actions, studentNote });
+    } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
+});
+
 /* ---------------- GOALS ROUTES (Objectifs, in Mes outils) ---------------- */
 app.get('/api/goals', requireStudentOrAdmin, async (req, res) => {
     const studentId = resolveStudentId(req, res);
@@ -1412,7 +1429,7 @@ app.get('/api/admin/feedback', requireAdmin, async (req, res) => {
 app.get('/api/admin/plans', requireAdmin, async (req, res) => {
     try {
         const [rows] = await db.query(
-            `SELECT s.id AS student_id, s.name, s.username, p.objective, p.start_date, p.obstacles, p.actions, p.habits, p.updated_at
+            `SELECT s.id AS student_id, s.name, s.username, p.objective, p.start_date, p.obstacles, p.student_note, p.actions, p.habits, p.updated_at
              FROM students s LEFT JOIN self_guided_plans p ON p.student_id = s.id
              WHERE s.status = 'active' ORDER BY s.name ASC`
         );

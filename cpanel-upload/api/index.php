@@ -1080,28 +1080,6 @@ if ($request_uri === '/api/plan' && $method == 'POST') {
     exit;
 }
 
-if ($request_uri === '/api/plan/progress' && $method == 'POST') {
-    $user = requireStudent($secret_key);
-    $updates = is_array($input['actions'] ?? null) ? $input['actions'] : [];
-    $studentNote = mb_substr(trim((string)($input['studentNote'] ?? '')), 0, 2000);
-    $stmt = $pdo->prepare("SELECT actions FROM self_guided_plans WHERE student_id = ?");
-    $stmt->execute([(int)$user['id']]);
-    $row = $stmt->fetch();
-    if (!$row) { http_response_code(404); echo json_encode(['message' => 'Plan not found']); exit; }
-    $doneById = [];
-    foreach ($updates as $update) if (isset($update['id'])) $doneById[(string)$update['id']] = !empty($update['done']);
-    $actions = json_decode($row['actions'] ?? '[]', true) ?: [];
-    foreach ($actions as &$action) {
-        $id = (string)($action['id'] ?? '');
-        if (array_key_exists($id, $doneById)) $action['done'] = $doneById[$id];
-    }
-    unset($action);
-    $stmt = $pdo->prepare("UPDATE self_guided_plans SET actions = ?, student_note = ? WHERE student_id = ?");
-    $stmt->execute([json_encode($actions), $studentNote, (int)$user['id']]);
-    echo json_encode(['message' => 'Plan progress saved', 'actions' => $actions, 'studentNote' => $studentNote]);
-    exit;
-}
-
 // 15. GOALS (Objectifs, in Mes outils)
 if ($request_uri === '/api/goals' && $method == 'GET') {
     $user = requireStudentOrAdmin($secret_key);
@@ -1546,7 +1524,7 @@ if ($request_uri === '/api/coaching-sessions' && $method == 'GET') {
 // 25. ADMIN CROSS-STUDENT OVERVIEWS (Plans, Check-ins, Progression)
 if ($request_uri === '/api/admin/plans' && $method == 'GET') {
     requireAdmin($secret_key);
-    $stmt = $pdo->query("SELECT s.id AS student_id, s.name, s.username, p.objective, p.start_date, p.obstacles, p.student_note, p.actions, p.habits, p.updated_at
+    $stmt = $pdo->query("SELECT s.id AS student_id, s.name, s.username, p.objective, p.start_date, p.obstacles, p.actions, p.habits, p.updated_at
         FROM students s LEFT JOIN self_guided_plans p ON p.student_id = s.id
         WHERE s.status = 'active' ORDER BY s.name ASC");
     echo json_encode($stmt->fetchAll());

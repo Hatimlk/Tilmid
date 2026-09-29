@@ -158,7 +158,7 @@ function useApiRecord<T>(
     [saveApi, mapToApi]
   );
 
-  return { record, save, loaded };
+  return { record, save, loaded, setRecord };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -277,18 +277,20 @@ export interface SelfGuidedPlan {
   actions: PlanAction[];
   habits: string[];
   obstacles: string;
+  studentNote: string;
 }
 
-const EMPTY_PLAN: SelfGuidedPlan = { objective: '', startDate: '', actions: [], habits: [], obstacles: '' };
+const EMPTY_PLAN: SelfGuidedPlan = { objective: '', startDate: '', actions: [], habits: [], obstacles: '', studentNote: '' };
 
-export const useSelfGuidedPlan = (username: string) =>
-  useApiRecord<SelfGuidedPlan>(
+export const useSelfGuidedPlan = (username: string) => {
+  const state = useApiRecord<SelfGuidedPlan>(
     username,
     () => dataManager.getPlan(),
     (r) => ({
       objective: r.objective || '',
       startDate: r.start_date || '',
       obstacles: r.obstacles || '',
+      studentNote: r.student_note || '',
       actions: r.actions || [],
       habits: r.habits || [],
     }),
@@ -296,6 +298,16 @@ export const useSelfGuidedPlan = (username: string) =>
     (body) => dataManager.savePlan(body),
     (item) => ({ objective: item.objective, startDate: item.startDate, obstacles: item.obstacles, actions: item.actions, habits: item.habits })
   );
+  const saveProgress = useCallback((actions: PlanAction[], studentNote: string) => {
+    const previous = state.record;
+    state.setRecord({ ...state.record, actions, studentNote });
+    dataManager.savePlanProgress(actions.map(({ id, done }) => ({ id, done })), studentNote).catch((err) => {
+      console.error(err);
+      state.setRecord(previous);
+    });
+  }, [state.record, state.setRecord]);
+  return { ...state, saveProgress };
+};
 
 /* -------------------------------------------------------------------------- */
 /* Check-ins (Boost/Premium self-log)                                        */

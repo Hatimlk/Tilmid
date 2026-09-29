@@ -146,6 +146,7 @@ export interface PlanOverviewRow {
   actions: { id: string; text: string; done: boolean }[];
   habits: string[];
   obstacles: string;
+  studentNote?: string;
   startDate: string | null;
   updatedAt: string | null;
 }

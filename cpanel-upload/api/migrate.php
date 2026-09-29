@@ -141,19 +141,12 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS self_guided_plans (
     objective VARCHAR(500) DEFAULT '',
     start_date VARCHAR(50) DEFAULT '',
     obstacles TEXT,
-    student_note TEXT,
     actions JSON DEFAULT NULL,
     habits JSON DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 )");
 $log[] = 'self_guided_plans table ensured';
-
-$planCols = $pdo->query("SHOW COLUMNS FROM self_guided_plans")->fetchAll(PDO::FETCH_COLUMN);
-if (!in_array('student_note', $planCols, true)) {
-    $pdo->exec("ALTER TABLE self_guided_plans ADD COLUMN student_note TEXT DEFAULT NULL AFTER obstacles");
-    $log[] = 'added self_guided_plans.student_note column';
-}
 
 $pdo->exec("CREATE TABLE IF NOT EXISTS goals (
     id INT AUTO_INCREMENT PRIMARY KEY,

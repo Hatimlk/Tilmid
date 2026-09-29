@@ -190,6 +190,7 @@ CREATE TABLE IF NOT EXISTS self_guided_plans (
     objective VARCHAR(500) DEFAULT '',
     start_date VARCHAR(50) DEFAULT '',
     obstacles TEXT,
+    student_note TEXT,
     actions JSON DEFAULT NULL,
     habits JSON DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

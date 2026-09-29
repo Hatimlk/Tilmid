@@ -76,6 +76,7 @@ const mapPlanOverview = (p: any): PlanOverviewRow => ({
   actions: parseArray(p.actions),
   habits: parseArray(p.habits),
   obstacles: p.obstacles || '',
+  studentNote: p.student_note || '',
   startDate: p.start_date || null,
   updatedAt: p.updated_at,
 });
@@ -370,6 +371,9 @@ export const dataManager = {
   },
   savePlan: async (plan: { objective: string; startDate: string; obstacles: string; actions: any[]; habits: string[] }): Promise<any> => {
     return await api.post('/plan', plan);
+  },
+  savePlanProgress: async (actions: { id: string; done: boolean }[], studentNote: string): Promise<void> => {
+    await api.post('/plan/progress', { actions, studentNote });
   },
 
   getGoals: async (studentId?: string): Promise<any[]> => {
