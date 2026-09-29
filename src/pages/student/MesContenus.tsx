@@ -6,6 +6,7 @@ import { PageHeader, Card, LockedState } from '../../components/student/primitiv
 import { CourseModule } from '../../types';
 import { dataManager } from '../../utils/dataManager';
 import { resolveFileUrl } from '../../lib/api';
+import { RestrictedVideo } from '../../components/student/RestrictedVideo';
 
 const ICONS: Record<string, React.ElementType> = {
   'diagnostic-objectifs': Target,
@@ -55,6 +56,8 @@ export const MesContenus: React.FC<{ entitlements: Entitlements }> = ({ entitlem
           setModules(raw.map((r: any) => ({
             id: r.id, slug: r.slug, title: r.title, description: r.description,
             position: r.position, videoUrl: r.video_url, videoSource: r.video_source,
+            watchedSeconds: Number(r.watched_seconds || 0), durationSeconds: Number(r.duration_seconds || 0),
+            progressPercent: Number(r.progress_percent || 0), completed: !!Number(r.completed),
           })));
         }
       } catch (err) {
@@ -102,6 +105,7 @@ export const MesContenus: React.FC<{ entitlements: Entitlements }> = ({ entitlem
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-slate-900 text-[14.5px]">{m.title}</p>
                     <p className="text-slate-400 text-[12.5px] font-medium">{m.description}</p>
+                    {m.videoUrl && <div className="mt-2 flex items-center gap-2"><div className="h-1.5 flex-1 max-w-48 rounded-full bg-slate-100 overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: `${m.progressPercent}%` }} /></div><span className="text-[11px] font-black text-slate-400">{Math.round(m.progressPercent)}%</span></div>}
                   </div>
                   {m.videoUrl ? (
                     <span className="shrink-0 flex items-center gap-1.5">
@@ -116,21 +120,7 @@ export const MesContenus: React.FC<{ entitlements: Entitlements }> = ({ entitlem
                 </button>
                 {isOpen && m.videoUrl && (
                   <div className="px-5 pb-5">
-                    {m.videoSource === 'upload' ? (
-                      <video controls className="w-full rounded-xl bg-black" src={resolveFileUrl(m.videoUrl)} />
-                    ) : embedUrl ? (
-                      <div className="relative w-full rounded-xl overflow-hidden" style={{ paddingTop: '56.25%' }}>
-                        <iframe
-                          className="absolute inset-0 w-full h-full"
-                          src={embedUrl}
-                          title={m.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    ) : (
-                      <video controls className="w-full rounded-xl bg-black" src={m.videoUrl} />
-                    )}
+                    <RestrictedVideo moduleId={m.id} src={m.videoSource === 'upload' ? resolveFileUrl(m.videoUrl) : m.videoUrl} embedUrl={embedUrl} initialPercent={m.progressPercent} initialSeconds={m.watchedSeconds} initialDuration={m.durationSeconds} onProgress={(progressPercent) => setModules((all) => all.map((item) => item.id === m.id ? { ...item, progressPercent, completed: progressPercent >= 90 } : item))} />
                   </div>
                 )}
               </Card>

@@ -225,6 +225,17 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS course_modules (
 )");
 $log[] = 'course_modules table ensured';
 
+$pdo->exec("CREATE TABLE IF NOT EXISTS course_module_progress (
+    student_id INT NOT NULL, module_id INT NOT NULL,
+    watched_seconds INT NOT NULL DEFAULT 0, duration_seconds INT NOT NULL DEFAULT 0,
+    progress_percent DECIMAL(5,2) NOT NULL DEFAULT 0, completed BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (student_id, module_id),
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (module_id) REFERENCES course_modules(id) ON DELETE CASCADE
+)");
+$log[] = 'course_module_progress table ensured';
+
 $pdo->exec("INSERT IGNORE INTO course_modules (slug, title, description, position) VALUES
     ('diagnostic-objectifs', 'Faire le point & définir ses objectifs', 'Diagnostic de votre situation actuelle et définition de vos objectifs.', 1),
     ('planning-efficace', 'Construire un planning efficace', 'Organisation et création d''un programme hebdomadaire.', 2),

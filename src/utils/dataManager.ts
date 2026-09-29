@@ -448,8 +448,11 @@ export const dataManager = {
   },
 
   // --- Course modules ("Mes contenus") ---
-  getCourseModules: async (): Promise<any[]> => {
-    return await api.get('/course-modules');
+  getCourseModules: async (studentId?: string | number): Promise<any[]> => {
+    return await api.get(`/course-modules${studentId ? `?studentId=${studentId}` : ''}`);
+  },
+  saveCourseModuleProgress: async (id: number, watchedSeconds: number, durationSeconds: number): Promise<void> => {
+    await api.post(`/course-modules/${id}/progress`, { watchedSeconds, durationSeconds });
   },
   saveCourseModuleVideo: async (id: number | string, body: { videoUrl: string | null; videoSource: 'link' | 'upload' | null }): Promise<void> => {
     await api.post(`/course-modules/${id}`, body);

@@ -16,7 +16,7 @@ import { ProgressBar } from '../../components/student/primitives';
 import { getEntitlements } from '../../utils/entitlements';
 import { computeProgressDimensions } from '../../utils/progress';
 import { dataManager } from '../../utils/dataManager';
-import { TimetableTask, Appointment, FeedbackEntry, Student } from '../../types';
+import { TimetableTask, Appointment, FeedbackEntry, Student, CourseModule } from '../../types';
 import { Goal, Habit, RevisionSession, CheckIn, SelfGuidedPlan } from '../../hooks/useStudentData';
 
 /* -------------------------------------------------------------------------- */
@@ -35,9 +35,10 @@ interface StudentModules {
   timetable: TimetableTask[];
   coachingSessions: Appointment[];
   feedback: FeedbackEntry[];
+  courseModules: CourseModule[];
 }
 
-const EMPTY_MODULES: StudentModules = { plan: null, goals: [], revisions: [], habits: [], checkins: [], timetable: [], coachingSessions: [], feedback: [] };
+const EMPTY_MODULES: StudentModules = { plan: null, goals: [], revisions: [], habits: [], checkins: [], timetable: [], coachingSessions: [], feedback: [], courseModules: [] };
 
 function useStudentModules(studentId: string | undefined) {
   const [data, setData] = useState<StudentModules>(EMPTY_MODULES);
@@ -48,7 +49,7 @@ function useStudentModules(studentId: string | undefined) {
   const load = useCallback(async () => {
     if (!studentId) return;
     try {
-      const [plan, goals, revisions, habits, checkins, timetable, coachingSessions, feedback] = await Promise.all([
+      const [plan, goals, revisions, habits, checkins, timetable, coachingSessions, feedback, courseModuleRows] = await Promise.all([
         dataManager.getPlan(studentId),
         dataManager.getGoals(studentId),
         dataManager.getRevisions(studentId),
@@ -57,6 +58,7 @@ function useStudentModules(studentId: string | undefined) {
         dataManager.getTimetable(studentId),
         dataManager.getCoachingSessions(studentId),
         dataManager.getFeedback(studentId),
+        dataManager.getCourseModules(studentId),
       ]);
       setData({
         plan: plan ? { objective: plan.objective || '', startDate: plan.start_date || '', obstacles: plan.obstacles || '', actions: plan.actions || [], habits: plan.habits || [] } : null,
@@ -67,6 +69,7 @@ function useStudentModules(studentId: string | undefined) {
         timetable: timetable.map((r: any) => ({ id: String(r.id), subject: r.subject, day: r.day, startTime: r.start_time, endTime: r.end_time })),
         coachingSessions,
         feedback,
+        courseModules: courseModuleRows.map((r: any) => ({ id: r.id, slug: r.slug, title: r.title, description: r.description || '', position: r.position, videoUrl: r.video_url, videoSource: r.video_source, watchedSeconds: Number(r.watched_seconds || 0), durationSeconds: Number(r.duration_seconds || 0), progressPercent: Number(r.progress_percent || 0), completed: !!Number(r.completed) })),
       });
       setError(false);
       setLastUpdated(new Date());
@@ -147,7 +150,7 @@ export const AdminStudentDetail: React.FC = () => {
   if (!student) return <AdminCard><AdminEmptyState title="Étudiant introuvable" description="Ce dossier n'existe pas ou a été supprimé." cta={{ label: 'Retour à la liste', onClick: () => navigate('/admin/students') }} /></AdminCard>;
 
   const entitlements = getEntitlements(student.package);
-  const isLiveTab = tab === 'plan' || tab === 'planning' || tab === 'coaching' || tab === 'checkins' || tab === 'feedback' || tab === 'progress' || tab === 'tools';
+  const isLiveTab = tab === 'plan' || tab === 'planning' || tab === 'coaching' || tab === 'checkins' || tab === 'feedback' || tab === 'progress' || tab === 'content' || tab === 'tools';
 
   const changeStatus = async (status: typeof student.status) => {
     await dataManager.saveStudent({ ...student, status });
@@ -263,7 +266,11 @@ export const AdminStudentDetail: React.FC = () => {
         modules.loading ? <AdminCard className="p-8"><div className="h-40 rounded-xl bg-slate-50 animate-pulse" /></AdminCard> :
         <AdminProgressTab modules={modules.data} />
       )}
-      {tab === 'content' && <ModuleComingSoon icon={PlayCircle} title="Contenus" description="La progression dans les modules et vidéos sera visible ici." />}
+      {tab === 'content' && (
+        modules.error ? <AdminCard><AdminErrorState onRetry={modules.refresh} /></AdminCard> :
+        modules.loading ? <AdminCard className="p-8"><div className="h-40 rounded-xl bg-slate-50 animate-pulse" /></AdminCard> :
+        <AdminContentProgress modules={modules.data.courseModules} />
+      )}
       {tab === 'tools' && (
         modules.error ? <AdminCard><AdminErrorState onRetry={modules.refresh} /></AdminCard> :
         modules.loading ? <AdminCard className="p-8"><div className="h-40 rounded-xl bg-slate-50 animate-pulse" /></AdminCard> :
@@ -545,6 +552,22 @@ const AdminFeedbackTab: React.FC<{ studentId: string; entries: FeedbackEntry[]; 
 /* -------------------------------------------------------------------------- */
 /* Progression — mirrors the dimension calc shown to the student itself       */
 /* -------------------------------------------------------------------------- */
+
+const AdminContentProgress: React.FC<{ modules: CourseModule[] }> = ({ modules }) => {
+  const available = modules.filter((m) => m.videoUrl);
+  const average = available.length ? available.reduce((sum, m) => sum + m.progressPercent, 0) / available.length : 0;
+  return <AdminCard className="p-5">
+    <div className="flex items-center justify-between mb-5">
+      <div><h2 className="font-black text-slate-900 text-[15px]">Progression des contenus</h2><p className="text-[12px] font-semibold text-slate-400 mt-1">Visionnage enregistré automatiquement</p></div>
+      <span className="text-lg font-black text-primary">{Math.round(average)}%</span>
+    </div>
+    {available.length === 0 ? <AdminEmptyState icon={PlayCircle} title="Aucune vidéo disponible" description="Ajoutez une vidéo à un module pour suivre sa progression." /> :
+      <div className="space-y-4">{available.map((m) => <div key={m.id}>
+        <div className="flex items-center justify-between gap-3 mb-1.5"><span className="text-[13px] font-bold text-slate-700">{m.title}</span><span className={`text-[11px] font-black ${m.completed ? 'text-emerald-600' : 'text-slate-400'}`}>{m.completed ? 'Terminé' : `${Math.round(m.progressPercent)}%`}</span></div>
+        <ProgressBar value={m.progressPercent} label={`${Math.round(m.progressPercent)}% visionné`} />
+      </div>)}</div>}
+  </AdminCard>;
+};
 
 const AdminProgressTab: React.FC<{ modules: StudentModules }> = ({ modules }) => {
   const { plan, goals, revisions, habits } = modules;

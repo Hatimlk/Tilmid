@@ -35,6 +35,10 @@ export interface CourseModule {
   position: number;
   videoUrl: string | null;
   videoSource: 'link' | 'upload' | null;
+  watchedSeconds: number;
+  durationSeconds: number;
+  progressPercent: number;
+  completed: boolean;
 }
 
 export interface TimetableTask {

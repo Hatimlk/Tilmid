@@ -1231,14 +1231,36 @@ app.delete('/api/resources/:id', requireAdmin, async (req, res) => {
 });
 
 /* ---------------- COURSE MODULES ROUTES ("Mes contenus") ---------------- */
-app.get('/api/course-modules', authenticate, async (req, res) => {
+app.get('/api/course-modules', requireStudentOrAdmin, async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM course_modules ORDER BY position ASC');
+        const studentId = req.user.role === 'student' ? req.user.id : (Number(req.query.studentId) || 0);
+        const [rows] = await db.query(
+            `SELECT m.*, COALESCE(p.watched_seconds,0) watched_seconds,
+             COALESCE(p.duration_seconds,0) duration_seconds, COALESCE(p.progress_percent,0) progress_percent,
+             COALESCE(p.completed,0) completed FROM course_modules m
+             LEFT JOIN course_module_progress p ON p.module_id=m.id AND p.student_id=? ORDER BY m.position ASC`,
+            [studentId]);
         res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
+});
+
+app.post('/api/course-modules/:id/progress', requireStudent, async (req, res) => {
+    const watched = Math.max(0, Math.floor(Number(req.body.watchedSeconds) || 0));
+    const duration = Math.max(0, Math.floor(Number(req.body.durationSeconds) || 0));
+    const percent = duration > 0 ? Math.min(100, watched / duration * 100) : 0;
+    try {
+        await db.query(`INSERT INTO course_module_progress
+            (student_id,module_id,watched_seconds,duration_seconds,progress_percent,completed) VALUES (?,?,?,?,?,?)
+            ON DUPLICATE KEY UPDATE watched_seconds=GREATEST(watched_seconds,VALUES(watched_seconds)),
+            duration_seconds=GREATEST(duration_seconds,VALUES(duration_seconds)),
+            progress_percent=GREATEST(progress_percent,VALUES(progress_percent)),
+            completed=GREATEST(completed,VALUES(completed))`,
+            [req.user.id, req.params.id, watched, duration, percent, percent >= 90]);
+        res.json({ progressPercent: percent, completed: percent >= 90 });
+    } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
 app.post('/api/course-modules/:id', requireAdmin, async (req, res) => {

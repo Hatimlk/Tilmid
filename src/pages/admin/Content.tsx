@@ -189,6 +189,8 @@ export const AdminContent: React.FC = () => {
       setModules(raw.map((r: any) => ({
         id: r.id, slug: r.slug, title: r.title, description: r.description,
         position: r.position, videoUrl: r.video_url, videoSource: r.video_source,
+        watchedSeconds: Number(r.watched_seconds || 0), durationSeconds: Number(r.duration_seconds || 0),
+        progressPercent: Number(r.progress_percent || 0), completed: !!Number(r.completed),
       })));
     } catch (err) {
       console.error(err);

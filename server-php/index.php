@@ -1045,7 +1045,7 @@ if (strpos($request_uri, '/api/orientation-requests') !== false) {
 // 14. SELF-GUIDED PLAN (Mon Plan) — one row per student
 if ($request_uri === '/api/plan' && $method == 'GET') {
     $user = requireStudentOrAdmin($secret_key);
-    $studentId = resolveStudentId($user);
+    $studentId = ($user['role'] ?? '') === 'student' ? (int)$user['id'] : (int)($_GET['studentId'] ?? 0);
     $stmt = $pdo->prepare("SELECT * FROM self_guided_plans WHERE student_id = ?");
     $stmt->execute([$studentId]);
     $row = $stmt->fetch();
@@ -1362,9 +1362,22 @@ if ($request_uri === '/api/upload' && $method == 'POST') {
 
 // 22. COURSE MODULES ("Mes contenus" — fixed 5 modules, admin attaches a video)
 if ($request_uri === '/api/course-modules' && $method == 'GET') {
-    requireAuth($secret_key); // any logged-in user (student or admin)
-    $stmt = $pdo->query("SELECT * FROM course_modules ORDER BY position ASC");
+    $user = requireStudentOrAdmin($secret_key);
+    $studentId = resolveStudentId($user);
+    $stmt = $pdo->prepare("SELECT m.*, COALESCE(p.watched_seconds,0) watched_seconds, COALESCE(p.duration_seconds,0) duration_seconds, COALESCE(p.progress_percent,0) progress_percent, COALESCE(p.completed,0) completed FROM course_modules m LEFT JOIN course_module_progress p ON p.module_id=m.id AND p.student_id=? ORDER BY m.position ASC");
+    $stmt->execute([$studentId]);
     echo json_encode($stmt->fetchAll());
+    exit;
+}
+
+if (preg_match('#^/api/course-modules/(\d+)/progress$#', $request_uri, $matches) && $method == 'POST') {
+    $user = requireStudent($secret_key);
+    $watched = max(0, (int)($input['watchedSeconds'] ?? 0));
+    $duration = max(0, (int)($input['durationSeconds'] ?? 0));
+    $percent = $duration > 0 ? min(100, $watched / $duration * 100) : 0;
+    $stmt = $pdo->prepare("INSERT INTO course_module_progress (student_id,module_id,watched_seconds,duration_seconds,progress_percent,completed) VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE watched_seconds=GREATEST(watched_seconds,VALUES(watched_seconds)), duration_seconds=GREATEST(duration_seconds,VALUES(duration_seconds)), progress_percent=GREATEST(progress_percent,VALUES(progress_percent)), completed=GREATEST(completed,VALUES(completed))");
+    $stmt->execute([(int)$user['id'], (int)$matches[1], $watched, $duration, $percent, $percent >= 90 ? 1 : 0]);
+    echo json_encode(['progressPercent' => $percent, 'completed' => $percent >= 90]);
     exit;
 }
 
