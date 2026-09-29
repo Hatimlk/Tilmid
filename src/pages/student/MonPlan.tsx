@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X, Target, Check } from 'lucide-react';
+import { Plus, X, Target, Check, ArrowRight, CalendarDays, MessageSquare } from 'lucide-react';
 import { Student } from '../../types';
 import { Entitlements } from '../../utils/entitlements';
 import { PageHeader, Card, ProgressBar, EmptyState } from '../../components/student/primitives';
@@ -7,16 +7,18 @@ import { useSelfGuidedPlan, PlanAction } from '../../hooks/useStudentData';
 import { StudentTab } from '../../components/student/navigation';
 
 export const MonPlan: React.FC<{ student: Student; entitlements: Entitlements; onNavigate: (tab: StudentTab) => void }> = ({ student, entitlements, onNavigate }) => {
-  const { record, save, loaded } = useSelfGuidedPlan(student.username);
+  const { record, save, saveProgress, loaded } = useSelfGuidedPlan(student.username);
   const [objectiveDraft, setObjectiveDraft] = useState('');
   const [newAction, setNewAction] = useState('');
   const [newHabit, setNewHabit] = useState('');
   const [obstaclesDraft, setObstaclesDraft] = useState('');
+  const [studentNoteDraft, setStudentNoteDraft] = useState('');
 
   React.useEffect(() => {
     if (loaded) {
       setObjectiveDraft(record.objective);
       setObstaclesDraft(record.obstacles);
+      setStudentNoteDraft(record.studentNote);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded]);
@@ -26,6 +28,18 @@ export const MonPlan: React.FC<{ student: Student; entitlements: Entitlements; o
   if (entitlements.label !== 'Essentiel') {
     const hasCoachPlan = !!record.objective || record.actions.length > 0 || record.habits.length > 0;
     const completed = record.actions.filter((action) => action.done).length;
+    const nextAction = record.actions.find((action) => !action.done);
+    const targetDate = record.startDate && entitlements.personalPlanDays ? (() => {
+      const date = new Date(record.startDate);
+      if (Number.isNaN(date.getTime())) return '';
+      date.setDate(date.getDate() + entitlements.personalPlanDays);
+      return date.toLocaleDateString('fr-FR');
+    })() : '';
+    const toggleCoachedAction = (id: string) => {
+      const actions = record.actions.map((action) => action.id === id ? { ...action, done: !action.done } : action);
+      saveProgress(actions, studentNoteDraft);
+    };
+    const commitStudentNote = () => saveProgress(record.actions, studentNoteDraft);
     return (
       <div>
         <PageHeader title="Mon Plan" subtitle={title} />
@@ -45,13 +59,17 @@ export const MonPlan: React.FC<{ student: Student; entitlements: Entitlements; o
             <Card emphasis className="p-6">
               <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Objectif principal</p>
               <p className="font-black text-slate-900 text-[17px]">{record.objective}</p>
-              {record.startDate && <p className="text-[12px] font-bold text-slate-400 mt-2">Début : {record.startDate}</p>}
+              <div className="flex flex-wrap gap-3 mt-2 text-[12px] font-bold text-slate-400">
+                {record.startDate && <span className="inline-flex items-center gap-1.5"><CalendarDays size={13} /> Début : {record.startDate}</span>}
+                {targetDate && <span>Échéance indicative : {targetDate}</span>}
+              </div>
               {record.actions.length > 0 && <div className="mt-5"><ProgressBar value={(completed / record.actions.length) * 100} label={`${completed} / ${record.actions.length} étapes réalisées`} /></div>}
             </Card>
+            {nextAction && <Card className="p-5 border-blue-100 bg-blue-50/40"><div className="flex items-center gap-3"><span className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center"><ArrowRight size={18} /></span><div><p className="text-[11px] font-black uppercase tracking-wider text-primary">Prochaine étape</p><p className="text-[14px] font-bold text-slate-800 mt-0.5">{nextAction.text}</p></div></div></Card>}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <Card className="p-6">
                 <p className="font-black text-slate-900 text-[15px] mb-4">Étapes pratiques</p>
-                <div className="space-y-3">{record.actions.map((action) => <div key={action.id} className="flex items-center gap-3"><span className={`w-6 h-6 rounded-lg flex items-center justify-center ${action.done ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{action.done && <Check size={13} />}</span><span className={`text-[13.5px] font-semibold ${action.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{action.text}</span></div>)}</div>
+                <div className="space-y-3">{record.actions.map((action) => <div key={action.id} className="flex items-center gap-3"><button onClick={() => toggleCoachedAction(action.id)} aria-pressed={action.done} aria-label={action.done ? 'Marquer comme non terminée' : 'Marquer comme terminée'} className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 ${action.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 hover:border-primary'}`}>{action.done && <Check size={13} />}</button><span className={`text-[13.5px] font-semibold ${action.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{action.text}</span></div>)}</div>
               </Card>
               <Card className="p-6">
                 <p className="font-black text-slate-900 text-[15px] mb-4">Habitudes recommandées</p>
@@ -59,6 +77,12 @@ export const MonPlan: React.FC<{ student: Student; entitlements: Entitlements; o
                 {record.obstacles && <><p className="font-black text-slate-900 text-[14px] mt-6 mb-2">Obstacles identifiés</p><p className="text-[13.5px] text-slate-600 whitespace-pre-line">{record.obstacles}</p></>}
               </Card>
             </div>
+            <Card className="p-6">
+              <p className="font-black text-slate-900 text-[15px] mb-1 flex items-center gap-2"><MessageSquare size={16} className="text-primary" /> Mon retour au coach</p>
+              <p className="text-[12px] font-medium text-slate-400 mb-3">Signalez une difficulté, une réussite ou un ajustement nécessaire.</p>
+              <textarea value={studentNoteDraft} onChange={(e) => setStudentNoteDraft(e.target.value)} onBlur={commitStudentNote} rows={3} maxLength={2000} placeholder="Ex. J'ai réussi à suivre le planning, mais je bloque encore sur…" className="w-full p-4 rounded-xl border border-slate-200 text-[13.5px] font-medium outline-none focus:border-primary resize-none" />
+              <p className="text-[11px] font-bold text-slate-400 mt-2">Enregistré automatiquement lorsque vous quittez le champ.</p>
+            </Card>
           </div>
         )}
       </div>

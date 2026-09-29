@@ -61,7 +61,7 @@ function useStudentModules(studentId: string | undefined) {
         dataManager.getCourseModules(studentId),
       ]);
       setData({
-        plan: plan ? { objective: plan.objective || '', startDate: plan.start_date || '', obstacles: plan.obstacles || '', actions: plan.actions || [], habits: plan.habits || [] } : null,
+        plan: plan ? { objective: plan.objective || '', startDate: plan.start_date || '', obstacles: plan.obstacles || '', studentNote: plan.student_note || '', actions: plan.actions || [], habits: plan.habits || [] } : null,
         goals: goals.map((r: any) => ({ id: String(r.id), title: r.title, category: r.category, targetDate: r.target_date || '', progress: r.progress, status: r.status, nextAction: r.next_action || '' })),
         revisions: revisions.map((r: any) => ({ id: String(r.id), subject: r.subject, chapter: r.chapter || '', durationMin: r.duration_min, technique: r.technique || '', understanding: r.understanding, date: r.session_date })),
         habits: habits.map((r: any) => ({ id: String(r.id), name: r.name, days: r.days })),
@@ -381,6 +381,12 @@ const AdminPlanTab: React.FC<{ plan: SelfGuidedPlan | null }> = ({ plan }) => {
         <AdminCard className="p-6">
           <p className="font-black text-slate-900 text-[15px] mb-2">Obstacles identifiés</p>
           <p className="text-slate-600 text-[13.5px] font-medium leading-relaxed">{plan.obstacles}</p>
+        </AdminCard>
+      )}
+      {plan.studentNote && (
+        <AdminCard className="p-6 border-amber-100 bg-amber-50/40">
+          <p className="font-black text-slate-900 text-[15px] mb-2 flex items-center gap-2"><MessageSquare size={16} className="text-amber-600" /> Retour de l'étudiant</p>
+          <p className="text-slate-600 text-[13.5px] font-medium leading-relaxed whitespace-pre-line">{plan.studentNote}</p>
         </AdminCard>
       )}
     </div>
