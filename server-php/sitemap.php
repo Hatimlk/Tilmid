@@ -54,14 +54,14 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
     <?php
     try {
         // Fetch all blog posts
-        $stmt = $pdo->query("SELECT id, created_at FROM blog_posts ORDER BY created_at DESC");
+        $stmt = $pdo->query("SELECT id, created_at FROM posts WHERE status = 'published' ORDER BY created_at DESC");
         $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($posts as $post) {
             $lastMod = date('Y-m-d', strtotime($post['created_at']));
             echo "    <url>\n";
-            echo "        <loc>{$baseUrl}/blog/{$post['id']}</loc>\n";
-            echo "        <lastmod>{$lastMod}</lastmod>\n";
+            echo "        <loc>" . htmlspecialchars($baseUrl . '/blog/' . (int)$post['id'], ENT_XML1 | ENT_QUOTES, 'UTF-8') . "</loc>\n";
+            echo "        <lastmod>" . htmlspecialchars($lastMod, ENT_XML1, 'UTF-8') . "</lastmod>\n";
             echo "        <changefreq>weekly</changefreq>\n";
             echo "        <priority>0.7</priority>\n";
             echo "    </url>\n";

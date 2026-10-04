@@ -3,6 +3,8 @@ require_once __DIR__ . '/config.php';
 require_once 'cors.php';
 require_once 'db.php';
 require_once 'jwt.php';
+require_once 'validation.php';
+$SCHEMAS = require __DIR__ . '/schemas.php';
 
 $secret_key = require_env('JWT_SECRET');
 
@@ -12,6 +14,13 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Helper for JSON Input
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+// ?studentId= must be a whole number, like the path ids.
+if (isset($_GET['studentId']) && !ctype_digit((string)$_GET['studentId'])) {
+    http_response_code(400);
+    echo json_encode(['code' => 'VALIDATION_FAILED', 'message' => 'Identifiant invalide.']);
+    exit;
+}
 
 /* ---------------- AUTH HELPERS ---------------- */
 
@@ -347,6 +356,7 @@ if ($request_uri === '/api/settings' && $method == 'GET') {
 
 if ($request_uri === '/api/settings' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['settings']);
     $contactPhone = $input['contactPhone'] ?? null;
     $contactEmail = $input['contactEmail'] ?? null;
     $whatsappNumber = $input['whatsappNumber'] ?? null;
@@ -376,6 +386,7 @@ if ($request_uri === '/api/settings' && $method == 'POST') {
 
 // 1. LOGIN (admin / general users)
 if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
+    $input = validate_input($input, $SCHEMAS['login']);
     $email = trim($input['email'] ?? '');
     $password = (string)($input['password'] ?? '');
     enforceRateLimit($pdo, 'auth.login', $email, 30, 8, 15, false);
@@ -413,6 +424,7 @@ if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
 
 // 1b. STUDENT LOGIN
 if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') {
+    $input = validate_input($input, $SCHEMAS['studentLogin']);
     $username = trim($input['username'] ?? '');
     $password = (string)($input['password'] ?? '');
     enforceRateLimit($pdo, 'auth.student_login', $username, 30, 8, 15, false);
@@ -491,6 +503,7 @@ if ($request_uri === '/api/admin/abuse' && $method == 'GET') {
 
 // 2. REGISTER
 if (strpos($request_uri, '/api/auth/register') !== false && $method == 'POST') {
+    $input = validate_input($input, $SCHEMAS['register']);
     $username = trim($input['username'] ?? '');
     $email = trim($input['email'] ?? '');
     $password = (string)($input['password'] ?? '');
@@ -535,6 +548,7 @@ if ($request_uri === '/api/users' && $method == 'GET') {
 
 if ($request_uri === '/api/users' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['user']);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
     $username = $input['username'] ?? '';
@@ -652,6 +666,7 @@ if (($request_uri == '/api/posts' || $request_uri == '/api/posts/') && $method =
 // 4. CREATE POST (admin only)
 if (strpos($request_uri, '/api/posts') !== false && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['post']);
 
     $title = $input['title'] ?? '';
     $content = $input['content'] ?? ($input['html'] ?? '');
@@ -754,6 +769,7 @@ function resolveCoach(PDO $pdo, $coachId, ?string $fallbackName): array {
 
 if ($request_uri === '/api/students' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['student']);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
 
@@ -819,6 +835,7 @@ if ($request_uri === '/api/students' && $method == 'POST') {
 // One row per recipient; a broadcast is fanned out to N rows at creation time.
 if ($request_uri === '/api/notifications' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['notification']);
     $title = trim($input['title'] ?? '');
     $message = trim($input['message'] ?? '');
     $target = $input['target'] ?? [];
@@ -905,6 +922,7 @@ if ($request_uri === '/api/tool-options' && $method == 'GET') {
 
 if ($request_uri === '/api/tool-options' && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['toolOption']);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
     $category = $input['category'] ?? '';
@@ -963,6 +981,7 @@ if ($request_uri === '/api/coaches' && $method == 'GET') {
 
 if ($request_uri === '/api/coaches' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['coach']);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
     $name = trim($input['name'] ?? '');
@@ -1048,6 +1067,7 @@ if (preg_match('#^/api/appointments/(\d+)$#', $request_uri, $matches) && $method
 
 if (strpos($request_uri, '/api/appointments') !== false && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['appointment']);
     $id = $input['id'] ?? null;
     $isUpdate = $id !== null && ctype_digit((string)$id);
 
@@ -1134,6 +1154,7 @@ if (strpos($request_uri, '/api/messages') !== false) {
         exit;
     }
     if ($method == 'POST') {
+        $input = validate_input($input, $SCHEMAS['message']);
         $name = trim((string)($input['name'] ?? ''));
         $phone = trim((string)($input['phone'] ?? ''));
         enforceRateLimit($pdo, 'contact.message', preg_replace('/\D/', '', (string)($input['phone'] ?? '')), 10, 3, 60, true);
@@ -1182,6 +1203,7 @@ if (strpos($request_uri, '/api/coaching-requests') !== false) {
         exit;
     }
     if ($method == 'POST') {
+        $input = validate_input($input, $SCHEMAS['coachingRequest']);
         $name = trim((string)($input['name'] ?? ''));
         $phone = trim((string)($input['phone'] ?? ''));
         enforceRateLimit($pdo, 'contact.coaching_request', preg_replace('/\D/', '', (string)($input['phone'] ?? '')), 10, 3, 60, true);
@@ -1217,6 +1239,7 @@ if (strpos($request_uri, '/api/orientation-requests') !== false) {
         exit;
     }
     if ($method == 'POST') {
+        $input = validate_input($input, $SCHEMAS['orientationRequest']);
         $name = trim((string)($input['name'] ?? ''));
         $phone = trim((string)($input['phone'] ?? ''));
         enforceRateLimit($pdo, 'contact.orientation_request', preg_replace('/\D/', '', (string)($input['phone'] ?? '')), 10, 3, 60, true);
@@ -1265,6 +1288,7 @@ if ($request_uri === '/api/plan' && $method == 'GET') {
 
 if ($request_uri === '/api/plan' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['plan']);
     $objective = $input['objective'] ?? '';
     $startDate = $input['startDate'] ?? '';
     $obstacles = $input['obstacles'] ?? '';
@@ -1288,6 +1312,7 @@ if ($request_uri === '/api/plan' && $method == 'POST') {
 
 if ($request_uri === '/api/plan/progress' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['planProgress']);
     $updates = is_array($input['actions'] ?? null) ? $input['actions'] : [];
     $studentNote = mb_substr(trim((string)($input['studentNote'] ?? '')), 0, 2000);
     $stmt = $pdo->prepare("SELECT actions FROM self_guided_plans WHERE student_id = ?");
@@ -1320,6 +1345,7 @@ if ($request_uri === '/api/goals' && $method == 'GET') {
 
 if ($request_uri === '/api/goals' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['goal']);
     $id = $input['id'] ?? null;
     $title = $input['title'] ?? '';
     $category = $input['category'] ?? null;
@@ -1379,6 +1405,7 @@ if ($request_uri === '/api/revisions' && $method == 'GET') {
 
 if ($request_uri === '/api/revisions' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['revision']);
     $subject = $input['subject'] ?? '';
     $chapter = $input['chapter'] ?? null;
     $durationMin = $input['durationMin'] ?? 0;
@@ -1425,6 +1452,7 @@ if ($request_uri === '/api/habits' && $method == 'GET') {
 
 if ($request_uri === '/api/habits' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['habit']);
     $id = $input['id'] ?? null;
     $name = $input['name'] ?? '';
     $days = json_encode($input['days'] ?? [false, false, false, false, false, false, false]);
@@ -1480,6 +1508,7 @@ if ($request_uri === '/api/checkins' && $method == 'GET') {
 
 if ($request_uri === '/api/checkins' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['checkin']);
     $adherence = $input['adherence'] ?? null;
     $daysRespected = $input['daysRespected'] ?? null;
     $obstacle = $input['obstacle'] ?? null;
@@ -1533,6 +1562,7 @@ if ($request_uri === '/api/timetable' && $method == 'GET') {
 
 if ($request_uri === '/api/timetable' && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['timetable']);
     $subject = $input['subject'] ?? '';
     $day = $input['day'] ?? '';
     $startTime = $input['startTime'] ?? '';
@@ -1571,29 +1601,58 @@ if (preg_match('#^/api/timetable/(\d+)$#', $request_uri, $matches) && $method ==
 if ($request_uri === '/api/upload' && $method == 'POST') {
     requireAdmin($secret_key);
 
-    if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+    // Strict kind: anything other than document or video is refused, never silently defaulted.
+    $kind = $_GET['kind'] ?? 'document';
+    if ($kind !== 'document' && $kind !== 'video') {
         http_response_code(400);
-        echo json_encode(['message' => 'Aucun fichier reçu ou erreur d\'upload']);
+        echo json_encode(['code' => 'VALIDATION_FAILED', 'message' => 'Type de téléversement inconnu.']);
         exit;
     }
 
-    $kind = ($_GET['kind'] ?? 'document') === 'video' ? 'video' : 'document';
-    $allowedExtensions = $kind === 'video'
-        ? ['mp4', 'webm', 'mov']
-        : ['pdf', 'doc', 'docx'];
+    // Each kind has its own extension list, byte cap and content signature.
+    $uploadTypes = $kind === 'video'
+        ? ['mp4' => 'mp4', 'mov' => 'mp4', 'webm' => 'ebml']
+        : ['pdf' => 'pdf', 'doc' => 'ole', 'docx' => 'zip'];
     $maxBytes = $kind === 'video' ? 500 * 1024 * 1024 : 20 * 1024 * 1024;
 
-    $originalName = $_FILES['file']['name'];
-    $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    // When the whole request is over post_max_size, PHP drops the file entirely: report it as too large.
+    if (empty($_FILES) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > ini_bytes((string)ini_get('post_max_size'))) {
+        http_response_code(413);
+        echo json_encode(['message' => 'Fichier trop volumineux']);
+        exit;
+    }
 
-    if (!in_array($ext, $allowedExtensions, true)) {
+    $upload = $_FILES['file'] ?? null;
+    if (!$upload || $upload['error'] === UPLOAD_ERR_NO_FILE) {
         http_response_code(400);
+        echo json_encode(['message' => 'Aucun fichier sélectionné.']);
+        exit;
+    }
+    if ($upload['error'] === UPLOAD_ERR_INI_SIZE || $upload['error'] === UPLOAD_ERR_FORM_SIZE || $upload['size'] > $maxBytes) {
+        http_response_code(413);
+        echo json_encode(['message' => 'Fichier trop volumineux']);
+        exit;
+    }
+    if ($upload['error'] !== UPLOAD_ERR_OK || $upload['size'] === 0) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Téléversement impossible']);
+        exit;
+    }
+
+    $ext = strtolower(pathinfo($upload['name'], PATHINFO_EXTENSION));
+    if (!isset($uploadTypes[$ext])) {
+        http_response_code(415);
         echo json_encode(['message' => 'Type de fichier non autorisé']);
         exit;
     }
-    if ($_FILES['file']['size'] > $maxBytes) {
-        http_response_code(400);
-        echo json_encode(['message' => 'Fichier trop volumineux']);
+
+    // The first bytes must match the format the extension claims, so a renamed file is refused.
+    $handle = fopen($upload['tmp_name'], 'rb');
+    $header = $handle ? fread($handle, 16) : '';
+    if ($handle) fclose($handle);
+    if (!upload_signature_matches((string)$header, $uploadTypes[$ext])) {
+        http_response_code(415);
+        echo json_encode(['message' => 'Le contenu du fichier ne correspond pas à son extension.']);
         exit;
     }
 
@@ -1607,7 +1666,7 @@ if ($request_uri === '/api/upload' && $method == 'POST') {
 
     $filename = $kind . '-' . time() . '-' . bin2hex(random_bytes(4)) . '.' . $ext;
 
-    if (!move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir . $filename)) {
+    if (!move_uploaded_file($upload['tmp_name'], $uploadDir . $filename)) {
         http_response_code(500);
         echo json_encode(['message' => 'Échec de l\'upload']);
         exit;
@@ -1617,9 +1676,33 @@ if ($request_uri === '/api/upload' && $method == 'POST') {
     echo json_encode([
         'message' => 'File uploaded',
         'url' => '/api/uploads/' . $subdir . '/' . $filename,
-        'size' => $_FILES['file']['size'],
+        'size' => $upload['size'],
     ]);
     exit;
+}
+
+// Converts a php.ini size such as "8M" or "2G" to bytes.
+function ini_bytes(string $value): int {
+    $value = trim($value);
+    $number = (int)$value;
+    switch (strtolower(substr($value, -1))) {
+        case 'g': $number *= 1024;
+        case 'm': $number *= 1024;
+        case 'k': $number *= 1024;
+    }
+    return $number;
+}
+
+// First-bytes signature of each container format, as in server/index.js.
+function upload_signature_matches(string $header, string $type): bool {
+    switch ($type) {
+        case 'pdf': return substr($header, 0, 5) === '%PDF-';
+        case 'zip': return substr($header, 0, 4) === "\x50\x4b\x03\x04";
+        case 'ole': return substr($header, 0, 8) === "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1";
+        case 'mp4': return substr($header, 4, 4) === 'ftyp';
+        case 'ebml': return substr($header, 0, 4) === "\x1A\x45\xDF\xA3";
+    }
+    return false;
 }
 
 // 22. COURSE MODULES ("Mes contenus" — fixed 5 modules, admin attaches a video)
@@ -1642,6 +1725,7 @@ if ($request_uri === '/api/course-modules' && $method == 'GET') {
 
 if (preg_match('#^/api/course-modules/(\d+)/progress$#', $request_uri, $matches) && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $input = validate_input($input, $SCHEMAS['courseProgress']);
     if (!canUseLearningContent($user)) {
         http_response_code(403);
         echo json_encode(['message' => 'Contenus réservés aux formules Mouwakaba']);
@@ -1665,6 +1749,7 @@ if (preg_match('#^/api/course-modules/(\d+)/progress$#', $request_uri, $matches)
 
 if (preg_match('#^/api/course-modules/(\d+)$#', $request_uri, $matches) && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['courseModuleVideo']);
     $id = $matches[1];
     $videoUrl = $input['videoUrl'] ?? null;
     $videoSource = in_array($input['videoSource'] ?? null, ['link', 'upload'], true) ? $input['videoSource'] : null;
@@ -1687,6 +1772,7 @@ if (preg_match('#^/api/course-modules/(\d+)$#', $request_uri, $matches) && $meth
 // insert id so it stays unique without the admin having to pick one.
 if ($request_uri === '/api/course-modules' && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['courseModule']);
     $title = trim($input['title'] ?? '');
     $description = $input['description'] ?? null;
     if ($title === '') {
@@ -1718,6 +1804,7 @@ if ($request_uri === '/api/course-modules' && $method == 'POST') {
 
 if (preg_match('#^/api/course-modules/(\d+)/details$#', $request_uri, $matches) && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['courseModule']);
     $id = $matches[1];
     $title = trim($input['title'] ?? '');
     $description = $input['description'] ?? null;
@@ -1755,6 +1842,7 @@ if (preg_match('#^/api/course-modules/(\d+)$#', $request_uri, $matches) && $meth
 // 23. RESOURCES — write side (admin only; GET is public to any authenticated user, see section 11 above)
 if ($request_uri === '/api/resources' && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['resource']);
     $title = $input['title'] ?? '';
     $type = $input['type'] ?? 'summary';
     $url = $input['url'] ?? '';
@@ -1812,6 +1900,7 @@ if ($request_uri === '/api/admin/plans' && $method == 'GET') {
 
 if (preg_match('#^/api/admin/plans/(\d+)$#', $request_uri, $matches) && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['adminPlan']);
     $studentId = (int)$matches[1];
     $objective = trim((string)($input['objective'] ?? ''));
     $actions = $input['actions'] ?? [];
@@ -1900,6 +1989,7 @@ if ($request_uri === '/api/feedback' && $method == 'GET') {
 
 if ($request_uri === '/api/feedback' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['feedback']);
     $studentId = $input['studentId'] ?? null;
     $message = trim($input['message'] ?? '');
     $appointmentId = $input['appointmentId'] ?? null;
@@ -1986,6 +2076,7 @@ if ($request_uri === '/api/collective-sessions' && $method == 'GET') {
 
 if ($request_uri === '/api/collective-sessions' && $method == 'POST') {
     $admin = requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['collectiveSession']);
     $id = $input['id'] ?? null;
     $title = $input['title'] ?? '';
     $description = $input['description'] ?? null;
@@ -2084,6 +2175,7 @@ if (preg_match('#^/api/collective-sessions/(\d+)/register$#', $request_uri, $mat
 
 if (preg_match('#^/api/collective-sessions/(\d+)/attendance$#', $request_uri, $matches) && $method == 'POST') {
     requireAdmin($secret_key);
+    $input = validate_input($input, $SCHEMAS['attendance']);
     $studentId = $input['studentId'] ?? null;
     $attended = array_key_exists('attended', $input) ? (bool)$input['attended'] : null;
     if (!$studentId) {

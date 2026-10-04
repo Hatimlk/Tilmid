@@ -10,7 +10,8 @@
         "db:check": "node test_db.js",
         "seed:admin": "node seed.js",
         "test:api": "node --test test/api-ownership.test.js",
-        "test:ratelimit": "node --test test/rate-limit.test.js"
+        "test:ratelimit": "node --test test/rate-limit.test.js",
+        "test:validation": "node --test test/input-validation.test.js"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

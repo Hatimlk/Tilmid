@@ -6,6 +6,8 @@ const db = require('./db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { limitRoute, ensureRateLimitTable, normalizeEmail, normalizePhone, MINUTE, HOUR } = require('./rateLimit');
+const S = require('./schemas');
+const { validateBody, parseParam, Int } = require('./validation');
 
 dotenv.config();
 
@@ -43,6 +45,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://tilmide.ma,https
     .filter(Boolean);
 
 app.use(cors({
+    allowedHeaders: ['Authorization', 'Content-Type'],
     origin: (origin, callback) => {
         // allow same-origin/non-browser requests (no Origin header) and the explicit allowlist
         if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
@@ -51,6 +54,27 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+
+// Path ids (/:id, /:studentId) and the ?studentId= query must be positive whole numbers.
+const ID = Int({ min: 1 }).req();
+const refuseBadId = (res) => res.status(400).json({ code: 'VALIDATION_FAILED', message: 'Identifiant invalide.' });
+app.param(['id', 'studentId'], (req, res, next, value) => {
+    try {
+        parseParam(value, ID);
+        next();
+    } catch {
+        refuseBadId(res);
+    }
+});
+app.use((req, res, next) => {
+    if (req.query.studentId === undefined) return next();
+    try {
+        parseParam(req.query.studentId, ID);
+        next();
+    } catch {
+        refuseBadId(res);
+    }
+});
 
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -259,7 +283,7 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-app.post('/api/settings', requireAdmin, async (req, res) => {
+app.post('/api/settings', requireAdmin, validateBody(S.settings), async (req, res) => {
     const {
         contactPhone, contactEmail, whatsappNumber,
         instagramUrl, tiktokUrl, facebookUrl, youtubeUrl,
@@ -284,7 +308,7 @@ app.post('/api/settings', requireAdmin, async (req, res) => {
 /* ---------------- AUTH ROUTES ---------------- */
 
 // Register
-app.post('/api/auth/register', ...registerLimits, async (req, res) => {
+app.post('/api/auth/register', ...registerLimits, validateBody(S.register), async (req, res) => {
     const { username, email, password } = req.body;
 
     if (typeof username !== 'string' || !username.trim() || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email) || !isAcceptablePassword(password)) {
@@ -313,7 +337,7 @@ app.post('/api/auth/register', ...registerLimits, async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', ...loginLimits, async (req, res) => {
+app.post('/api/auth/login', ...loginLimits, validateBody(S.login), async (req, res) => {
     const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     if (!email || !password) {
@@ -351,7 +375,7 @@ app.post('/api/auth/login', ...loginLimits, async (req, res) => {
 });
 
 // Student login
-app.post('/api/students/login', ...studentLoginLimits, async (req, res) => {
+app.post('/api/students/login', ...studentLoginLimits, validateBody(S.studentLogin), async (req, res) => {
     const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     if (!username || !password) {
@@ -413,7 +437,7 @@ app.get('/api/users', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/users', requireAdmin, async (req, res) => {
+app.post('/api/users', requireAdmin, validateBody(S.user), async (req, res) => {
     const { id, username, email, password, role } = req.body;
     const isUpdate = id && /^\d+$/.test(String(id));
     const nextRole = role === 'admin' ? 'admin' : 'user';
@@ -480,39 +504,63 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Documents (PDF/DOC/DOCX, e.g. Bibliothèque resources) and videos (course
-// module videos) get their own subdirectory, extension whitelist and size
-// cap — mirrors server-php/index.php's /api/upload handler.
+// Each kind has its own folder, extension list and byte cap. The file's first bytes must also match
+// its extension, so a renamed file (a script saved as .pdf, say) is refused. Mirrors server-php/index.php.
 const UPLOAD_KINDS = {
-    document: { dir: 'uploads/documents', extensions: ['.pdf', '.doc', '.docx'], maxBytes: 20 * 1024 * 1024 },
-    video: { dir: 'uploads/videos', extensions: ['.mp4', '.webm', '.mov'], maxBytes: 500 * 1024 * 1024 },
+    document: {
+        dir: 'uploads/documents',
+        maxBytes: 20 * 1024 * 1024,
+        types: { '.pdf': 'pdf', '.doc': 'ole', '.docx': 'zip' },
+    },
+    video: {
+        dir: 'uploads/videos',
+        maxBytes: 500 * 1024 * 1024,
+        types: { '.mp4': 'mp4', '.mov': 'mp4', '.webm': 'ebml' },
+    },
 };
+
+// First-bytes signature of each container format.
+const SIGNATURES = {
+    pdf: (h) => h.subarray(0, 5).toString('latin1') === '%PDF-',
+    zip: (h) => h.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04])),
+    ole: (h) => h.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])),
+    mp4: (h) => h.subarray(4, 8).toString('latin1') === 'ftyp',
+    ebml: (h) => h.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])),
+};
+
+function readHeader(file) {
+    const fd = fs.openSync(file, 'r');
+    try {
+        const buf = Buffer.alloc(16);
+        const bytes = fs.readSync(fd, buf, 0, buf.length, 0);
+        return buf.subarray(0, bytes);
+    } finally {
+        fs.closeSync(fd);
+    }
+}
 
 for (const { dir } of Object.values(UPLOAD_KINDS)) {
     fs.mkdirSync(dir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const kind = UPLOAD_KINDS[req.query.kind] ? req.query.kind : 'document';
-        cb(null, UPLOAD_KINDS[kind].dir);
-    },
+    destination: (req, file, cb) => cb(null, UPLOAD_KINDS[req.uploadKind].dir),
     filename: (req, file, cb) => {
-        const kind = UPLOAD_KINDS[req.query.kind] ? req.query.kind : 'document';
-        cb(null, `${kind}-${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname).toLowerCase()}`);
-    }
+        const ext = path.extname(file.originalname).toLowerCase();
+        cb(null, `${req.uploadKind}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
 });
 
-const upload = multer({
+// One uploader per kind, so each has its own size cap; the cap is enforced while the file streams in.
+const uploaders = Object.fromEntries(Object.entries(UPLOAD_KINDS).map(([kind, cfg]) => [kind, multer({
     storage,
-    limits: { fileSize: 500 * 1024 * 1024 },
+    limits: { fileSize: cfg.maxBytes, files: 1, fields: 5 },
     fileFilter: (req, file, cb) => {
-        const kind = UPLOAD_KINDS[req.query.kind] ? req.query.kind : 'document';
         const ext = path.extname(file.originalname).toLowerCase();
-        if (UPLOAD_KINDS[kind].extensions.includes(ext)) return cb(null, true);
-        cb(new Error('Type de fichier non autorisé'));
-    }
-}).single('file');
+        if (cfg.types[ext]) return cb(null, true);
+        cb(Object.assign(new Error('Type de fichier non autorisé'), { status: 415 }));
+    },
+}).single('file')]));
 
 app.use('/api/uploads', express.static('uploads'));
 
@@ -520,17 +568,24 @@ app.use('/api/uploads', express.static('uploads'));
 
 // Upload Endpoint (admin only) — ?kind=document (default) or ?kind=video
 app.post('/api/upload', requireAdmin, (req, res) => {
-    upload(req, res, (err) => {
+    const kind = req.query.kind === undefined ? 'document' : req.query.kind;
+    if (!Object.prototype.hasOwnProperty.call(UPLOAD_KINDS, kind)) {
+        return res.status(400).json({ code: 'VALIDATION_FAILED', message: 'Type de téléversement inconnu.' });
+    }
+    req.uploadKind = kind;
+    uploaders[kind](req, res, (err) => {
         if (err) {
-            return res.status(400).json({ message: err.message || 'Upload failed' });
+            if (err.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ message: 'Fichier trop volumineux' });
+            return res.status(err.status || 400).json({ message: err.message || 'Téléversement impossible' });
         }
         if (!req.file) {
-            return res.status(400).json({ message: 'No file selected!' });
+            return res.status(400).json({ message: 'Aucun fichier sélectionné.' });
         }
-        const kind = UPLOAD_KINDS[req.query.kind] ? req.query.kind : 'document';
-        if (req.file.size > UPLOAD_KINDS[kind].maxBytes) {
+        const ext = path.extname(req.file.filename).toLowerCase();
+        const signature = SIGNATURES[UPLOAD_KINDS[kind].types[ext]];
+        if (req.file.size === 0 || !signature(readHeader(req.file.path))) {
             fs.unlink(req.file.path, () => {});
-            return res.status(400).json({ message: 'Fichier trop volumineux' });
+            return res.status(415).json({ message: 'Le contenu du fichier ne correspond pas à son extension.' });
         }
         res.status(201).json({
             message: 'File uploaded',
@@ -557,7 +612,7 @@ app.get('/api/posts', optionalAuth, async (req, res) => {
 });
 
 // Create post - admin only
-app.post('/api/posts', requireAdmin, async (req, res) => {
+app.post('/api/posts', requireAdmin, validateBody(S.post), async (req, res) => {
     const { title, content, excerpt, category, image, file_url, content_type } = req.body;
     try {
         const [result] = await db.query(
@@ -610,7 +665,7 @@ async function resolveCoach(coachId, fallbackName) {
     return { coachId: rows[0].id, coachName: rows[0].name };
 }
 
-app.post('/api/students', requireAdmin, async (req, res) => {
+app.post('/api/students', requireAdmin, validateBody(S.student), async (req, res) => {
     const { id, name, username, email, grade, status, avatar, password } = req.body;
     const pkg = normalizePackage(req.body.package);
     const isUpdate = id && /^\d+$/.test(String(id));
@@ -664,7 +719,7 @@ app.post('/api/students', requireAdmin, async (req, res) => {
 
 /* ---------------- NOTIFICATIONS ROUTES (admin "Notifications" module) ---------------- */
 // One row per recipient; a broadcast is fanned out to N rows at creation time.
-app.post('/api/notifications', requireAdmin, async (req, res) => {
+app.post('/api/notifications', requireAdmin, validateBody(S.notification), async (req, res) => {
     const title = (req.body.title || '').trim();
     const message = (req.body.message || '').trim();
     const target = req.body.target || {};
@@ -703,7 +758,7 @@ app.get('/api/notifications', requireStudent, async (req, res) => {
     }
 });
 
-app.post('/api/notifications/:id/read', requireStudent, async (req, res) => {
+app.post('/api/notifications/:id/read', requireStudent, validateBody(S.emptyBody), async (req, res) => {
     try {
         const [result] = await db.query('UPDATE notifications SET read_at = NOW() WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
         if (!result.affectedRows) return res.status(404).json({ message: 'Notification not found' });
@@ -738,7 +793,7 @@ app.get('/api/tool-options', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/tool-options', requireAdmin, async (req, res) => {
+app.post('/api/tool-options', requireAdmin, validateBody(S.toolOption), async (req, res) => {
     const { id, category, label, position = 0 } = req.body;
     const isUpdate = id && /^\d+$/.test(String(id));
     if (!['subject', 'technique'].includes(category) || !label || !String(label).trim()) {
@@ -788,7 +843,7 @@ app.get('/api/coaches', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/coaches', requireAdmin, async (req, res) => {
+app.post('/api/coaches', requireAdmin, validateBody(S.coach), async (req, res) => {
     const { id, name, email, phone, specialty, status = 'active' } = req.body;
     const isUpdate = id && /^\d+$/.test(String(id));
     if (!name || !String(name).trim()) return res.status(400).json({ message: 'Name required' });
@@ -875,7 +930,7 @@ app.delete('/api/appointments/:id', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/appointments', requireAdmin, async (req, res) => {
+app.post('/api/appointments', requireAdmin, validateBody(S.appointment), async (req, res) => {
     const { id } = req.body;
     const isUpdate = id && /^\d+$/.test(String(id));
 
@@ -974,7 +1029,7 @@ app.get('/api/stories', async (req, res) => {
     }
 });
 
-app.post('/api/stories', requireAdmin, async (req, res) => {
+app.post('/api/stories', requireAdmin, validateBody(S.story), async (req, res) => {
     const { studentName, grade, storyText, avatar } = req.body;
     try {
         const [result] = await db.query(
@@ -999,7 +1054,7 @@ app.get('/api/messages', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/messages', ...contactLimits('contact.message'), async (req, res) => {
+app.post('/api/messages', ...contactLimits('contact.message'), validateBody(S.message), async (req, res) => {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim();
     const phone = String(req.body.phone || '').trim();
@@ -1031,7 +1086,7 @@ app.get('/api/coaching-requests', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/coaching-requests', ...contactLimits('contact.coaching_request'), async (req, res) => {
+app.post('/api/coaching-requests', ...contactLimits('contact.coaching_request'), validateBody(S.coachingRequest), async (req, res) => {
     const name = String(req.body.name || '').trim();
     const phone = String(req.body.phone || '').trim();
     const grade = String(req.body.grade || '').trim();
@@ -1061,7 +1116,7 @@ app.get('/api/orientation-requests', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/orientation-requests', ...contactLimits('contact.orientation_request'), async (req, res) => {
+app.post('/api/orientation-requests', ...contactLimits('contact.orientation_request'), validateBody(S.orientationRequest), async (req, res) => {
     const name = String(req.body.name || '').trim();
     const phone = String(req.body.phone || '').trim();
     const filiere = String(req.body.filiere || '').trim();
@@ -1100,7 +1155,7 @@ app.get('/api/plan', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/plan', requireStudent, async (req, res) => {
+app.post('/api/plan', requireStudent, validateBody(S.plan), async (req, res) => {
     const { objective, startDate, obstacles, actions, habits } = req.body;
     try {
         await db.query(
@@ -1119,7 +1174,7 @@ app.post('/api/plan', requireStudent, async (req, res) => {
 
 // A coached student may report execution without being able to rewrite the
 // coach-owned objective, action labels, habits or identified obstacles.
-app.post('/api/plan/progress', requireStudent, async (req, res) => {
+app.post('/api/plan/progress', requireStudent, validateBody(S.planProgress), async (req, res) => {
     const updates = Array.isArray(req.body.actions) ? req.body.actions : [];
     const studentNote = String(req.body.studentNote || '').trim().slice(0, 2000);
     try {
@@ -1147,7 +1202,7 @@ app.get('/api/goals', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/goals', requireStudent, async (req, res) => {
+app.post('/api/goals', requireStudent, validateBody(S.goal), async (req, res) => {
     const { id, title, category, targetDate, progress, status, nextAction } = req.body;
     try {
         if (id) {
@@ -1193,7 +1248,7 @@ app.get('/api/revisions', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/revisions', requireStudent, async (req, res) => {
+app.post('/api/revisions', requireStudent, validateBody(S.revision), async (req, res) => {
     const { subject, chapter, durationMin, technique, understanding } = req.body;
     try {
         const [result] = await db.query(
@@ -1231,7 +1286,7 @@ app.get('/api/habits', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/habits', requireStudent, async (req, res) => {
+app.post('/api/habits', requireStudent, validateBody(S.habit), async (req, res) => {
     const { id, name, days } = req.body;
     try {
         if (id) {
@@ -1274,7 +1329,7 @@ app.get('/api/checkins', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/checkins', requireStudent, async (req, res) => {
+app.post('/api/checkins', requireStudent, validateBody(S.checkin), async (req, res) => {
     const { adherence, daysRespected, obstacle, concentration, success, needsAdjustment } = req.body;
     try {
         const [students] = await db.query('SELECT package FROM students WHERE id = ?', [req.user.id]);
@@ -1320,7 +1375,7 @@ app.get('/api/timetable', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/timetable', requireStudent, async (req, res) => {
+app.post('/api/timetable', requireStudent, validateBody(S.timetable), async (req, res) => {
     const { subject, day, startTime, endTime } = req.body;
     try {
         const [result] = await db.query(
@@ -1357,7 +1412,7 @@ app.get('/api/resources', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/resources', requireAdmin, async (req, res) => {
+app.post('/api/resources', requireAdmin, validateBody(S.resource), async (req, res) => {
     const { title, type, url, subject, fileSize, iconName } = req.body;
     try {
         const [result] = await db.query(
@@ -1399,7 +1454,7 @@ app.get('/api/course-modules', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/course-modules/:id/progress', requireStudent, async (req, res) => {
+app.post('/api/course-modules/:id/progress', requireStudent, validateBody(S.courseProgress), async (req, res) => {
     if (!canUseLearningContent(req.user)) return res.status(403).json({ message: 'Contenus réservés aux formules Mouwakaba' });
     const [modules] = await db.query('SELECT id FROM course_modules WHERE id = ?', [req.params.id]);
     if (!modules.length) return res.status(404).json({ message: 'Module not found' });
@@ -1418,7 +1473,7 @@ app.post('/api/course-modules/:id/progress', requireStudent, async (req, res) =>
     } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
-app.post('/api/course-modules/:id', requireAdmin, async (req, res) => {
+app.post('/api/course-modules/:id', requireAdmin, validateBody(S.courseModuleVideo), async (req, res) => {
     let { videoUrl, videoSource } = req.body;
     if (!['link', 'upload'].includes(videoSource)) videoSource = null;
     if (videoUrl === '') { videoUrl = null; videoSource = null; }
@@ -1433,7 +1488,7 @@ app.post('/api/course-modules/:id', requireAdmin, async (req, res) => {
 
 // Admin creates a new module (title + description); slug is derived from the
 // insert id so it stays unique without the admin having to pick one.
-app.post('/api/course-modules', requireAdmin, async (req, res) => {
+app.post('/api/course-modules', requireAdmin, validateBody(S.courseModule), async (req, res) => {
     const title = (req.body.title || '').trim();
     const description = req.body.description || null;
     if (!title) return res.status(400).json({ message: 'Title required' });
@@ -1457,7 +1512,7 @@ app.post('/api/course-modules', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/course-modules/:id/details', requireAdmin, async (req, res) => {
+app.post('/api/course-modules/:id/details', requireAdmin, validateBody(S.courseModule), async (req, res) => {
     const title = (req.body.title || '').trim();
     const description = req.body.description || null;
     if (!title) return res.status(400).json({ message: 'Title required' });
@@ -1520,7 +1575,7 @@ app.get('/api/feedback', requireStudentOrAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/feedback', requireAdmin, async (req, res) => {
+app.post('/api/feedback', requireAdmin, validateBody(S.feedback), async (req, res) => {
     const { studentId, appointmentId, checkinId } = req.body;
     const message = (req.body.message || '').trim();
     if (!studentId || message === '') {
@@ -1583,7 +1638,7 @@ app.get('/api/admin/plans', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/admin/plans/:studentId', requireAdmin, async (req, res) => {
+app.post('/api/admin/plans/:studentId', requireAdmin, validateBody(S.adminPlan), async (req, res) => {
     const studentId = Number(req.params.studentId);
     const { objective, startDate, obstacles, actions, habits } = req.body;
     if (!studentId || !String(objective || '').trim() || !Array.isArray(actions) || actions.length === 0) {
@@ -1704,7 +1759,7 @@ app.get('/api/collective-sessions', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/collective-sessions', requireAdmin, async (req, res) => {
+app.post('/api/collective-sessions', requireAdmin, validateBody(S.collectiveSession), async (req, res) => {
     const { id, title, description, date, time, capacity, meetingLink, status } = req.body;
     try {
         if (id) {
@@ -1750,7 +1805,7 @@ app.get('/api/collective-sessions/:id/registrations', requireAdmin, async (req, 
     }
 });
 
-app.post('/api/collective-sessions/:id/register', requireStudent, async (req, res) => {
+app.post('/api/collective-sessions/:id/register', requireStudent, validateBody(S.emptyBody), async (req, res) => {
     const sessionId = Number(req.params.id);
     try {
         const [students] = await db.query('SELECT package FROM students WHERE id = ?', [req.user.id]);
@@ -1789,7 +1844,7 @@ app.delete('/api/collective-sessions/:id/register', requireStudent, async (req, 
     }
 });
 
-app.post('/api/collective-sessions/:id/attendance', requireAdmin, async (req, res) => {
+app.post('/api/collective-sessions/:id/attendance', requireAdmin, validateBody(S.attendance), async (req, res) => {
     const { studentId } = req.body;
     const attended = 'attended' in req.body ? !!req.body.attended : null;
     if (!studentId) return res.status(400).json({ message: 'studentId required' });
