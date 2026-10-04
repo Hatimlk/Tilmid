@@ -7,7 +7,7 @@ import SEO from '../components/SEO';
 import { useTranslation } from 'react-i18next';
 
 const ABOUT_FR = {
-  seoTitle: 'À propos de nous', seoDescription: "Tilmid est une plateforme marocaine d’orientation scolaire et d’accompagnement éducatif.",
+  seoTitle: 'À propos de nous', seoDescription: "Découvrez Tilmid, plateforme marocaine d’orientation scolaire et d’accompagnement éducatif : notre mission, notre approche et notre équipe au service des élèves.",
   eyebrow: 'Notre histoire et notre vision', hero1: 'Nous sommes bien plus qu’une', hero2: 'plateforme éducative',
   heroText: "Tilmid est un mouvement de transformation de l’orientation scolaire. Chaque élève possède les clés de sa réussite : notre rôle est de l’aider à les trouver.",
   mission: 'Notre mission', missionText: "Aider les élèves à surmonter leurs difficultés scolaires et personnelles grâce à un accompagnement adapté, des outils d’organisation et des méthodes d’apprentissage efficaces.",
@@ -27,7 +27,7 @@ const ABOUT_FR = {
 };
 
 const ABOUT_AR = {
-  seoTitle: 'من نحن', seoDescription: 'تلميذ هي المنصة الأولى في المغرب للتوجيه المدرسي والمواكبة التربوية.', eyebrow: 'قصتنا ورؤيتنا', hero1: 'نحن أكثر من مجرد', hero2: 'منصة تعليمية', heroText: 'تلميذ هي حركة تغيير في عالم التوجيه المدرسي. نحن نؤمن بأن كل طالب يمتلك مفاتيح النجاح، ودورنا هو مساعدته في العثور عليها.',
+  seoTitle: 'من نحن', seoDescription: 'تعرّف على تلميذ، المنصة المغربية للتوجيه المدرسي والمواكبة التربوية: رسالتنا ومنهجنا وفريقنا في خدمة كل تلميذ يبحث عن طريقه نحو النجاح.', eyebrow: 'قصتنا ورؤيتنا', hero1: 'نحن أكثر من مجرد', hero2: 'منصة تعليمية', heroText: 'تلميذ هي حركة تغيير في عالم التوجيه المدرسي. نحن نؤمن بأن كل طالب يمتلك مفاتيح النجاح، ودورنا هو مساعدته في العثور عليها.',
   mission: 'مهمتنا', missionText: 'تمكين التلاميذ من تجاوز الصعوبات الدراسية والنفسية من خلال توفير مواكبة شخصية، أدوات تنظيمية متطورة، واستراتيجيات تعلم ذكية تضمن لهم التفوق بأقل جهد.', vision: 'رؤيتنا', visionText: 'أن نكون المرجع الأول في المغرب للتوجيه المدرسي والمواكبة التربوية، ونساهم في بناء جيل واثق من قدراته، واعٍ بمساره، وقادر على تحقيق طموحاته.',
   students: '+3500 تلميذ', trust: 'وثقوا بنا وغيروا مسارهم الدراسي.', why: 'لماذا تلميذ؟', whyText: 'نرتكز على قيم أساسية تجعل تجربتك معنا فريدة ومثمرة.', values: [['الدعم النفسي', 'نعتبر الجانب النفسي أساس التفوق، لذا نوفر بيئة داعمة ومحفزة.'], ['المنهجية العلمية', 'برامجنا مبنية على أحدث أبحاث علم النفس التربوي وتقنيات التعلم.'], ['المصداقية والالتزام', 'نلتزم بمواكبتك خطوة بخطوة حتى تحقق أهدافك المرسومة.']],
   founderTitle: 'مؤسس المنصة', founderIntro: 'تعرف على الخبير وراء نجاح تلميذ', founderName: 'الأستاذ ياسين', founderRole: 'مؤسس منصة تلميذ & مستشار تربوي', founderQuote: "بعد مسيرة امتدت لأكثر من 10 سنوات، أدركت أن الفجوة الحقيقية ليست في المناهج، بل في طريقة التعامل معها. أسست 'تلميذ' لتكون البوصلة التي توجه الطلاب.", founderBio: 'خبير معتمد في استراتيجيات التعلم السريع والتوجيه المدرسي. ساعد آلاف الطلاب على تجاوز عقبات التحصيل الدراسي وتحقيق نتائج استثنائية من خلال منهجيات علمية حديثة.', badges: ['+10 سنوات خبرة', 'مستشار معتمد', 'تقييم 4.9/5'], cta1: 'مستعد لبدء رحلة', cta2: 'التغيير نحو التفوق؟', ctaText: 'انضم اليوم لمجتمع المتفوقين واستفد من مواكبة شخصية تضمن لك الوصول لأهدافك الدراسية.', cta: 'انضم إلينا الآن',
@@ -77,7 +77,7 @@ export const About: React.FC = () => {
               controls
               poster={IMAGES.ABOUT.VIDEO_COVER}
               className="w-full h-full object-cover"
-              preload="metadata"
+              preload="none"
             >
               Your browser does not support the video tag.
             </video>

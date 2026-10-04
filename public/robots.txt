@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /student-area
 
-Sitemap: https://tilmide.ma/api/sitemap.php
+Sitemap: https://tilmide.ma/sitemap.xml

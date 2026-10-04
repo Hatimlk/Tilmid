@@ -92,7 +92,7 @@ export const SchoolDetail: React.FC = () => {
     <div className="min-h-screen bg-slate-50 pb-24 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title={`${school.name}${school.acronym ? ` (${school.acronym})` : ''} — Écoles Supérieures`}
-        description={`${school.name} — établissement ${school.type === 'public' ? 'public' : 'privé'} à ${school.city}. Filières : ${school.fields.join(', ')}.`}
+        description={`${school.name} — établissement ${school.type === 'public' ? 'public' : 'privé'} à ${school.city}. Filières : ${school.fields.slice(0, 4).join(', ')}. Admission et conditions d'accès sur Tilmid.`}
       />
 
       {/* Header */}

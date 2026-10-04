@@ -205,8 +205,11 @@ const HeroImage: React.FC<{ t: any }> = ({ t }) => {
         <img
           src={IMAGES.HERO.HOME_MAIN}
           alt="Mentor Tilmid"
+          width={1080}
+          height={835}
           className="w-full h-auto object-cover"
           loading="eager"
+          decoding="async"
         />
 
         {/* Bottom gradient so chips sit legibly over the image */}
@@ -313,25 +316,15 @@ export const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchStories = async () => {
-      const stories = await dataManager.getStories();
-      setSuccessStories(stories);
-    };
-    fetchStories();
+    // A failed request just hides the testimonials section; the rest of the page is unaffected.
+    dataManager.getStories()
+      .then((stories) => setSuccessStories(Array.isArray(stories) ? stories : []))
+      .catch(() => setSuccessStories([]));
   }, []);
 
-  const getExamDate = (month: number, day: number) => {
-    const now = new Date();
-    let year = now.getFullYear();
-    let target = new Date(year, month, day, 8, 0);
-    if (target.getTime() < now.getTime()) {
-      target = new Date(year + 1, month, day, 8, 0);
-    }
-    return target;
-  };
-
-  const nationalDate = useMemo(() => getExamDate(5, 4), []);
-  const regionalDate = useMemo(() => getExamDate(5, 1), []);
+  // Official exam dates for the 2026-2027 session (08:00 start). Update these each year.
+  const nationalDate = useMemo(() => new Date(2027, 5, 1, 8, 0), []);
+  const regionalDate = useMemo(() => new Date(2027, 4, 28, 8, 0), []);
 
 
   const steps = (t('home.howItWorksSteps', { returnObjects: true }) as unknown as { title: string; desc: string }[]) || [];

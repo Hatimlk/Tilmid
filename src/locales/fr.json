@@ -1,4 +1,12 @@
 {
+  "notFound": {
+    "title": "Page introuvable",
+    "heading": "Page introuvable",
+    "text": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "home": "Retour à l'accueil",
+    "schools": "Explorer les écoles",
+    "filiere": "Trouver ma filière"
+  },
   "language": {
     "toggle": "Changer de langue"
   },
@@ -10,6 +18,7 @@
     "higherSchools": "Écoles",
     "studentArea": "Espace Étudiant",
     "menu": "Menu",
+    "closeMenu": "Fermer le menu",
     "primaryCta": "Faire mon orientation"
   },
   "search": {
@@ -40,8 +49,8 @@
     "admin": "Administration"
   },
   "home": {
-    "seoTitle": "Tilmid - Orientation Scolaire",
-    "seoDesc": "Plateforme Tilmid pour l'orientation scolaire au Maroc. Découvrez des méthodes de révision intelligentes, la préparation au Bac, et des conseils pour l'excellence académique.",
+    "seoTitle": "Orientation Scolaire au Maroc",
+    "seoDesc": "Plateforme Tilmid pour l'orientation scolaire au Maroc : méthodes de révision, préparation au Bac et conseils pour réussir votre parcours académique.",
     "badge": "La plateforme d'orientation et d'accompagnement au Maroc",
     "heroTitle1": "Tilmid, votre compagnon",
     "heroTitle2": "vers l'excellence",

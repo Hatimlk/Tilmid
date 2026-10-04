@@ -1,9 +1,14 @@
 import React from 'react';
 import { Shield, Lock, Eye, FileText } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export const PrivacyPolicy: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-20">
+      <SEO
+        title="سياسة الخصوصية"
+        description="اطلع على سياسة الخصوصية لمنصة تلميذ: كيف نجمع بياناتك الشخصية ونستخدمها ونحميها أثناء استخدام خدمات التوجيه والمواكبة، وحقوقك في التحكم بها."
+      />
       <div className="container mx-auto px-4 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}

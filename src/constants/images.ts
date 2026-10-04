@@ -1,8 +1,8 @@
-import YassineImage from '../assets/yassine-image.png';
-import TilmidHomeHero from '../assets/tilmid-home page.jpg';
-import TilmidHeroPortrait from '../assets/tilmid-hero-portrait.jpg';
+import YassineImage from '../assets/yassine-image.webp';
+import TilmidHomeHero from '../assets/tilmid-home-page.webp';
+import TilmidHeroPortrait from '../assets/tilmid-hero-portrait.webp';
 import TilmidVideo from '../assets/tilmidesite-web.mov';
-import TilmidVideoThumbnail from '../assets/tilmid-video-thumbnail.png';
+import TilmidVideoThumbnail from '../assets/tilmid-video-thumbnail.webp';
 
 export const IMAGES = {
   LOGOS: {

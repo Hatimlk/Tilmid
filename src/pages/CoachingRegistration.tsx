@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2, ArrowLeft, Sparkles, UserRound, GraduationCap } from 'lucide-react';
 import { PACKS, GRADE_OPTIONS } from '../constants/mouwakabaPacks';
 import { dataManager } from '../utils/dataManager';
+import { isValidMaPhone } from '../utils/phone';
 import SEO from '../components/SEO';
 
 const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwjkIdjHjdglElwR73th4W2F24FOAonO2Lk958jQ-dxKLfTX4BeKPEsDewAGh-vE2t3/exec';
@@ -26,9 +27,14 @@ export const CoachingRegistration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError('');
     if (!formData.name || !formData.phone) {
       setError('Merci de remplir toutes les informations requises.');
+      return;
+    }
+    if (!isValidMaPhone(formData.phone)) {
+      setError('Numéro de téléphone invalide. Exemple : 0612345678 ou +212612345678.');
       return;
     }
     setIsSubmitting(true);
@@ -61,7 +67,7 @@ export const CoachingRegistration: React.FC = () => {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,143,245,0.10),_transparent_32%),#f8fafc] py-10 md:py-16 px-4 text-start">
       <SEO
         title="Inscription - Offre d'accompagnement Mouwakaba"
-        description="Choisissez votre formule Mouwakaba et remplissez le formulaire d'inscription."
+        description="Choisissez votre formule d'accompagnement Mouwakaba et remplissez le formulaire d'inscription. Un conseiller Tilmid vous recontacte pour confirmer votre parcours."
         noindex={true}
       />
       <div className="max-w-4xl mx-auto">

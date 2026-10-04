@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2, ArrowLeft, Sparkles, UserRound, GraduationCap } from 'lucide-react';
 import { ORIENTATION_PACKS } from '../constants/orientationPacks';
 import { dataManager } from '../utils/dataManager';
+import { isValidMaPhone } from '../utils/phone';
 import SEO from '../components/SEO';
 
 const FILIERE_OPTIONS = [
@@ -50,9 +51,14 @@ export const OrientationRegistration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError('');
     if (!formData.name || !formData.phone || !formData.city) {
       setError('Merci de remplir toutes les informations requises.');
+      return;
+    }
+    if (!isValidMaPhone(formData.phone)) {
+      setError('Numéro de téléphone invalide. Exemple : 0612345678 ou +212612345678.');
       return;
     }
     setIsSubmitting(true);
@@ -84,8 +90,8 @@ export const OrientationRegistration: React.FC = () => {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(14,143,245,0.10),_transparent_32%),#f8fafc] py-10 md:py-16 px-4">
       <SEO
-        title="Inscription - Orientation Tilmid"
-        description="Choisissez votre pack d'orientation Tilmid et remplissez le formulaire d'inscription."
+        title="Inscription à l'orientation"
+        description="Choisissez le pack d'orientation Tilmid adapté à votre profil et remplissez le formulaire. Un conseiller vous recontacte pour confirmer votre accompagnement."
         noindex={true}
       />
       <div className="max-w-4xl mx-auto">

@@ -6,11 +6,12 @@ import { IMAGES } from '../constants/images';
 import { useTranslation } from 'react-i18next';
 import { dataManager } from '../utils/dataManager';
 import { PlatformSettings } from '../types';
+import { formatMaPhone, toTelHref } from '../utils/phone';
 
 // Hardcoded fallback — used until /api/settings resolves, and if it fails,
 // so the footer is never blank. Kept in sync with the admin "Paramètres" module.
 const FALLBACK_SETTINGS: PlatformSettings = {
-  contact_phone: '+2127 7810 4220',
+  contact_phone: '+212778104220',
   contact_email: 'contact@tilmide.ma',
   whatsapp_number: 'https://wa.me/message/GN4XKUOMHNHGO1',
   instagram_url: 'https://www.instagram.com/tilmid.official/',
@@ -85,11 +86,11 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-6">
               <li>
-                <a href={`tel:${settings.contact_phone}`} className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors dir-ltr text-lg font-bold">
+                <a href={toTelHref(settings.contact_phone)} className="group flex items-center gap-4 text-slate-500 hover:text-primary transition-colors dir-ltr text-lg font-bold">
                   <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <Phone size={18} />
                   </div>
-                  <span dir="ltr">{settings.contact_phone}</span>
+                  <span dir="ltr">{formatMaPhone(settings.contact_phone)}</span>
                 </a>
               </li>
               <li>

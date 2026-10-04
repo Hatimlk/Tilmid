@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, ChevronDown, Search, User } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
@@ -17,6 +17,29 @@ export const Navbar: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
   const { t } = useTranslation();
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
+
+  // Mobile drawer: close on route change, Escape, and lock background scroll while open.
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    // Deferred: the drawer's visibility transition must start before it can take focus.
+    const focusTimer = window.setTimeout(() => drawerCloseRef.current?.focus(), 50);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -199,6 +222,8 @@ export const Navbar: React.FC = () => {
                 className="p-2.5 text-slate-800 hover:bg-slate-100/50 rounded-xl transition-all active:scale-95"
                 onClick={toggleMenu}
                 aria-label={t('nav.menu')}
+                aria-expanded={isOpen}
+                aria-controls="mobile-menu"
               >
                 {isOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
@@ -216,13 +241,19 @@ export const Navbar: React.FC = () => {
           ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
         `}
         onClick={() => setIsOpen(false)}
+        aria-hidden="true"
       />
 
       <div
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('nav.menu')}
+        aria-hidden={!isOpen}
         className={`
           fixed top-0 right-0 w-[80%] max-w-sm h-full bg-white z-50 md:hidden
-          shadow-2xl transition-transform duration-300 ease-out flex flex-col
-          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+          shadow-2xl transition-[transform,visibility] duration-300 ease-out flex flex-col
+          ${isOpen ? 'translate-x-0 visible' : 'translate-x-full invisible'}
         `}
       >
         <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
@@ -232,8 +263,10 @@ export const Navbar: React.FC = () => {
             className="h-12 w-auto"
           />
           <button
+            ref={drawerCloseRef}
             onClick={() => setIsOpen(false)}
             className="p-2 -mr-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
+            aria-label={t('nav.closeMenu')}
           >
             <X size={24} />
           </button>

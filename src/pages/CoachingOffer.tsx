@@ -25,16 +25,16 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import img0604 from '../assets/Testimonial/IMG_0604.jpg';
-import img0605 from '../assets/Testimonial/IMG_0605.jpg';
-import img0606 from '../assets/Testimonial/IMG_0606.jpg';
-import img0710 from '../assets/Testimonial/IMG_0710.PNG';
-import img0726 from '../assets/Testimonial/IMG_0726.PNG';
-import img0727 from '../assets/Testimonial/IMG_0727.PNG';
-import img2756 from '../assets/Testimonial/IMG_2756.jpg';
-import img2944 from '../assets/Testimonial/IMG_2944.jpg';
-import img2945 from '../assets/Testimonial/IMG_2945.jpg';
-import img2947 from '../assets/Testimonial/IMG_2947.jpg';
+import img0604 from '../assets/Testimonial/IMG_0604.webp';
+import img0605 from '../assets/Testimonial/IMG_0605.webp';
+import img0606 from '../assets/Testimonial/IMG_0606.webp';
+import img0710 from '../assets/Testimonial/IMG_0710.webp';
+import img0726 from '../assets/Testimonial/IMG_0726.webp';
+import img0727 from '../assets/Testimonial/IMG_0727.webp';
+import img2756 from '../assets/Testimonial/IMG_2756.webp';
+import img2944 from '../assets/Testimonial/IMG_2944.webp';
+import img2945 from '../assets/Testimonial/IMG_2945.webp';
+import img2947 from '../assets/Testimonial/IMG_2947.webp';
 import mouwakabaHero from '../assets/mouwakaba-hero.jpeg';
 import { PackTier, PackDef, PACKS, NOT_INCLUDED, PREMIUM_JOURNEY } from '../constants/mouwakabaPacks';
 import SEO from '../components/SEO';
@@ -1326,7 +1326,7 @@ export const CoachingOffer: React.FC = () => {
     <div dir={i18n.dir()} lang={i18n.language.startsWith('ar') ? 'ar' : 'fr'} className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden font-sans w-full max-w-full text-start">
       <SEO
         title={t('coachingOffer.seo.title', "Offre d'accompagnement Mouwakaba")}
-        description={t('coachingOffer.seo.description', "Le programme d'accompagnement Mouwakaba de Tilmid : méthode, outils et coaching pour progresser avec structure. Trois formules, Essentiel, Boost et Premium, adaptées à chaque étudiant.")}
+        description={t('coachingOffer.seo.description', "Programme d'accompagnement Mouwakaba de Tilmid : méthode, outils et coaching pour progresser avec structure. Trois formules Essentiel, Boost et Premium.")}
         url="/coaching-offer"
         jsonLd={jsonLd}
       />

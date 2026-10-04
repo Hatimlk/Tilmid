@@ -152,7 +152,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           className={`bg-white text-primary p-3 rounded-full shadow-xl border border-blue-50 hover:bg-blue-50 transition-all duration-500 transform ${
             showScrollTop ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-50 pointer-events-none'
           }`}
-          aria-label="Scroll to top"
+          aria-label="Revenir en haut de la page"
         >
           <ArrowUp size={24} />
         </button>
@@ -166,7 +166,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             target="_blank" 
             rel="noopener noreferrer"
             className="relative block bg-[#25D366] text-white p-4 lg:p-5 rounded-full shadow-2xl shadow-green-500/40 hover:shadow-green-500/60 hover:-translate-y-2 active:scale-90 transition-all z-10"
-            aria-label="Chat on WhatsApp"
+            aria-label="Contacter Tilmid sur WhatsApp"
           >
             <MessageCircle size={32} fill="white" className="drop-shadow-sm" />
           </a>

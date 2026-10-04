@@ -1,32 +1,46 @@
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 interface SEOProps {
     title: string;
     description: string;
     keywords?: string;
     image?: string;
+    /** Canonical path or absolute URL. Defaults to the current route path (no query string). */
     url?: string;
     type?: string;
     /** Extra JSON-LD blocks (FAQPage, BreadcrumbList, Service...) for this page, in addition to the Organization schema below. */
     jsonLd?: Record<string, any>[];
+    noindex?: boolean;
 }
+
+const SITE_URL = 'https://tilmide.ma';
+const SITE_TITLE = 'تلميذ - Tilmid';
+// Strips a brand suffix a page may already include ("Contact - Tilmid", "... | تلميذ - Tilmid")
+// so the brand is appended exactly once.
+const BRAND_SUFFIX = /\s*[|–—-]\s*(تلميذ(\s*-\s*Tilmid)?|Tilmid)\s*$/i;
 
 const SEO = ({
     title,
     description,
     keywords,
     image = '/og-image.jpg',
-    url = 'https://tilmide.ma',
+    url,
     type = 'website',
     noindex = false,
     jsonLd = []
-}: SEOProps & { noindex?: boolean }) => {
-    const siteTitle = 'تلميذ - Tilmid';
-    const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
+}: SEOProps) => {
+    const { pathname } = useLocation();
+    const siteTitle = SITE_TITLE;
+    const cleanTitle = title.replace(BRAND_SUFFIX, '').trim();
+    const fullTitle = cleanTitle === siteTitle ? siteTitle : `${cleanTitle} | ${siteTitle}`;
 
     // Ensure absolute URL for image
-    const fullImage = image.startsWith('http') ? image : `https://tilmide.ma${image}`;
-    const fullUrl = url.startsWith('http') ? url : `https://tilmide.ma${url}`;
+    const fullImage = image.startsWith('http') ? image : `${SITE_URL}${image}`;
+    // Canonical: explicit url, otherwise the current route path. Query strings
+    // (filters, tracking params) are never part of the canonical URL.
+    const canonicalPath = url ?? (pathname.replace(/\/+$/, '') || '/');
+    const fullUrl = canonicalPath.startsWith('http') ? canonicalPath : `${SITE_URL}${canonicalPath}`;
 
     return (
         <Helmet>
@@ -67,7 +81,7 @@ const SEO = ({
                     "@type": "Organization",
                     "name": "Tilmid",
                     "url": "https://tilmide.ma",
-                    "logo": "https://tilmide.ma/logo.png",
+                    "logo": "https://res.cloudinary.com/do4mapb11/image/upload/v1766146135/Logo-Tilmid_wyhz1m.png",
                     "sameAs": [
                         "https://www.instagram.com/tilmid.official/",
                         "https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc",

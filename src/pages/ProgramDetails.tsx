@@ -1203,7 +1203,7 @@ export const ProgramDetails: React.FC = () => {
     >
       <SEO
         title={`${t(data.title)} - Tilmid`}
-        description={t(data.subtitle)}
+        description={isTawjih ? "Programme d'orientation Tawjih de Tilmid : découvrez les filières et parcours qui correspondent à votre profil, avec un accompagnement personnalisé au Maroc." : t(data.subtitle)}
         url={isTawjih ? '/tawjih' : undefined}
         jsonLd={tawjihJsonLd}
       />
