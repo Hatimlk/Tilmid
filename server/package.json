@@ -8,7 +8,8 @@
         "dev": "nodemon index.js",
         "check": "node --check index.js && node --check db.js",
         "db:check": "node test_db.js",
-        "seed:admin": "node seed.js"
+        "seed:admin": "node seed.js",
+        "test:api": "node --test test/api-ownership.test.js"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

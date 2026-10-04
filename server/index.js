@@ -92,14 +92,19 @@ const DUMMY_HASH = bcrypt.hashSync('timing-equalizer-not-a-real-password', 10);
 // it was issued with (suspended student, deleted user, admin demoted to user).
 async function loadActiveAccount(claims) {
     if (claims.role === 'student') {
-        const [rows] = await db.query("SELECT password_hash FROM students WHERE id = ? AND status = 'active'", [claims.id]);
+        const [rows] = await db.query("SELECT password_hash, package FROM students WHERE id = ? AND status = 'active'", [claims.id]);
         if (!rows[0] || claims.pwv !== passwordFingerprint(rows[0].password_hash)) return null;
-        return 'student';
+        return { role: 'student', package: rows[0].package };
     }
     const [rows] = await db.query('SELECT role, password_hash FROM users WHERE id = ?', [claims.id]);
     if (!rows[0] || claims.pwv !== passwordFingerprint(rows[0].password_hash)) return null;
-    return rows[0].role;
+    return { role: rows[0].role, package: null };
 }
+
+// Packages that unlock course videos, library resources and practical tools. Mirrors
+// src/utils/entitlements.ts, where only these three packs set learningContent/practicalTools.
+const LEARNING_PACKAGES = ['essentiel', 'boost', 'premium'];
+const canUseLearningContent = (user) => user.role === 'admin' || LEARNING_PACKAGES.includes(user.package);
 
 async function authenticate(req, res, next) {
     const authHeader = req.headers['authorization'] || '';
@@ -114,12 +119,33 @@ async function authenticate(req, res, next) {
     }
 
     try {
-        const role = await loadActiveAccount(claims);
-        if (!role) return res.status(401).json({ message: 'Unauthorized' });
-        req.user = { ...claims, role };
+        const account = await loadActiveAccount(claims);
+        if (!account) return res.status(401).json({ message: 'Unauthorized' });
+        req.user = { ...claims, role: account.role, package: account.package };
     } catch (err) {
         console.error('Auth account check failed:', err.message);
         return res.status(500).json({ message: 'Server error' });
+    }
+    next();
+}
+
+// For public routes that show extra data to signed-in staff. A missing, invalid or
+// revoked token is treated as anonymous rather than rejected.
+async function optionalAuth(req, res, next) {
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) return next();
+    let claims;
+    try {
+        claims = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    } catch {
+        return next();
+    }
+    try {
+        const account = await loadActiveAccount(claims);
+        if (account) req.user = { ...claims, role: account.role, package: account.package };
+    } catch (err) {
+        console.error('Optional auth check failed:', err.message);
     }
     next();
 }
@@ -508,9 +534,14 @@ app.post('/api/upload', requireAdmin, (req, res) => {
 });
 
 // Get all posts - public
-app.get('/api/posts', async (req, res) => {
+app.get('/api/posts', optionalAuth, async (req, res) => {
     try {
-        const [posts] = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
+        // Drafts are visible to admins only.
+        const [posts] = await db.query(
+            req.user?.role === 'admin'
+                ? 'SELECT * FROM posts ORDER BY created_at DESC'
+                : "SELECT * FROM posts WHERE status = 'published' ORDER BY created_at DESC"
+        );
         res.json(posts.map((p) => ({ ...p, sections: parseJsonField(p.sections, null) })));
     } catch (err) {
         console.error(err);
@@ -667,7 +698,8 @@ app.get('/api/notifications', requireStudent, async (req, res) => {
 
 app.post('/api/notifications/:id/read', requireStudent, async (req, res) => {
     try {
-        await db.query('UPDATE notifications SET read_at = NOW() WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        const [result] = await db.query('UPDATE notifications SET read_at = NOW() WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        if (!result.affectedRows) return res.status(404).json({ message: 'Notification not found' });
         res.json({ message: 'Marked as read' });
     } catch (err) {
         console.error(err);
@@ -741,7 +773,8 @@ app.get('/api/coaches', authenticate, async (req, res) => {
              FROM coaches c LEFT JOIN students s ON s.coach_id = c.id AND s.status = 'active'
              GROUP BY c.id ORDER BY c.name ASC`
         );
-        res.json(coaches);
+        // Staff contact details stay admin-only; students only need name and specialty.
+        res.json(req.user.role === 'student' ? coaches.map(({ email, phone, ...publicFields }) => publicFields) : coaches);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -1093,10 +1126,11 @@ app.post('/api/goals', requireStudent, async (req, res) => {
     const { id, title, category, targetDate, progress, status, nextAction } = req.body;
     try {
         if (id) {
-            await db.query(
+            const [result] = await db.query(
                 'UPDATE goals SET title=?, category=?, target_date=?, progress=?, status=?, next_action=? WHERE id=? AND student_id=?',
                 [title, category, targetDate || null, progress ?? 0, status, nextAction || null, id, req.user.id]
             );
+            if (!result.affectedRows) return res.status(404).json({ message: 'Goal not found' });
             return res.json({ id: Number(id), message: 'Goal updated' });
         }
         const [result] = await db.query(
@@ -1112,7 +1146,8 @@ app.post('/api/goals', requireStudent, async (req, res) => {
 
 app.delete('/api/goals/:id', requireStudent, async (req, res) => {
     try {
-        await db.query('DELETE FROM goals WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        const [result] = await db.query('DELETE FROM goals WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        if (!result.affectedRows) return res.status(404).json({ message: 'Goal not found' });
         res.json({ message: 'Goal deleted' });
     } catch (err) {
         console.error(err);
@@ -1149,7 +1184,8 @@ app.post('/api/revisions', requireStudent, async (req, res) => {
 
 app.delete('/api/revisions/:id', requireStudent, async (req, res) => {
     try {
-        await db.query('DELETE FROM revision_sessions WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        const [result] = await db.query('DELETE FROM revision_sessions WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        if (!result.affectedRows) return res.status(404).json({ message: 'Revision session not found' });
         res.json({ message: 'Revision session deleted' });
     } catch (err) {
         console.error(err);
@@ -1174,7 +1210,8 @@ app.post('/api/habits', requireStudent, async (req, res) => {
     const { id, name, days } = req.body;
     try {
         if (id) {
-            await db.query('UPDATE habits SET name=?, days=? WHERE id=? AND student_id=?', [name, JSON.stringify(days), id, req.user.id]);
+            const [result] = await db.query('UPDATE habits SET name=?, days=? WHERE id=? AND student_id=?', [name, JSON.stringify(days), id, req.user.id]);
+            if (!result.affectedRows) return res.status(404).json({ message: 'Habit not found' });
             return res.json({ id: Number(id), message: 'Habit updated' });
         }
         const [result] = await db.query(
@@ -1190,7 +1227,8 @@ app.post('/api/habits', requireStudent, async (req, res) => {
 
 app.delete('/api/habits/:id', requireStudent, async (req, res) => {
     try {
-        await db.query('DELETE FROM habits WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        const [result] = await db.query('DELETE FROM habits WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        if (!result.affectedRows) return res.status(404).json({ message: 'Habit not found' });
         res.json({ message: 'Habit deleted' });
     } catch (err) {
         console.error(err);
@@ -1273,7 +1311,8 @@ app.post('/api/timetable', requireStudent, async (req, res) => {
 
 app.delete('/api/timetable/:id', requireStudent, async (req, res) => {
     try {
-        await db.query('DELETE FROM timetable_tasks WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        const [result] = await db.query('DELETE FROM timetable_tasks WHERE id = ? AND student_id = ?', [req.params.id, req.user.id]);
+        if (!result.affectedRows) return res.status(404).json({ message: 'Timetable task not found' });
         res.json({ message: 'Timetable task deleted' });
     } catch (err) {
         console.error(err);
@@ -1283,6 +1322,7 @@ app.delete('/api/timetable/:id', requireStudent, async (req, res) => {
 
 /* ---------------- RESOURCES ROUTES (GET: any authenticated user, write: admin only) ---------------- */
 app.get('/api/resources', authenticate, async (req, res) => {
+    if (!canUseLearningContent(req.user)) return res.json([]);
     try {
         const [resources] = await db.query('SELECT * FROM resources ORDER BY created_at DESC');
         res.json(resources);
@@ -1326,7 +1366,8 @@ app.get('/api/course-modules', requireStudentOrAdmin, async (req, res) => {
              COALESCE(p.completed,0) completed FROM course_modules m
              LEFT JOIN course_module_progress p ON p.module_id=m.id AND p.student_id=? ORDER BY m.position ASC`,
             [studentId]);
-        res.json(rows);
+        // Titles are visible to everyone; the video itself needs a paid package.
+        res.json(canUseLearningContent(req.user) ? rows : rows.map((m) => ({ ...m, video_url: null, video_source: null })));
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -1334,6 +1375,9 @@ app.get('/api/course-modules', requireStudentOrAdmin, async (req, res) => {
 });
 
 app.post('/api/course-modules/:id/progress', requireStudent, async (req, res) => {
+    if (!canUseLearningContent(req.user)) return res.status(403).json({ message: 'Contenus réservés aux formules Mouwakaba' });
+    const [modules] = await db.query('SELECT id FROM course_modules WHERE id = ?', [req.params.id]);
+    if (!modules.length) return res.status(404).json({ message: 'Module not found' });
     const watched = Math.max(0, Math.floor(Number(req.body.watchedSeconds) || 0));
     const duration = Math.max(0, Math.floor(Number(req.body.durationSeconds) || 0));
     const percent = duration > 0 ? Math.min(100, watched / duration * 100) : 0;
@@ -1465,6 +1509,11 @@ app.post('/api/feedback', requireAdmin, async (req, res) => {
         if (checkinId) {
             const [checkins] = await db.query('SELECT id FROM checkins WHERE id = ? AND student_id = ?', [checkinId, studentId]);
             if (!checkins.length) return res.status(400).json({ message: 'Check-in does not belong to this student' });
+        }
+
+        if (appointmentId) {
+            const [appointments] = await db.query('SELECT id FROM appointments WHERE id = ? AND student_id = ?', [appointmentId, studentId]);
+            if (!appointments.length) return res.status(400).json({ message: 'Appointment does not belong to this student' });
         }
 
         const [users] = await db.query('SELECT username FROM users WHERE id = ?', [req.user.id]);

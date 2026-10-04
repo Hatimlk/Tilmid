@@ -46,10 +46,11 @@ function passwordFingerprint(string $passwordHash, string $secret_key): string {
 function refreshAccount(array $claims, string $secret_key): ?array {
     global $pdo;
     if (($claims['role'] ?? '') === 'student') {
-        $stmt = $pdo->prepare("SELECT password_hash FROM students WHERE id = ? AND status = 'active'");
+        $stmt = $pdo->prepare("SELECT password_hash, package FROM students WHERE id = ? AND status = 'active'");
         $stmt->execute([$claims['id']]);
         $row = $stmt->fetch();
         if (!$row || !hash_equals(passwordFingerprint((string)$row['password_hash'], $secret_key), (string)($claims['pwv'] ?? ''))) return null;
+        $claims['package'] = $row['package'];
         return $claims;
     }
     $stmt = $pdo->prepare("SELECT role, password_hash FROM users WHERE id = ?");
@@ -58,6 +59,13 @@ function refreshAccount(array $claims, string $secret_key): ?array {
     if (!$row || !hash_equals(passwordFingerprint((string)$row['password_hash'], $secret_key), (string)($claims['pwv'] ?? ''))) return null;
     $claims['role'] = $row['role'];
     return $claims;
+}
+
+// Packages that unlock course videos, library resources and practical tools. Mirrors
+// src/utils/entitlements.ts, where only these three packs set learningContent/practicalTools.
+const LEARNING_PACKAGES = ['essentiel', 'boost', 'premium'];
+function canUseLearningContent(array $user): bool {
+    return ($user['role'] ?? '') === 'admin' || in_array($user['package'] ?? null, LEARNING_PACKAGES, true);
 }
 
 function currentUser(string $secret_key): ?array {
@@ -508,7 +516,11 @@ if (preg_match('#^/api/users/(\d+)$#', $request_uri, $matches) && $method == 'DE
 
 // 3. GET POSTS (List) - public
 if (($request_uri == '/api/posts' || $request_uri == '/api/posts/') && $method == 'GET') {
-    $stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC");
+    // Drafts are visible to admins only. An invalid or missing token counts as anonymous.
+    $viewer = currentUser($secret_key);
+    $stmt = ($viewer['role'] ?? '') === 'admin'
+        ? $pdo->query("SELECT * FROM posts ORDER BY created_at DESC")
+        : $pdo->query("SELECT * FROM posts WHERE status = 'published' ORDER BY created_at DESC");
     $posts = $stmt->fetchAll();
 
     $formattedPosts = array_map(function ($post) {
@@ -573,14 +585,18 @@ if (preg_match('#/api/posts/(\d+)#', $request_uri, $matches) && $method == 'DELE
 if (preg_match('#/api/posts/(\d+)(/)?$#', $request_uri, $matches) && $method == 'GET') {
     $id = $matches[1];
 
-    $updateStmt = $pdo->prepare("UPDATE posts SET views = views + 1 WHERE id = ?");
-    $updateStmt->execute([$id]);
-
     $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
     $stmt->execute([$id]);
     $post = $stmt->fetch();
 
+    // A draft looks like a missing post to anyone who isn't an admin.
+    $viewer = currentUser($secret_key);
+    if ($post && $post['status'] === 'draft' && ($viewer['role'] ?? '') !== 'admin') {
+        $post = false;
+    }
+
     if ($post) {
+        $pdo->prepare("UPDATE posts SET views = views + 1 WHERE id = ?")->execute([$id]);
         $post['image'] = $post['image_url'];
         $post['date'] = date('Y-m-d', strtotime($post['created_at']));
         $post['author'] = [
@@ -745,6 +761,13 @@ if ($request_uri === '/api/notifications' && $method == 'GET') {
 
 if (preg_match('#^/api/notifications/(\d+)/read$#', $request_uri, $matches) && $method == 'POST') {
     $user = requireStudent($secret_key);
+    $own = $pdo->prepare("SELECT id FROM notifications WHERE id = ? AND student_id = ?");
+    $own->execute([$matches[1], $user['id']]);
+    if (!$own->fetch()) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Notification not found']);
+        exit;
+    }
     $stmt = $pdo->prepare("UPDATE notifications SET read_at = NOW() WHERE id = ? AND student_id = ?");
     $stmt->execute([$matches[1], $user['id']]);
     echo json_encode(['message' => 'Marked as read']);
@@ -812,13 +835,18 @@ if (preg_match('#^/api/tool-options/(\d+)$#', $request_uri, $matches) && $method
 
 // 7b. COACHES (admin "Coachs" module)
 if ($request_uri === '/api/coaches' && $method == 'GET') {
-    requireAuth($secret_key);
+    $user = requireAuth($secret_key);
     $stmt = $pdo->query(
         "SELECT c.*, COUNT(s.id) AS student_count
          FROM coaches c LEFT JOIN students s ON s.coach_id = c.id AND s.status = 'active'
          GROUP BY c.id ORDER BY c.name ASC"
     );
-    echo json_encode($stmt->fetchAll());
+    $coaches = $stmt->fetchAll();
+    // Staff contact details stay admin-only; students only need name and specialty.
+    if (($user['role'] ?? '') === 'student') {
+        $coaches = array_map(function ($c) { unset($c['email'], $c['phone']); return $c; }, $coaches);
+    }
+    echo json_encode($coaches);
     exit;
 }
 
@@ -1023,7 +1051,11 @@ if (strpos($request_uri, '/api/messages') !== false) {
 
 // 11. RESOURCES - any authenticated user (students need this for their library view)
 if (strpos($request_uri, '/api/resources') !== false && $method == 'GET') {
-    requireAuth($secret_key);
+    $user = requireAuth($secret_key);
+    if (!canUseLearningContent($user)) {
+        echo json_encode([]);
+        exit;
+    }
     $stmt = $pdo->query("SELECT * FROM resources ORDER BY created_at DESC");
     echo json_encode($stmt->fetchAll());
     exit;
@@ -1184,6 +1216,13 @@ if ($request_uri === '/api/goals' && $method == 'POST') {
 
     try {
         if ($id) {
+            $own = $pdo->prepare("SELECT id FROM goals WHERE id = ? AND student_id = ?");
+            $own->execute([$id, $user['id']]);
+            if (!$own->fetch()) {
+                http_response_code(404);
+                echo json_encode(['message' => 'Goal not found']);
+                exit;
+            }
             $stmt = $pdo->prepare("UPDATE goals SET title=?, category=?, target_date=?, progress=?, status=?, next_action=? WHERE id=? AND student_id=?");
             $stmt->execute([$title, $category, $targetDate, $progress, $status, $nextAction, $id, $user['id']]);
             echo json_encode(['id' => (int)$id, 'message' => 'Goal updated']);
@@ -1205,6 +1244,11 @@ if (preg_match('#^/api/goals/(\d+)$#', $request_uri, $matches) && $method == 'DE
     $user = requireStudent($secret_key);
     $stmt = $pdo->prepare("DELETE FROM goals WHERE id = ? AND student_id = ?");
     $stmt->execute([$matches[1], $user['id']]);
+    if ($stmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Goal not found']);
+        exit;
+    }
     echo json_encode(['message' => 'Goal deleted']);
     exit;
 }
@@ -1244,6 +1288,11 @@ if (preg_match('#^/api/revisions/(\d+)$#', $request_uri, $matches) && $method ==
     $user = requireStudent($secret_key);
     $stmt = $pdo->prepare("DELETE FROM revision_sessions WHERE id = ? AND student_id = ?");
     $stmt->execute([$matches[1], $user['id']]);
+    if ($stmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Revision session not found']);
+        exit;
+    }
     echo json_encode(['message' => 'Revision session deleted']);
     exit;
 }
@@ -1268,6 +1317,13 @@ if ($request_uri === '/api/habits' && $method == 'POST') {
 
     try {
         if ($id) {
+            $own = $pdo->prepare("SELECT id FROM habits WHERE id = ? AND student_id = ?");
+            $own->execute([$id, $user['id']]);
+            if (!$own->fetch()) {
+                http_response_code(404);
+                echo json_encode(['message' => 'Habit not found']);
+                exit;
+            }
             $stmt = $pdo->prepare("UPDATE habits SET name=?, days=? WHERE id=? AND student_id=?");
             $stmt->execute([$name, $days, $id, $user['id']]);
             echo json_encode(['id' => (int)$id, 'message' => 'Habit updated']);
@@ -1289,6 +1345,11 @@ if (preg_match('#^/api/habits/(\d+)$#', $request_uri, $matches) && $method == 'D
     $user = requireStudent($secret_key);
     $stmt = $pdo->prepare("DELETE FROM habits WHERE id = ? AND student_id = ?");
     $stmt->execute([$matches[1], $user['id']]);
+    if ($stmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Habit not found']);
+        exit;
+    }
     echo json_encode(['message' => 'Habit deleted']);
     exit;
 }
@@ -1380,6 +1441,11 @@ if (preg_match('#^/api/timetable/(\d+)$#', $request_uri, $matches) && $method ==
     $user = requireStudent($secret_key);
     $stmt = $pdo->prepare("DELETE FROM timetable_tasks WHERE id = ? AND student_id = ?");
     $stmt->execute([$matches[1], $user['id']]);
+    if ($stmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Timetable task not found']);
+        exit;
+    }
     echo json_encode(['message' => 'Timetable task deleted']);
     exit;
 }
@@ -1451,12 +1517,29 @@ if ($request_uri === '/api/course-modules' && $method == 'GET') {
     $studentId = ($user['role'] ?? '') === 'student' ? (int)$user['id'] : (int)($_GET['studentId'] ?? 0);
     $stmt = $pdo->prepare("SELECT m.*, COALESCE(p.watched_seconds,0) watched_seconds, COALESCE(p.duration_seconds,0) duration_seconds, COALESCE(p.progress_percent,0) progress_percent, COALESCE(p.completed,0) completed FROM course_modules m LEFT JOIN course_module_progress p ON p.module_id=m.id AND p.student_id=? ORDER BY m.position ASC");
     $stmt->execute([$studentId]);
-    echo json_encode($stmt->fetchAll());
+    $modules = $stmt->fetchAll();
+    // Titles are visible to everyone; the video itself needs a paid package.
+    if (!canUseLearningContent($user)) {
+        $modules = array_map(function ($m) { $m['video_url'] = null; $m['video_source'] = null; return $m; }, $modules);
+    }
+    echo json_encode($modules);
     exit;
 }
 
 if (preg_match('#^/api/course-modules/(\d+)/progress$#', $request_uri, $matches) && $method == 'POST') {
     $user = requireStudent($secret_key);
+    if (!canUseLearningContent($user)) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Contenus réservés aux formules Mouwakaba']);
+        exit;
+    }
+    $module = $pdo->prepare("SELECT id FROM course_modules WHERE id = ?");
+    $module->execute([(int)$matches[1]]);
+    if (!$module->fetch()) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Module not found']);
+        exit;
+    }
     $watched = max(0, (int)($input['watchedSeconds'] ?? 0));
     $duration = max(0, (int)($input['durationSeconds'] ?? 0));
     $percent = $duration > 0 ? min(100, $watched / $duration * 100) : 0;
@@ -1721,6 +1804,16 @@ if ($request_uri === '/api/feedback' && $method == 'POST') {
         http_response_code(404);
         echo json_encode(['message' => 'Student not found']);
         exit;
+    }
+
+    if ($appointmentId) {
+        $stmt = $pdo->prepare("SELECT id FROM appointments WHERE id = ? AND student_id = ?");
+        $stmt->execute([$appointmentId, $studentId]);
+        if (!$stmt->fetch()) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Appointment does not belong to this student']);
+            exit;
+        }
     }
 
     if ($checkinId) {
