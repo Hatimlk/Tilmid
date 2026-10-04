@@ -1,3 +1,4 @@
+import { ApiError, rateLimitMinutes } from '../lib/api';
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2, ArrowLeft, Sparkles, UserRound, GraduationCap } from 'lucide-react';
@@ -73,7 +74,10 @@ export const OrientationRegistration: React.FC = () => {
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
-      setError('Une erreur est survenue lors de l\'envoi. Veuillez réessayer plus tard.');
+      const apiErr = err as ApiError;
+      setError(apiErr?.status === 429
+        ? `Trop de tentatives. Réessayez dans ${rateLimitMinutes(apiErr.retryAfterSeconds)} minute(s).`
+        : 'Une erreur est survenue lors de l’envoi. Veuillez réessayer plus tard.');
     }
   };
 

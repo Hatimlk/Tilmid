@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const db = require('./db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
+const { limitRoute, ensureRateLimitTable, normalizeEmail, normalizePhone, MINUTE, HOUR } = require('./rateLimit');
 
 dotenv.config();
 
@@ -59,18 +59,25 @@ app.use((req, res, next) => {
     next();
 });
 
-// Only failed attempts count, and each client IP is limited per account it targets, so a
-// shared network (school Wi-Fi, NAT) doesn't lock out everyone and a single visitor can't
-// brute-force one account indefinitely.
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 8,
-    standardHeaders: true,
-    legacyHeaders: false,
-    skipSuccessfulRequests: true,
-    keyGenerator: (req) => `${req.ip}|${String(req.body?.email ?? req.body?.username ?? '').trim().toLowerCase()}`,
-    message: { message: 'Too many attempts. Please try again later.' },
+// Limits per route, by IP and by account (see rateLimit.js). Logins count only failed attempts.
+const loginLimits = limitRoute('auth.login', {
+    windowMs: 15 * MINUTE, perIp: 30, perAccount: 8, countSuccessful: false,
+    accountOf: (req) => normalizeEmail(req.body?.email),
 });
+const studentLoginLimits = limitRoute('auth.student_login', {
+    windowMs: 15 * MINUTE, perIp: 30, perAccount: 8, countSuccessful: false,
+    accountOf: (req) => normalizeEmail(req.body?.username),
+});
+// Signup and the public forms count every request, successful or not.
+const registerLimits = limitRoute('auth.register', {
+    windowMs: HOUR, perIp: 10, perAccount: 3,
+    accountOf: (req) => normalizeEmail(req.body?.email),
+});
+const contactLimits = (route) => limitRoute(route, {
+    windowMs: HOUR, perIp: 10, perAccount: 3,
+    accountOf: (req) => normalizePhone(req.body?.phone),
+});
+
 
 // Session lifetime for every issued token. The account is re-checked on each request too (see
 // authenticate), so suspending, archiving or deleting an account takes effect immediately.
@@ -277,7 +284,7 @@ app.post('/api/settings', requireAdmin, async (req, res) => {
 /* ---------------- AUTH ROUTES ---------------- */
 
 // Register
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', ...registerLimits, async (req, res) => {
     const { username, email, password } = req.body;
 
     if (typeof username !== 'string' || !username.trim() || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email) || !isAcceptablePassword(password)) {
@@ -306,7 +313,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', loginLimiter, async (req, res) => {
+app.post('/api/auth/login', ...loginLimits, async (req, res) => {
     const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     if (!email || !password) {
@@ -344,7 +351,7 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 });
 
 // Student login
-app.post('/api/students/login', loginLimiter, async (req, res) => {
+app.post('/api/students/login', ...studentLoginLimits, async (req, res) => {
     const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
     const password = typeof req.body.password === 'string' ? req.body.password : '';
     if (!username || !password) {
@@ -938,6 +945,24 @@ app.get('/api/activity', requireAdmin, async (req, res) => {
     }
 });
 
+/* ---------------- SECURITY MONITOR (admin "Sécurité" view of rate-limit blocks) ---------------- */
+app.get('/api/admin/abuse', requireAdmin, async (req, res) => {
+    try {
+        const [offenders] = await db.query(
+            `SELECT client_ip, COUNT(*) AS blocks, MAX(created_at) AS last_seen, GROUP_CONCAT(DISTINCT route) AS routes
+             FROM rate_limit_events WHERE created_at > (NOW() - INTERVAL 7 DAY)
+             GROUP BY client_ip ORDER BY blocks DESC LIMIT 50`
+        );
+        const [recent] = await db.query(
+            'SELECT route, scope, client_ip, account, retry_after_seconds, created_at FROM rate_limit_events ORDER BY created_at DESC LIMIT 100'
+        );
+        res.json({ offenders, recent });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 /* ---------------- STORIES ROUTES (public - shown on the homepage) ---------------- */
 app.get('/api/stories', async (req, res) => {
     try {
@@ -974,7 +999,7 @@ app.get('/api/messages', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/messages', async (req, res) => {
+app.post('/api/messages', ...contactLimits('contact.message'), async (req, res) => {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim();
     const phone = String(req.body.phone || '').trim();
@@ -1006,7 +1031,7 @@ app.get('/api/coaching-requests', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/coaching-requests', async (req, res) => {
+app.post('/api/coaching-requests', ...contactLimits('contact.coaching_request'), async (req, res) => {
     const name = String(req.body.name || '').trim();
     const phone = String(req.body.phone || '').trim();
     const grade = String(req.body.grade || '').trim();
@@ -1036,7 +1061,7 @@ app.get('/api/orientation-requests', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/orientation-requests', async (req, res) => {
+app.post('/api/orientation-requests', ...contactLimits('contact.orientation_request'), async (req, res) => {
     const name = String(req.body.name || '').trim();
     const phone = String(req.body.phone || '').trim();
     const filiere = String(req.body.filiere || '').trim();
@@ -1782,4 +1807,5 @@ app.post('/api/collective-sessions/:id/attendance', requireAdmin, async (req, re
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    ensureRateLimitTable().catch((err) => console.error('Could not prepare rate_limit_events:', err.message));
 });

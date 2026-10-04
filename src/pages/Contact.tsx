@@ -1,4 +1,5 @@
 import React from 'react';
+import { ApiError, rateLimitMinutes } from '../lib/api';
 import { dataManager } from '../utils/dataManager';
 import { ContactMessage } from '../types';
 import SEO from '../components/SEO';
@@ -59,7 +60,10 @@ export const Contact = () => {
       } catch (e) {
         console.error("Submission Error:", e);
         setStatus('idle');
-        alert("فشل الإرسال. حاول مرة أخرى.");
+        const apiErr = e as ApiError;
+        alert(apiErr?.status === 429
+          ? `محاولات كثيرة. حاول مرة أخرى بعد ${rateLimitMinutes(apiErr.retryAfterSeconds)} دقيقة.`
+          : "فشل الإرسال. حاول مرة أخرى.");
       }
     };
     saveMsg();

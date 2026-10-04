@@ -34,7 +34,7 @@ const TABLES = [
   'contact_messages', 'resources', 'timetable_tasks', 'coaching_requests', 'orientation_requests',
   'self_guided_plans', 'goals', 'revision_sessions', 'habits', 'checkins', 'course_modules',
   'course_module_progress', 'feedback', 'collective_sessions', 'collective_session_registrations',
-  'tool_options', 'platform_settings', 'notifications', 'login_attempts',
+  'tool_options', 'platform_settings', 'notifications', 'login_attempts', 'rate_limit_events',
 ];
 
 // Fresh random passwords every run: nothing secret-shaped lives in the repository.

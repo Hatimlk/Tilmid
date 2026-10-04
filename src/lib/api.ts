@@ -14,7 +14,11 @@ export const resolveFileUrl = (path: string | null | undefined): string => {
 
 export interface ApiError extends Error {
   status?: number;
+  retryAfterSeconds?: number;
 }
+
+// Whole minutes to wait, for a message like "réessayez dans 15 minutes".
+export const rateLimitMinutes = (seconds?: number): number => Math.max(1, Math.ceil((seconds ?? 60) / 60));
 
 // Attaches the HTTP status to the thrown Error (in addition to the existing
 // .message text) so callers can distinguish e.g. invalid credentials (400)
@@ -22,8 +26,11 @@ export interface ApiError extends Error {
 // .message keeps its previous shape, so existing catch blocks are unaffected.
 const throwApiError = async (res: Response): Promise<never> => {
   const text = await res.text();
+  let body: { retryAfterSeconds?: number } | null = null;
+  try { body = JSON.parse(text); } catch { /* not JSON */ }
   const err: ApiError = new Error(text);
   err.status = res.status;
+  err.retryAfterSeconds = body?.retryAfterSeconds ?? (Number(res.headers.get('Retry-After')) || undefined);
   throw err;
 };
 

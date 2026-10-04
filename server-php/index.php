@@ -161,26 +161,134 @@ function logActivity(PDO $pdo, array $actor, string $action, string $entityType,
     }
 }
 
-/* ---------------- RATE LIMITING (login endpoints) ---------------- */
+/* ---------------- RATE LIMITING (login, signup, public forms) ---------------- */
+// Each route is limited per client IP and per account (email, username or phone). Counted requests
+// are stored in login_attempts, one row per bucket. Going over a limit returns 429 RATE_LIMITED with
+// Retry-After and is logged to rate_limit_events, so repeated abuse shows on the admin Sécurité view.
+const RATE_REPEAT_THRESHOLD = 5;
 
-function rateLimited(PDO $pdo, string $identifier, int $maxAttempts = 8, int $windowMinutes = 15): bool {
+function ensureRateLimitEvents(PDO $pdo): void {
+    static $ready = false;
+    if ($ready) return;
+    $ready = true;
     try {
-        $stmt = $pdo->prepare("SELECT COUNT(*) c FROM login_attempts WHERE identifier = ? AND created_at > (NOW() - INTERVAL ? MINUTE)");
-        $stmt->execute([$identifier, $windowMinutes]);
-        return (int)($stmt->fetch()['c'] ?? 0) >= $maxAttempts;
+        $pdo->exec("CREATE TABLE IF NOT EXISTS rate_limit_events (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            route VARCHAR(100) NOT NULL,
+            scope ENUM('ip', 'account') NOT NULL,
+            client_ip VARCHAR(64) NOT NULL,
+            account VARCHAR(255) DEFAULT NULL,
+            retry_after_seconds INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_ip_created (client_ip, created_at),
+            INDEX idx_created (created_at)
+        )");
+        $pdo->exec("DELETE FROM rate_limit_events WHERE created_at < (NOW() - INTERVAL 90 DAY)");
     } catch (PDOException $e) {
-        // If the login_attempts table doesn't exist yet (migration not run), fail open
-        // rather than taking the whole login flow down.
-        return false;
+        error_log('Could not prepare rate_limit_events: ' . $e->getMessage());
     }
 }
 
-function recordAttempt(PDO $pdo, string $identifier): void {
+// Shows enough of an account identifier to recognise it in logs, without writing it in full.
+function maskAccountValue(string $value): ?string {
+    $text = trim($value);
+    if ($text === '') return null;
+    if (strpos($text, '@') !== false) {
+        [$user, $domain] = explode('@', $text, 2);
+        return substr($user, 0, 1) . '***@' . $domain;
+    }
+    return substr($text, 0, 2) . '***' . substr($text, -2);
+}
+
+// The two bucket keys for one request. The account is hashed so the table never holds it in clear.
+function rateBuckets(string $route, string $account): array {
+    $buckets = ['ip' => 'ip|' . $route . '|' . clientIp()];
+    $account = strtolower(trim($account));
+    if ($account !== '') {
+        $buckets['account'] = 'acct|' . $route . '|' . hash('sha256', $account);
+    }
+    return $buckets;
+}
+
+function rateBucketCount(PDO $pdo, string $bucket, int $windowMinutes): int {
+    try {
+        $stmt = $pdo->prepare("SELECT COUNT(*) c FROM login_attempts WHERE identifier = ? AND created_at > (NOW() - INTERVAL ? MINUTE)");
+        $stmt->execute([$bucket, $windowMinutes]);
+        return (int)($stmt->fetch()['c'] ?? 0);
+    } catch (PDOException $e) {
+        // login_attempts missing (migration not run yet): fail open rather than block everyone.
+        return 0;
+    }
+}
+
+// Seconds until the oldest counted request in the bucket leaves the window.
+function rateBucketRetryAfter(PDO $pdo, string $bucket, int $windowMinutes): int {
+    try {
+        $stmt = $pdo->prepare("SELECT GREATEST(1, TIMESTAMPDIFF(SECOND, NOW(), DATE_ADD(MIN(created_at), INTERVAL ? MINUTE))) AS wait
+                               FROM login_attempts WHERE identifier = ? AND created_at > (NOW() - INTERVAL ? MINUTE)");
+        $stmt->execute([$windowMinutes, $bucket, $windowMinutes]);
+        return (int)($stmt->fetch()['wait'] ?? 60);
+    } catch (PDOException $e) {
+        return 60;
+    }
+}
+
+function recordRateHit(PDO $pdo, array $buckets): void {
     try {
         $stmt = $pdo->prepare("INSERT INTO login_attempts (identifier, created_at) VALUES (?, NOW())");
-        $stmt->execute([$identifier]);
+        foreach ($buckets as $bucket) {
+            $stmt->execute([$bucket]);
+        }
     } catch (PDOException $e) {
-        // ignore if table missing
+        // login_attempts missing: nothing to record against.
+    }
+}
+
+// Logins call this only for failed attempts, so successful logins never use up the quota.
+function recordRateFailure(PDO $pdo, string $route, string $account): void {
+    recordRateHit($pdo, rateBuckets($route, $account));
+}
+
+function rejectRateLimited(PDO $pdo, string $route, string $scope, string $account, int $retryAfter): void {
+    ensureRateLimitEvents($pdo);
+    $ip = clientIp();
+    $masked = maskAccountValue($account);
+    error_log("[abuse] 429 route=$route scope=$scope ip=$ip account=" . ($masked ?? '-') . " retry_after={$retryAfter}s");
+    try {
+        $stmt = $pdo->prepare("INSERT INTO rate_limit_events (route, scope, client_ip, account, retry_after_seconds) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$route, $scope, $ip, $masked, $retryAfter]);
+        $stmt = $pdo->prepare("SELECT COUNT(*) c FROM rate_limit_events WHERE client_ip = ? AND created_at > (NOW() - INTERVAL 1 HOUR)");
+        $stmt->execute([$ip]);
+        $blocks = (int)$stmt->fetch()['c'];
+        if ($blocks >= RATE_REPEAT_THRESHOLD) {
+            error_log("[abuse] REPEATED ip=$ip blocks_last_hour=$blocks latest_route=$route");
+        }
+    } catch (PDOException $e) {
+        error_log('[abuse] could not record event: ' . $e->getMessage());
+    }
+    $minutes = (int)ceil($retryAfter / 60);
+    header('Retry-After: ' . $retryAfter);
+    http_response_code(429);
+    echo json_encode([
+        'code' => 'RATE_LIMITED',
+        'message' => 'Trop de tentatives. Réessayez dans ' . $minutes . ' minute' . ($minutes > 1 ? 's' : '') . '.',
+        'retryAfterSeconds' => $retryAfter,
+    ]);
+    exit;
+}
+
+// Checks the IP limit, then the account limit. Exits with 429 when either is exhausted.
+// $countEvery = true also records this request (signup and public forms count every attempt).
+function enforceRateLimit(PDO $pdo, string $route, string $account, int $perIp, int $perAccount, int $windowMinutes, bool $countEvery): void {
+    $buckets = rateBuckets($route, $account);
+    $limits = ['ip' => $perIp, 'account' => $perAccount];
+    foreach ($buckets as $scope => $bucket) {
+        if (rateBucketCount($pdo, $bucket, $windowMinutes) >= $limits[$scope]) {
+            rejectRateLimited($pdo, $route, $scope, $account, rateBucketRetryAfter($pdo, $bucket, $windowMinutes));
+        }
+    }
+    if ($countEvery) {
+        recordRateHit($pdo, $buckets);
     }
 }
 
@@ -270,13 +378,7 @@ if ($request_uri === '/api/settings' && $method == 'POST') {
 if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
     $email = trim($input['email'] ?? '');
     $password = (string)($input['password'] ?? '');
-    $identifier = clientIp() . '|' . strtolower($email);
-
-    if (rateLimited($pdo, $identifier)) {
-        http_response_code(429);
-        echo json_encode(['message' => 'Too many attempts. Please try again later.']);
-        exit;
-    }
+    enforceRateLimit($pdo, 'auth.login', $email, 30, 8, 15, false);
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
@@ -302,7 +404,7 @@ if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
             ]
         ]);
     } else {
-        recordAttempt($pdo, $identifier);
+        recordRateFailure($pdo, 'auth.login', $email);
         http_response_code(400);
         echo json_encode(['message' => 'Invalid credentials']);
     }
@@ -313,13 +415,7 @@ if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
 if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') {
     $username = trim($input['username'] ?? '');
     $password = (string)($input['password'] ?? '');
-    $identifier = clientIp() . '|student|' . strtolower($username);
-
-    if (rateLimited($pdo, $identifier)) {
-        http_response_code(429);
-        echo json_encode(['message' => 'Too many attempts. Please try again later.']);
-        exit;
-    }
+    enforceRateLimit($pdo, 'auth.student_login', $username, 30, 8, 15, false);
 
     // The login field is presented as an identifier in the UI. Accept the
     // student's username or email so administrators can share either value.
@@ -345,7 +441,7 @@ if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') 
 
         echo json_encode(['token' => $token, 'user' => $student]);
     } else {
-        recordAttempt($pdo, $identifier);
+        recordRateFailure($pdo, 'auth.student_login', $username);
         http_response_code(400);
         echo json_encode(['message' => 'Invalid credentials']);
     }
@@ -380,11 +476,26 @@ if (($request_uri == '/api/auth/me') && $method == 'GET') {
     exit;
 }
 
+// 1d. SECURITY MONITOR (admin view of rate-limit blocks)
+if ($request_uri === '/api/admin/abuse' && $method == 'GET') {
+    requireAdmin($secret_key);
+    ensureRateLimitEvents($pdo);
+    $offenders = $pdo->query("SELECT client_ip, COUNT(*) AS blocks, MAX(created_at) AS last_seen, GROUP_CONCAT(DISTINCT route) AS routes
+                              FROM rate_limit_events WHERE created_at > (NOW() - INTERVAL 7 DAY)
+                              GROUP BY client_ip ORDER BY blocks DESC LIMIT 50")->fetchAll();
+    $recent = $pdo->query("SELECT route, scope, client_ip, account, retry_after_seconds, created_at
+                           FROM rate_limit_events ORDER BY created_at DESC LIMIT 100")->fetchAll();
+    echo json_encode(['offenders' => $offenders, 'recent' => $recent]);
+    exit;
+}
+
 // 2. REGISTER
 if (strpos($request_uri, '/api/auth/register') !== false && $method == 'POST') {
     $username = trim($input['username'] ?? '');
     $email = trim($input['email'] ?? '');
     $password = (string)($input['password'] ?? '');
+
+    enforceRateLimit($pdo, 'auth.register', $email, 10, 3, 60, true);
 
     if (!$username || !filter_var($email, FILTER_VALIDATE_EMAIL) || !isAcceptablePassword($password)) {
         http_response_code(400);
@@ -1025,6 +1136,7 @@ if (strpos($request_uri, '/api/messages') !== false) {
     if ($method == 'POST') {
         $name = trim((string)($input['name'] ?? ''));
         $phone = trim((string)($input['phone'] ?? ''));
+        enforceRateLimit($pdo, 'contact.message', preg_replace('/\D/', '', (string)($input['phone'] ?? '')), 10, 3, 60, true);
         $type = trim((string)($input['type'] ?? ($input['goal'] ?? 'General')));
         $message = trim((string)($input['message'] ?? ''));
 
@@ -1072,6 +1184,7 @@ if (strpos($request_uri, '/api/coaching-requests') !== false) {
     if ($method == 'POST') {
         $name = trim((string)($input['name'] ?? ''));
         $phone = trim((string)($input['phone'] ?? ''));
+        enforceRateLimit($pdo, 'contact.coaching_request', preg_replace('/\D/', '', (string)($input['phone'] ?? '')), 10, 3, 60, true);
         $grade = trim((string)($input['grade'] ?? ''));
 
         if ($name === '' || $phone === '' || $grade === '') {
@@ -1106,6 +1219,7 @@ if (strpos($request_uri, '/api/orientation-requests') !== false) {
     if ($method == 'POST') {
         $name = trim((string)($input['name'] ?? ''));
         $phone = trim((string)($input['phone'] ?? ''));
+        enforceRateLimit($pdo, 'contact.orientation_request', preg_replace('/\D/', '', (string)($input['phone'] ?? '')), 10, 3, 60, true);
         $filiere = trim((string)($input['filiere'] ?? ''));
         $schoolType = trim((string)($input['schoolType'] ?? ''));
         $city = trim((string)($input['city'] ?? ''));

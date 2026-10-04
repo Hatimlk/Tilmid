@@ -388,3 +388,16 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_identifier_created (identifier, created_at)
 );
+
+-- Rate-limit blocks (login, signup, public forms). Written by rateLimit.js; kept 90 days.
+CREATE TABLE IF NOT EXISTS rate_limit_events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    route VARCHAR(100) NOT NULL,
+    scope ENUM('ip', 'account') NOT NULL,
+    client_ip VARCHAR(64) NOT NULL,
+    account VARCHAR(255) DEFAULT NULL,
+    retry_after_seconds INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ip_created (client_ip, created_at),
+    INDEX idx_created (created_at)
+);
