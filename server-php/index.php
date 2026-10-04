@@ -33,10 +33,38 @@ function getBearerToken(): ?string {
     return null;
 }
 
+// Tokens last a day, so the account behind one is re-checked on every request: a suspended,
+// archived or deleted student (or a demoted admin) loses access immediately, not at expiry.
+// Returns the claims with the role the database currently holds, or null.
+// Fingerprint of a stored password hash, bound into each token as 'pwv'. An admin password reset
+// changes the hash, so every session issued before the reset stops working on its next request.
+// Keyed with the JWT secret so the token reveals nothing about the stored hash.
+function passwordFingerprint(string $passwordHash, string $secret_key): string {
+    return substr(hash_hmac('sha256', $passwordHash, $secret_key), 0, 32);
+}
+
+function refreshAccount(array $claims, string $secret_key): ?array {
+    global $pdo;
+    if (($claims['role'] ?? '') === 'student') {
+        $stmt = $pdo->prepare("SELECT password_hash FROM students WHERE id = ? AND status = 'active'");
+        $stmt->execute([$claims['id']]);
+        $row = $stmt->fetch();
+        if (!$row || !hash_equals(passwordFingerprint((string)$row['password_hash'], $secret_key), (string)($claims['pwv'] ?? ''))) return null;
+        return $claims;
+    }
+    $stmt = $pdo->prepare("SELECT role, password_hash FROM users WHERE id = ?");
+    $stmt->execute([$claims['id']]);
+    $row = $stmt->fetch();
+    if (!$row || !hash_equals(passwordFingerprint((string)$row['password_hash'], $secret_key), (string)($claims['pwv'] ?? ''))) return null;
+    $claims['role'] = $row['role'];
+    return $claims;
+}
+
 function currentUser(string $secret_key): ?array {
     $token = getBearerToken();
     if (!$token) return null;
-    return JWT::decode($token, $secret_key);
+    $claims = JWT::decode($token, $secret_key);
+    return $claims ? refreshAccount($claims, $secret_key) : null;
 }
 
 function requireAuth(string $secret_key): array {
@@ -152,6 +180,22 @@ function clientIp(): string {
     return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 }
 
+// bcrypt only reads the first 72 bytes, so a longer password is refused rather than silently weakened.
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_BYTES = 72;
+function isAcceptablePassword(string $password): bool {
+    $length = strlen($password);
+    return $length >= PASSWORD_MIN_LENGTH && $length <= PASSWORD_MAX_BYTES;
+}
+
+// Verified against when no account matches, so a failed login takes as long for an unknown
+// email as for a wrong password and response timing can't reveal which accounts exist.
+function verifyAgainstDummy(string $password): void {
+    static $dummyHash = null;
+    $dummyHash ??= password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+    password_verify($password, $dummyHash);
+}
+
 // ---------------- ROUTING ---------------- //
 
 // 0. ROOT CHECK
@@ -230,10 +274,12 @@ if (strpos($request_uri, '/api/auth/login') !== false && $method == 'POST') {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
+    if (!$user) verifyAgainstDummy($password);
     if ($user && password_verify($password, $user['password_hash'])) {
         $payload = [
             'id' => $user['id'],
             'role' => $user['role'],
+            'pwv' => passwordFingerprint($user['password_hash'], $secret_key),
             'exp' => time() + (60 * 60 * 24) // 1 day
         ];
         $token = JWT::encode($payload, $secret_key);
@@ -273,6 +319,7 @@ if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') 
     $stmt->execute([$username, $username]);
     $student = $stmt->fetch();
 
+    if (!$student || empty($student['password_hash'])) verifyAgainstDummy($password);
     if ($student && !empty($student['password_hash']) && password_verify($password, $student['password_hash'])) {
         if ($student['status'] !== 'active') {
             http_response_code(403);
@@ -282,6 +329,7 @@ if (strpos($request_uri, '/api/students/login') !== false && $method == 'POST') 
         $payload = [
             'id' => $student['id'],
             'role' => 'student',
+            'pwv' => passwordFingerprint($student['password_hash'], $secret_key),
             'exp' => time() + (60 * 60 * 24)
         ];
         $token = JWT::encode($payload, $secret_key);
@@ -330,9 +378,9 @@ if (strpos($request_uri, '/api/auth/register') !== false && $method == 'POST') {
     $email = trim($input['email'] ?? '');
     $password = (string)($input['password'] ?? '');
 
-    if (!$username || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
+    if (!$username || !filter_var($email, FILTER_VALIDATE_EMAIL) || !isAcceptablePassword($password)) {
         http_response_code(400);
-        echo json_encode(['message' => 'Valid username, email and a password of at least 8 characters are required']);
+        echo json_encode(['message' => 'Valid username, email and a password of 8 to 72 characters are required']);
         exit;
     }
 
@@ -380,6 +428,11 @@ if ($request_uri === '/api/users' && $method == 'POST') {
         echo json_encode(['message' => 'Username, email and password are required']);
         exit;
     }
+    if ($password !== null && $password !== '' && !isAcceptablePassword((string)$password)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Password must be 8 to 72 characters']);
+        exit;
+    }
 
     try {
         if ($isUpdate) {
@@ -395,6 +448,7 @@ if ($request_uri === '/api/users' && $method == 'POST') {
                 }
             }
             if ($password) {
+                logActivity($pdo, $admin, 'password_reset', 'user', $username ?: $email, []);
                 $stmt = $pdo->prepare("UPDATE users SET username=?, email=?, password_hash=?, role=? WHERE id=?");
                 $stmt->execute([$username, $email, password_hash($password, PASSWORD_DEFAULT), $nextRole, $id]);
             } else {
@@ -583,6 +637,11 @@ if ($request_uri === '/api/students' && $method == 'POST') {
     $status = $input['status'] ?? 'active';
     $avatar = $input['avatar'] ?? null;
     $password = $input['password'] ?? null; // optional - only set/changed when provided
+    if ($password !== null && $password !== '' && !isAcceptablePassword((string)$password)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Password must be 8 to 72 characters']);
+        exit;
+    }
     $validPackages = ['essentiel', 'boost', 'premium'];
     $package = in_array($input['package'] ?? null, $validPackages, true) ? $input['package'] : null;
     $coachIdProvided = array_key_exists('coachId', $input);
@@ -596,6 +655,7 @@ if ($request_uri === '/api/students' && $method == 'POST') {
             $nextCoachId = $coachIdProvided ? $coachId : ($existing['coach_id'] ?? null);
 
             if ($password) {
+                logActivity($pdo, $admin, 'password_reset', 'student', $name, []);
                 $stmt = $pdo->prepare("UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=?, coach_id=? WHERE id=?");
                 $stmt->execute([$name, $username, $email, $grade, $status, $avatar, password_hash($password, PASSWORD_DEFAULT), $package, $coachName, $nextCoachId, $id]);
             } else {

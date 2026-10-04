@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -17,6 +18,24 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 const JWT_SECRET = process.env.JWT_SECRET;
+if (JWT_SECRET.length < 32) {
+    console.error('JWT_SECRET must be at least 32 characters. Refusing to start with a weak signing key.');
+    process.exit(1);
+}
+
+// Fingerprint of a stored password hash, bound into each token as 'pwv'. An admin password reset
+// changes the hash, so every session issued before the reset stops working on its next request.
+// Keyed with JWT_SECRET so the token never reveals anything about the stored hash.
+const passwordFingerprint = (hash) => crypto.createHmac('sha256', JWT_SECRET).update(String(hash)).digest('hex').slice(0, 32);
+
+// Behind a reverse proxy (cPanel/Passenger, Apache, nginx) every request arrives from the
+// proxy's IP, which would put all visitors in one rate-limit bucket. TRUST_PROXY=1 (hop count)
+// or TRUST_PROXY=true makes Express read the real client IP from X-Forwarded-For. Leave it unset
+// when the API is exposed directly, otherwise clients can spoof that header to dodge the limiter.
+if (process.env.TRUST_PROXY) {
+    const trustProxy = process.env.TRUST_PROXY;
+    app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy === 'true');
+}
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://tilmide.ma,https://www.tilmide.ma')
     .split(',')
@@ -40,26 +59,69 @@ app.use((req, res, next) => {
     next();
 });
 
+// Only failed attempts count, and each client IP is limited per account it targets, so a
+// shared network (school Wi-Fi, NAT) doesn't lock out everyone and a single visitor can't
+// brute-force one account indefinitely.
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 8,
     standardHeaders: true,
     legacyHeaders: false,
+    skipSuccessfulRequests: true,
+    keyGenerator: (req) => `${req.ip}|${String(req.body?.email ?? req.body?.username ?? '').trim().toLowerCase()}`,
     message: { message: 'Too many attempts. Please try again later.' },
 });
 
+// Session lifetime for every issued token. The account is re-checked on each request too (see
+// authenticate), so suspending, archiving or deleting an account takes effect immediately.
+const SESSION_TTL = '1d';
+const MIN_PASSWORD_LENGTH = 8;
+// bcrypt silently truncates input beyond 72 bytes, so a longer password is rejected rather than weakened.
+const MAX_PASSWORD_BYTES = 72;
+const isAcceptablePassword = (pw) =>
+    typeof pw === 'string' && pw.length >= MIN_PASSWORD_LENGTH && Buffer.byteLength(pw, 'utf8') <= MAX_PASSWORD_BYTES;
+
+// Compared against when no account matches, so a failed login takes as long for an unknown
+// email as for a wrong password and response timing can't reveal which accounts exist.
+const DUMMY_HASH = bcrypt.hashSync('timing-equalizer-not-a-real-password', 10);
+
 /* ---------------- AUTH MIDDLEWARE ---------------- */
 
-function authenticate(req, res, next) {
+// Confirms the account behind a token still exists and is allowed to act. Returns the role
+// the database says the account has, or null. This stops a token from outliving the access
+// it was issued with (suspended student, deleted user, admin demoted to user).
+async function loadActiveAccount(claims) {
+    if (claims.role === 'student') {
+        const [rows] = await db.query("SELECT password_hash FROM students WHERE id = ? AND status = 'active'", [claims.id]);
+        if (!rows[0] || claims.pwv !== passwordFingerprint(rows[0].password_hash)) return null;
+        return 'student';
+    }
+    const [rows] = await db.query('SELECT role, password_hash FROM users WHERE id = ?', [claims.id]);
+    if (!rows[0] || claims.pwv !== passwordFingerprint(rows[0].password_hash)) return null;
+    return rows[0].role;
+}
+
+async function authenticate(req, res, next) {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(401).json({ message: 'Unauthorized' });
-        req.user = decoded;
-        next();
-    });
+    let claims;
+    try {
+        claims = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    } catch {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    try {
+        const role = await loadActiveAccount(claims);
+        if (!role) return res.status(401).json({ message: 'Unauthorized' });
+        req.user = { ...claims, role };
+    } catch (err) {
+        console.error('Auth account check failed:', err.message);
+        return res.status(500).json({ message: 'Server error' });
+    }
+    next();
 }
 
 function requireAdmin(req, res, next) {
@@ -192,8 +254,8 @@ app.post('/api/settings', requireAdmin, async (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
     const { username, email, password } = req.body;
 
-    if (!username || !email || !/^\S+@\S+\.\S+$/.test(email) || !password || password.length < 8) {
-        return res.status(400).json({ message: 'Valid username, email and a password of at least 8 characters are required' });
+    if (typeof username !== 'string' || !username.trim() || typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email) || !isAcceptablePassword(password)) {
+        return res.status(400).json({ message: 'Valid username, email and a password of 8 to 72 characters are required' });
     }
 
     try {
@@ -219,25 +281,25 @@ app.post('/api/auth/register', async (req, res) => {
 
 // Login
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
-    const { email, password } = req.body;
+    const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     try {
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length === 0) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
         const user = users[0];
-        const isMatch = await bcrypt.compare(password, user.password_hash);
+        const isMatch = await bcrypt.compare(password, user ? user.password_hash : DUMMY_HASH);
 
-        if (!isMatch) {
+        if (!user || !isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         const token = jwt.sign(
-            { id: user.id, role: user.role },
+            { id: user.id, role: user.role, pwv: passwordFingerprint(user.password_hash) },
             JWT_SECRET,
-            { expiresIn: '1d' }
+            { algorithm: 'HS256', expiresIn: SESSION_TTL }
         );
 
         res.json({
@@ -257,8 +319,11 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 
 // Student login
 app.post('/api/students/login', loginLimiter, async (req, res) => {
-    const username = String(req.body.username || '').trim();
-    const { password } = req.body;
+    const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     try {
         // Match the UI's generic "identifier" field: students may use their
@@ -266,19 +331,15 @@ app.post('/api/students/login', loginLimiter, async (req, res) => {
         const [students] = await db.query('SELECT * FROM students WHERE username = ? OR email = ? LIMIT 1', [username, username]);
         const student = students[0];
 
-        if (!student || !student.password_hash) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
-        const isMatch = await bcrypt.compare(password, student.password_hash);
-        if (!isMatch) {
+        const isMatch = await bcrypt.compare(password, student?.password_hash || DUMMY_HASH);
+        if (!student || !student.password_hash || !isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
         if (student.status !== 'active') {
             return res.status(403).json({ message: 'Student account is not active' });
         }
 
-        const token = jwt.sign({ id: student.id, role: 'student' }, JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: student.id, role: 'student', pwv: passwordFingerprint(student.password_hash) }, JWT_SECRET, { algorithm: 'HS256', expiresIn: SESSION_TTL });
         delete student.password_hash;
 
         res.json({ token, user: student });
@@ -327,6 +388,9 @@ app.post('/api/users', requireAdmin, async (req, res) => {
     if (!isUpdate && (!username || !email || !password)) {
         return res.status(400).json({ message: 'Username, email and password are required' });
     }
+    if (password && !isAcceptablePassword(password)) {
+        return res.status(400).json({ message: 'Password must be 8 to 72 characters' });
+    }
 
     try {
         if (isUpdate) {
@@ -339,6 +403,7 @@ app.post('/api/users', requireAdmin, async (req, res) => {
             }
             if (password) {
                 const hash = await bcrypt.hash(password, 10);
+                await logActivity(req.user.id, 'password_reset', 'user', username || email, {});
                 await db.query('UPDATE users SET username=?, email=?, password_hash=?, role=? WHERE id=?', [username, email, hash, nextRole, id]);
             } else {
                 await db.query('UPDATE users SET username=?, email=?, role=? WHERE id=?', [username, email, nextRole, id]);
@@ -511,6 +576,9 @@ app.post('/api/students', requireAdmin, async (req, res) => {
     const { id, name, username, email, grade, status, avatar, password } = req.body;
     const pkg = normalizePackage(req.body.package);
     const isUpdate = id && /^\d+$/.test(String(id));
+    if (password && !isAcceptablePassword(password)) {
+        return res.status(400).json({ message: 'Password must be 8 to 72 characters' });
+    }
     const { coachId, coachName } = await resolveCoach(req.body.coachId, req.body.coachName);
 
     try {
@@ -521,6 +589,7 @@ app.post('/api/students', requireAdmin, async (req, res) => {
 
             if (password) {
                 const hash = await bcrypt.hash(password, 10);
+                await logActivity(req.user.id, 'password_reset', 'student', name, {});
                 await db.query(
                     'UPDATE students SET name=?, username=?, email=?, grade=?, status=?, avatar_url=?, password_hash=?, package=?, coach_name=?, coach_id=? WHERE id=?',
                     [name, username, email, grade, status, avatar, hash, pkg, coachName, nextCoachId, id]

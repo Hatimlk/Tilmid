@@ -10,7 +10,10 @@
  *    never hardcodes or echoes it
  *
  * Usage: set ADMIN_EMAIL / ADMIN_BOOTSTRAP_PASSWORD in server-php/.env, then
- * visit /seed_admin.php?secret=YOUR_MIGRATION_SECRET once.
+ * send one POST to /seed_admin.php with the header
+ *   X-Setup-Secret: <MIGRATION_SECRET>
+ * (e.g. curl -X POST -H "X-Setup-Secret: ..." https://tilmide.ma/api/seed_admin.php).
+ * The secret is never accepted in the URL: query strings end up in server access logs.
  * DELETE THIS FILE from the server immediately afterward.
  */
 
@@ -20,7 +23,12 @@ require_once __DIR__ . '/db.php';
 header('Content-Type: application/json');
 
 $expected = require_env('MIGRATION_SECRET');
-$provided = $_GET['secret'] ?? '';
+if (isset($_GET['secret'])) {
+    http_response_code(400);
+    echo json_encode(['message' => 'Send the secret in the X-Setup-Secret header, not the URL']);
+    exit;
+}
+$provided = $_SERVER['HTTP_X_SETUP_SECRET'] ?? '';
 
 if (!hash_equals($expected, (string)$provided)) {
     http_response_code(403);

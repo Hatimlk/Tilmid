@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Save, UserPlus, Edit, Copy, CheckCircle2 } from 'lucide-react';
 import { Student, StudentStatus, MouwakabaPackage, Coach } from '../../types';
 import { dataManager } from '../../utils/dataManager';
+import { PasswordField, passwordProblem } from './PasswordField';
 
 const GRADES = ['Tronc commun', '1ère Bac', '2ème Bac', 'Enseignement supérieur'];
 const STATUS_OPTIONS: { value: StudentStatus; label: string }[] = [
@@ -51,6 +52,11 @@ export const StudentFormModal: React.FC<{
     }
     if (!isEdit && !form.password) {
       setError('Un mot de passe initial est requis pour un nouvel étudiant.');
+      return;
+    }
+    const pwProblem = passwordProblem(form.password || '');
+    if (pwProblem) {
+      setError(pwProblem);
       return;
     }
     setSaving(true);
@@ -171,7 +177,7 @@ export const StudentFormModal: React.FC<{
                 <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">
                   Mot de passe {isEdit && <span className="text-slate-400 font-medium">(laisser vide pour ne pas le modifier)</span>}
                 </label>
-                <input type="text" dir="ltr" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px]" placeholder={isEdit ? '••••••••' : 'Mot de passe initial'} autoComplete="new-password" />
+                <PasswordField value={form.password || ''} onChange={(password) => setForm({ ...form, password })} placeholder={isEdit ? '••••••••' : 'Mot de passe initial'} />
               </div>
 
               <div className="flex gap-3 pt-2">

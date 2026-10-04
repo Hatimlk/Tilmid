@@ -37,8 +37,8 @@ class JWT {
         if (!is_array($decoded)) return null;
 
         // Enforce expiry - previously 'exp' was set at login but never checked here,
-        // so every issued token was valid forever.
-        if (isset($decoded['exp']) && time() >= $decoded['exp']) return null;
+        // so every issued token was valid forever. A token without 'exp' is rejected too.
+        if (!isset($decoded['exp']) || time() >= $decoded['exp']) return null;
 
         return $decoded;
     }

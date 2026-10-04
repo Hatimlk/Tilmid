@@ -6,8 +6,9 @@
  *  3. Hashes any plaintext values left in password_hash (anything not already
  *     a bcrypt digest) with password_hash().
  *
- * Usage: visit /migrate.php?secret=YOUR_MIGRATION_SECRET once after deploying
- * the updated code, then DELETE THIS FILE from the server.
+ * Usage: send one POST to /migrate.php after deploying the updated code with the
+ * header X-Setup-Secret: <MIGRATION_SECRET>, then DELETE THIS FILE from the server.
+ * The secret is never accepted in the URL: query strings end up in server access logs.
  *
  * MIGRATION_SECRET must be set in server-php/.env.
  */
@@ -18,7 +19,12 @@ require_once __DIR__ . '/db.php';
 header('Content-Type: application/json');
 
 $expected = require_env('MIGRATION_SECRET');
-$provided = $_GET['secret'] ?? '';
+if (isset($_GET['secret'])) {
+    http_response_code(400);
+    echo json_encode(['message' => 'Send the secret in the X-Setup-Secret header, not the URL']);
+    exit;
+}
+$provided = $_SERVER['HTTP_X_SETUP_SECRET'] ?? '';
 
 if (!hash_equals($expected, (string)$provided)) {
     http_response_code(403);
