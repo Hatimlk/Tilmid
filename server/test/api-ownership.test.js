@@ -37,7 +37,8 @@ const TABLES = [
   'tool_options', 'platform_settings', 'notifications', 'login_attempts',
 ];
 
-const PASSWORDS = { admin: 'AdminPass123', a: 'StudentA123', b: 'StudentB123', c: 'StudentC123' };
+// Fresh random passwords every run: nothing secret-shaped lives in the repository.
+const PASSWORDS = Object.fromEntries(['admin', 'a', 'b', 'c'].map((k) => [k, require('crypto').randomBytes(12).toString('base64url')]));
 
 // Shared fixtures, filled in by before().
 const F = {};

@@ -35,3 +35,13 @@ server-php/uploads/*
 *.njsproj
 *.sln
 *.sw?
+
+# Credentials and key material - never commit, even as backups
+*.bak
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets/
+.secrets
