@@ -329,6 +329,18 @@ if (($request_uri == '/api/' || $request_uri == '/api') && $method == 'GET') {
     exit;
 }
 
+// Lightweight public readiness endpoint used after deployment.
+if ($request_uri === '/api/health' && $method === 'GET') {
+    try {
+        $pdo->query('SELECT 1');
+        echo json_encode(['status' => 'ok', 'database' => 'connected']);
+    } catch (PDOException $e) {
+        http_response_code(503);
+        echo json_encode(['status' => 'error', 'database' => 'unavailable']);
+    }
+    exit;
+}
+
 // 0b. PLATFORM SETTINGS (admin "Paramètres" module)
 // Public GET: the public Footer needs this on every page load, unauthenticated
 // visitors included. Falls back to the current hardcoded values if the row is
@@ -347,7 +359,8 @@ if ($request_uri === '/api/settings' && $method == 'GET') {
     try {
         $stmt = $pdo->query("SELECT * FROM platform_settings WHERE id = 1");
         $row = $stmt->fetch();
-        echo json_encode(array_merge($SETTINGS_DEFAULTS, $row ?: []));
+        $stored = array_filter($row ?: [], static fn($value) => $value !== null && $value !== '');
+        echo json_encode(array_merge($SETTINGS_DEFAULTS, $stored));
     } catch (PDOException $e) {
         echo json_encode($SETTINGS_DEFAULTS);
     }

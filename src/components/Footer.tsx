@@ -26,7 +26,12 @@ export const Footer: React.FC = () => {
 
   useEffect(() => {
     dataManager.getSettings()
-      .then((s) => setSettings({ ...FALLBACK_SETTINGS, ...s }))
+      .then((s) => {
+        const nonEmptySettings = Object.fromEntries(
+          Object.entries(s ?? {}).filter(([, value]) => typeof value === 'string' && value.trim() !== ''),
+        ) as Partial<PlatformSettings>;
+        setSettings({ ...FALLBACK_SETTINGS, ...nonEmptySettings });
+      })
       .catch(() => { /* keep fallback */ });
   }, []);
 
