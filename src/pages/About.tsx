@@ -49,7 +49,7 @@ export const About: React.FC = () => {
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-blob"></div>
           <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+          <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.25) 0.7px, transparent 0.7px)', backgroundSize: '20px 20px' }} />
         </div>
 
         <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
@@ -251,7 +251,7 @@ export const About: React.FC = () => {
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-slate-900">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-blue-600/20 opacity-30"></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]"></div>
+          <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.28) 0.7px, transparent 0.7px)', backgroundSize: '20px 20px' }} />
         </div>
 
         <div className="container mx-auto px-4 relative z-10 text-center">

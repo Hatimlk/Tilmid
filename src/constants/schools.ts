@@ -12,7 +12,7 @@ import schoolsDataset from '../data/ecoles_superieures_maroc_2026_complet.json';
  * wherever they're shown, rather than being guessed.
  */
 
-export const toSlug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+export const toSlug = (s: string | null | undefined) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 export type SchoolType = 'public' | 'private';
 
@@ -177,7 +177,7 @@ export const EMPTY_FILTERS: SchoolFilters = {
   query: '',
 };
 
-const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const normalize = (s: string | null | undefined) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 export const matchesQuery = (school: School, query: string): boolean => {
   if (!query.trim()) return true;

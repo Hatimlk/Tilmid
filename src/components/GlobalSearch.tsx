@@ -22,7 +22,7 @@ const usePageIndex = (t: (key: string) => string) => useMemo(() => ([
   { keywords: ['apropos', 'about', 'qui sommes'], label: t('footer.aboutUs'), meta: t('search.metaPage'), to: '/about' },
 ]), [t]);
 
-const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const normalize = (s: string | null | undefined) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 export const GlobalSearch: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
   const { t } = useTranslation();

@@ -2,12 +2,12 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
 interface SEOProps {
-    title: string;
-    description: string;
+    title: string | null | undefined;
+    description: string | null | undefined;
     keywords?: string;
-    image?: string;
+    image?: string | null;
     /** Canonical path or absolute URL. Defaults to the current route path (no query string). */
-    url?: string;
+    url?: string | null;
     type?: string;
     /** Extra JSON-LD blocks (FAQPage, BreadcrumbList, Service...) for this page, in addition to the Organization schema below. */
     jsonLd?: Record<string, any>[];
@@ -32,21 +32,24 @@ const SEO = ({
 }: SEOProps) => {
     const { pathname } = useLocation();
     const siteTitle = SITE_TITLE;
-    const cleanTitle = title.replace(BRAND_SUFFIX, '').trim();
+    const safeTitle = typeof title === 'string' && title.trim() ? title : SITE_TITLE;
+    const safeDescription = typeof description === 'string' ? description : '';
+    const safeImage = typeof image === 'string' && image ? image : '/og-image.jpg';
+    const cleanTitle = safeTitle.replace(BRAND_SUFFIX, '').trim();
     const fullTitle = cleanTitle === siteTitle ? siteTitle : `${cleanTitle} | ${siteTitle}`;
 
     // Ensure absolute URL for image
-    const fullImage = image.startsWith('http') ? image : `${SITE_URL}${image}`;
+    const fullImage = safeImage.startsWith('http') ? safeImage : `${SITE_URL}${safeImage}`;
     // Canonical: explicit url, otherwise the current route path. Query strings
     // (filters, tracking params) are never part of the canonical URL.
-    const canonicalPath = url ?? (pathname.replace(/\/+$/, '') || '/');
+    const canonicalPath = typeof url === 'string' && url ? url : (pathname || '/').replace(/\/+$/, '') || '/';
     const fullUrl = canonicalPath.startsWith('http') ? canonicalPath : `${SITE_URL}${canonicalPath}`;
 
     return (
         <Helmet>
             {/* Standard metadata tags */}
             <title>{fullTitle}</title>
-            <meta name='description' content={description} />
+            <meta name='description' content={safeDescription} />
             {keywords && <meta name='keywords' content={keywords} />}
             <link rel="canonical" href={fullUrl} />
 
@@ -57,7 +60,7 @@ const SEO = ({
             {/* Open Graph tags (Facebook, LinkedIn, etc.) */}
             <meta property="og:type" content={type} />
             <meta property="og:title" content={fullTitle} />
-            <meta property="og:description" content={description} />
+            <meta property="og:description" content={safeDescription} />
             <meta property="og:image" content={fullImage} />
             <meta property="og:url" content={fullUrl} />
             <meta property="og:site_name" content={siteTitle} />
@@ -65,7 +68,7 @@ const SEO = ({
             {/* Twitter Card tags */}
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content={fullTitle} />
-            <meta name="twitter:description" content={description} />
+            <meta name="twitter:description" content={safeDescription} />
             <meta name="twitter:image" content={fullImage} />
 
             {/* GEO Tags (Local SEO for Morocco) */}

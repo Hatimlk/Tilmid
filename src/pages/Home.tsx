@@ -518,7 +518,10 @@ export const Home: React.FC = () => {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob"></div>
           <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[120px] mix-blend-multiply opacity-50 animate-blob animation-delay-2000"></div>
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-multiply"></div>
+          <div
+            className="absolute inset-0 opacity-[0.18]"
+            style={{ backgroundImage: 'radial-gradient(rgba(59,130,246,0.22) 0.7px, transparent 0.7px)', backgroundSize: '18px 18px' }}
+          />
         </div>
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           <Reveal className="max-w-3xl mx-auto mb-12 text-center space-y-5">
