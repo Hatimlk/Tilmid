@@ -66,7 +66,7 @@ const AdminShell: React.FC = () => {
         onCloseMobile={() => setMobileOpen(false)}
       />
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className={`flex-1 min-w-0 flex flex-col transition-[margin] duration-200 ${collapsed ? 'lg:ms-[76px]' : 'lg:ms-[264px]'}`}>
         <AdminTopbar
           onOpenMobileSidebar={() => setMobileOpen(true)}
           onOpenSearch={() => setSearchOpen(true)}

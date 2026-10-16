@@ -180,7 +180,7 @@ export const AdminSidebar: React.FC<{
   onCloseMobile?: () => void;
 }> = ({ collapsed, onToggleCollapse, onLogout, mobileOpen, onCloseMobile }) => (
   <>
-    <aside className={`hidden lg:block shrink-0 sticky top-0 h-screen transition-all duration-200 ${collapsed ? 'w-[76px]' : 'w-[264px]'}`}>
+    <aside className={`hidden lg:block fixed inset-y-0 start-0 z-40 h-screen transition-all duration-200 ${collapsed ? 'w-[76px]' : 'w-[264px]'}`}>
       <SidebarContent collapsed={collapsed} onToggleCollapse={onToggleCollapse} onLogout={onLogout} />
     </aside>
 

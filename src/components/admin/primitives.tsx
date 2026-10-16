@@ -161,22 +161,26 @@ export const ConfirmDialog: React.FC<{
   description: string;
   confirmLabel: string;
   tone?: 'default' | 'danger';
-  onConfirm: () => void;
+  loading?: boolean;
+  error?: string | null;
+  onConfirm: () => void | Promise<void> | null;
   onCancel: () => void;
-}> = ({ open, title, description, confirmLabel, tone = 'default', onConfirm, onCancel }) => {
+}> = ({ open, title, description, confirmLabel, tone = 'default', loading = false, error, onConfirm, onCancel }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true">
       <div className="bg-white rounded-[20px] w-full max-w-sm shadow-2xl p-6">
         <h3 className="font-black text-slate-900 text-[17px] mb-2">{title}</h3>
         <p className="text-slate-500 text-[13.5px] font-medium leading-relaxed mb-6">{description}</p>
+        {error && <p className="-mt-3 mb-4 rounded-xl bg-rose-50 px-3 py-2.5 text-[12px] font-bold text-rose-700">{error}</p>}
         <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 h-11 rounded-xl border border-slate-200 font-bold text-[13px] text-slate-600 hover:bg-slate-50">Annuler</button>
+          <button disabled={loading} onClick={onCancel} className="flex-1 h-11 rounded-xl border border-slate-200 font-bold text-[13px] text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">Annuler</button>
           <button
+            disabled={loading}
             onClick={onConfirm}
-            className={`flex-1 h-11 rounded-xl font-bold text-[13px] text-white ${tone === 'danger' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-900 hover:bg-slate-800'}`}
+            className={`flex-1 min-h-11 rounded-xl px-3 font-bold text-[13px] text-white disabled:cursor-not-allowed disabled:opacity-60 ${tone === 'danger' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-900 hover:bg-slate-800'}`}
           >
-            {confirmLabel}
+            {loading ? 'Suppression…' : confirmLabel}
           </button>
         </div>
       </div>

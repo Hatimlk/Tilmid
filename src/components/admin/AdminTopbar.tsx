@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useAdminData } from '../../context/AdminDataContext';
 import { getPageMeta } from './navigation';
 import { Avatar } from './primitives';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 export const AdminTopbar: React.FC<{
   onOpenMobileSidebar: () => void;
@@ -84,6 +85,10 @@ export const AdminTopbar: React.FC<{
               </button>
             </div>
           )}
+        </div>
+
+        <div className="[&>button]:px-2.5 xl:[&>button]:px-4 [&>button>span]:hidden xl:[&>button>span]:inline">
+          <LanguageSwitcher />
         </div>
 
         <div className="relative" ref={notifRef}>

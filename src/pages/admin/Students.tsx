@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Search, UserPlus, MoreHorizontal, Eye, Edit, Ban, Unlock, Archive, X, Users, Upload,
+  Search, UserPlus, MoreHorizontal, Eye, Edit, Ban, Unlock, Archive, Trash2, X, Users, Upload,
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useAdminOutletContext } from '../../components/admin/AdminLayout';
@@ -37,6 +37,9 @@ export const AdminStudents: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmArchive, setConfirmArchive] = useState<Student | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Student | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
 
   const grades = useMemo(() => Array.from(new Set(students.data.map((s) => s.grade))).sort(), [students.data]);
@@ -75,6 +78,27 @@ export const AdminStudents: React.FC = () => {
     }));
     setSelected(new Set());
     await refreshStudents();
+  };
+
+  const deleteStudent = async () => {
+    if (!confirmDelete || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await dataManager.deleteStudent(confirmDelete.id);
+      setSelected((current) => {
+        const next = new Set(current);
+        next.delete(confirmDelete.id);
+        return next;
+      });
+      await refreshStudents();
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error(error);
+      setDeleteError("La suppression a échoué. Vérifiez votre connexion puis réessayez.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const activeFilterChips = [
@@ -210,6 +234,8 @@ export const AdminStudents: React.FC = () => {
                           {s.status !== 'archived' && (
                             <button onClick={() => { setConfirmArchive(s); setOpenMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 min-h-[40px] rounded-lg text-[13px] font-bold text-rose-600 hover:bg-rose-50"><Archive size={14} /> Archiver</button>
                           )}
+                          <div className="my-1 border-t border-slate-100" />
+                          <button onClick={() => { setConfirmDelete(s); setDeleteError(null); setOpenMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 min-h-[40px] rounded-lg text-[13px] font-bold text-rose-700 hover:bg-rose-50"><Trash2 size={14} /> Supprimer définitivement</button>
                         </div>
                       )}
                     </td>
@@ -229,6 +255,17 @@ export const AdminStudents: React.FC = () => {
         tone="danger"
         onCancel={() => setConfirmArchive(null)}
         onConfirm={async () => { if (confirmArchive) await changeStatus(confirmArchive, 'archived'); setConfirmArchive(null); }}
+      />
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Supprimer définitivement cet étudiant ?"
+        description={`Le compte de ${confirmDelete?.name || 'cet étudiant'} et toutes ses données associées seront supprimés. Cette action est irréversible.`}
+        confirmLabel="Supprimer définitivement"
+        tone="danger"
+        loading={deleting}
+        error={deleteError}
+        onCancel={() => { if (!deleting) { setConfirmDelete(null); setDeleteError(null); } }}
+        onConfirm={deleteStudent}
       />
       <StudentImportModal
         open={importOpen}
