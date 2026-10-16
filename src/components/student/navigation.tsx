@@ -59,7 +59,7 @@ export const getNavSections = (entitlements: Entitlements): NavSection[] => [
 export const StudentSidebar: React.FC<{ active: StudentTab; onSelect: (tab: StudentTab) => void; entitlements: Entitlements }> = ({ active, onSelect, entitlements }) => {
   const sections = getNavSections(entitlements);
   return (
-    <nav aria-label="Navigation espace étudiant" className="hidden lg:block w-[248px] shrink-0 bg-white border-e border-slate-100 min-h-[calc(100vh-64px)] py-6 px-3">
+    <nav aria-label="Navigation espace étudiant" className="hidden lg:block sticky top-[148px] self-start w-[248px] h-[calc(100vh-148px)] shrink-0 overflow-y-auto overscroll-contain bg-white border-e border-slate-100 py-6 px-3">
       {sections.map((section, si) => (
         <div key={si} className={si > 0 ? 'mt-6' : ''}>
           {section.title && <p className="px-3 mb-2 text-[10.5px] font-black uppercase tracking-widest text-slate-400">{section.title}</p>}

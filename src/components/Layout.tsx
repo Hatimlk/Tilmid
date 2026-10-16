@@ -60,7 +60,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
       {!isAdminRoute && !isLoginRoute && <Navbar />}
-      {(isAdminRoute || isStudentArea) && (
+      {isAdminRoute && (
         <div className="fixed top-3 end-16 sm:end-20 z-[90]">
           <LanguageSwitcher />
         </div>

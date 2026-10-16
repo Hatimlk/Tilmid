@@ -105,7 +105,7 @@ export const StudentHeader: React.FC<{
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100 px-4 lg:px-6 h-16 flex items-center justify-between">
+    <header className="sticky top-[76px] lg:top-[84px] z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100 px-4 lg:px-6 h-16 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <button onClick={onOpenMobileMenu} className="lg:hidden w-9 h-9 flex items-center justify-center text-slate-500 -ms-2" aria-label="Ouvrir le menu">
           <Menu size={20} />
