@@ -179,6 +179,9 @@ export interface ProgressOverviewRow {
   goalsTotal: number;
   goalsAtteints: number;
   revisionsLast7d: number;
+  focusedMinutesLast7d: number;
+  planningCompletedLast7d: number;
+  activeDaysLast7d: number;
   habitCount: number;
   habitConsistencyPct: number | null;
 }

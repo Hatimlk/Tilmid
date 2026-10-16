@@ -41,12 +41,15 @@ interface AdminDataContextType {
 }
 
 const AdminDataContext = createContext<AdminDataContextType | null>(null);
+const STUDENT_DATA_SYNC_MS = 30000;
 
 function useResource<T>(initial: T, fetcher: () => Promise<T>) {
   const [state, setState] = useState<Resource<T>>({ data: initial, loading: true, error: false });
 
   const load = useCallback(async () => {
-    setState((s) => ({ ...s, loading: true, error: false }));
+    // Keep existing data visible during background synchronization. Only the
+    // first request should replace the page with its loading skeleton.
+    setState((s) => ({ ...s, loading: s.data === initial, error: false }));
     try {
       const data = await fetcher();
       setState({ data, loading: false, error: false });
@@ -76,6 +79,26 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [collectiveSessions, refreshCollectiveSessions] = useResource<CollectiveSession[]>([], dataManager.getCollectiveSessions);
   const [coachingSessions, refreshCoachingSessions] = useResource<Appointment[]>([], () => dataManager.getCoachingSessions());
   const [coaches, refreshCoaches] = useResource<Coach[]>([], dataManager.getCoaches);
+
+  useEffect(() => {
+    const syncStudentData = () => {
+      if (document.visibilityState === 'hidden') return;
+      void Promise.allSettled([
+        refreshPlans(),
+        refreshCheckins(),
+        refreshProgressOverview(),
+        refreshFeedback(),
+        refreshCoachingSessions(),
+        refreshCollectiveSessions(),
+      ]);
+    };
+    const interval = window.setInterval(syncStudentData, STUDENT_DATA_SYNC_MS);
+    window.addEventListener('focus', syncStudentData);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', syncStudentData);
+    };
+  }, [refreshPlans, refreshCheckins, refreshProgressOverview, refreshFeedback, refreshCoachingSessions, refreshCollectiveSessions]);
 
   return (
     <AdminDataContext.Provider

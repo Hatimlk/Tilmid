@@ -1976,8 +1976,25 @@ if ($request_uri === '/api/admin/progress-overview' && $method == 'GET') {
     }
 
     $revisions = [];
-    foreach ($pdo->query("SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY) GROUP BY student_id") as $row) {
-        $revisions[$row['student_id']] = (int)$row['recent'];
+    foreach ($pdo->query("SELECT student_id, COUNT(*) AS recent, COALESCE(SUM(duration_min), 0) AS focused_minutes FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY) GROUP BY student_id") as $row) {
+        $revisions[$row['student_id']] = ['count' => (int)$row['recent'], 'minutes' => (int)$row['focused_minutes']];
+    }
+
+    $planning = [];
+    foreach ($pdo->query("SELECT student_id, COUNT(*) AS recent FROM timetable_tasks WHERE completed = TRUE AND completed_at > (NOW() - INTERVAL 7 DAY) GROUP BY student_id") as $row) {
+        $planning[$row['student_id']] = (int)$row['recent'];
+    }
+
+    $activeDays = [];
+    $activeDaySql = "SELECT student_id, COUNT(DISTINCT activity_date) AS active_days FROM (
+        SELECT student_id, DATE(COALESCE(completed_at, session_date)) AS activity_date
+        FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY)
+        UNION ALL
+        SELECT student_id, DATE(completed_at) AS activity_date
+        FROM timetable_tasks WHERE completed = TRUE AND completed_at > (NOW() - INTERVAL 7 DAY)
+    ) activity GROUP BY student_id";
+    foreach ($pdo->query($activeDaySql) as $row) {
+        $activeDays[$row['student_id']] = (int)$row['active_days'];
     }
 
     $habits = [];
@@ -1988,11 +2005,12 @@ if ($request_uri === '/api/admin/progress-overview' && $method == 'GET') {
         $habits[$row['student_id']]['daysDone'] += $daysDone;
     }
 
-    $overview = array_map(function ($s) use ($plans, $goals, $revisions, $habits) {
+    $overview = array_map(function ($s) use ($plans, $goals, $revisions, $planning, $activeDays, $habits) {
         $id = $s['id'];
         $plan = $plans[$id] ?? ['total' => 0, 'done' => 0];
         $goal = $goals[$id] ?? ['total' => 0, 'atteints' => 0];
         $habit = $habits[$id] ?? ['count' => 0, 'daysDone' => 0];
+        $revision = $revisions[$id] ?? ['count' => 0, 'minutes' => 0];
         return [
             'studentId' => (int)$id,
             'name' => $s['name'],
@@ -2002,7 +2020,10 @@ if ($request_uri === '/api/admin/progress-overview' && $method == 'GET') {
             'planActionsDone' => $plan['done'],
             'goalsTotal' => $goal['total'],
             'goalsAtteints' => $goal['atteints'],
-            'revisionsLast7d' => $revisions[$id] ?? 0,
+            'revisionsLast7d' => $revision['count'],
+            'focusedMinutesLast7d' => $revision['minutes'],
+            'planningCompletedLast7d' => $planning[$id] ?? 0,
+            'activeDaysLast7d' => $activeDays[$id] ?? 0,
             'habitCount' => $habit['count'],
             'habitConsistencyPct' => $habit['count'] > 0 ? round(($habit['daysDone'] / ($habit['count'] * 7)) * 100) : null,
         ];

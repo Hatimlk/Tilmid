@@ -105,6 +105,9 @@ const mapProgressOverview = (p: any): ProgressOverviewRow => ({
   goalsTotal: p.goalsTotal,
   goalsAtteints: p.goalsAtteints,
   revisionsLast7d: p.revisionsLast7d,
+  focusedMinutesLast7d: Number(p.focusedMinutesLast7d || 0),
+  planningCompletedLast7d: Number(p.planningCompletedLast7d || 0),
+  activeDaysLast7d: Number(p.activeDaysLast7d || 0),
   habitCount: p.habitCount,
   habitConsistencyPct: p.habitConsistencyPct,
 });

@@ -406,12 +406,14 @@ const AdminPlanningTab: React.FC<{ timetable: TimetableTask[] }> = ({ timetable 
   return (
     <div className="space-y-2.5">
       {sorted.map((s) => (
-        <AdminCard key={s.id} className="p-4 flex items-center gap-4">
+        <AdminCard key={s.id} className={`p-4 flex items-center gap-4 ${s.completed ? 'border-emerald-200 bg-emerald-50/40' : ''}`}>
           <span className="px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 text-[11px] font-black shrink-0">{s.day}</span>
           <div className="flex-1 min-w-0">
-            <p className="font-black text-slate-900 text-[14px]">{s.subject}</p>
+            <p className={`font-black text-[14px] ${s.completed ? 'text-emerald-800' : 'text-slate-900'}`}>{s.subject}</p>
+            {(s.topic || s.technique) && <p className="text-slate-500 text-[11.5px] font-semibold">{[s.topic, s.technique].filter(Boolean).join(' · ')}</p>}
             <p className="text-slate-400 text-[12px] font-bold flex items-center gap-1"><Clock size={11} /> {s.startTime} – {s.endTime}</p>
           </div>
+          <span className={`px-2.5 py-1 rounded-full text-[10.5px] font-black ${s.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{s.completed ? 'Terminée' : 'Planifiée'}</span>
         </AdminCard>
       ))}
     </div>
@@ -576,12 +578,13 @@ const AdminContentProgress: React.FC<{ modules: CourseModule[] }> = ({ modules }
 };
 
 const AdminProgressTab: React.FC<{ modules: StudentModules }> = ({ modules }) => {
-  const { plan, goals, revisions, habits } = modules;
-  const { dimensions, planActionsDone, planActionsTotal, planProgress, daysThisWeek, anyData } = computeProgressDimensions({
+  const { plan, goals, revisions, habits, timetable } = modules;
+  const { dimensions, planActionsDone, planActionsTotal, planProgress, daysThisWeek, completedRevisions, completedPlanningTasks, focusedMinutes, anyData } = computeProgressDimensions({
     planActions: plan?.actions || [],
     goals,
     revisions,
     habits,
+    timetable,
   });
 
   if (!anyData) {
@@ -590,11 +593,13 @@ const AdminProgressTab: React.FC<{ modules: StudentModules }> = ({ modules }) =>
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{Math.round(planProgress)}%</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Progression du plan</p></AdminCard>
         <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{planActionsDone} / {planActionsTotal || 0}</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Actions terminées</p></AdminCard>
         <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{daysThisWeek} / 7</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Régularité cette semaine</p></AdminCard>
-        <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{revisions.length}</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Sessions enregistrées</p></AdminCard>
+        <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{completedRevisions}</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Révisions terminées</p></AdminCard>
+        <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{focusedMinutes} min</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Temps de révision validé</p></AdminCard>
+        <AdminCard className="p-5"><p className="text-2xl font-black text-slate-900 tabular-nums">{completedPlanningTasks} / {timetable.length}</p><p className="text-[11.5px] font-bold text-slate-400 mt-1">Planning terminé</p></AdminCard>
       </div>
       <AdminCard className="p-6 md:p-7">
         <p className="font-black text-slate-900 text-[15px] mb-5">Vue d'ensemble par dimension</p>
@@ -701,7 +706,10 @@ const AdminToolsTab: React.FC<{ modules: StudentModules }> = ({ modules }) => {
                     <p className="font-bold text-slate-700 text-[13px]">{r.subject}{r.chapter ? ` · ${r.chapter}` : ''}</p>
                     {date && <p className="text-slate-400 text-[11.5px] font-bold mt-0.5">{date}</p>}
                   </div>
-                  <span className="text-[11.5px] font-bold text-slate-400 shrink-0 text-end">{r.durationMin} min · {r.technique}<br />Compréhension {r.understanding}/5</span>
+                  <div className="shrink-0 text-end">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-black ${r.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{r.completed ? 'Terminée' : r.startedAt ? 'Interrompue' : 'Non démarrée'}</span>
+                    <p className="text-[11.5px] font-bold text-slate-400 mt-1">{r.durationMin} min · {r.technique}<br />Compréhension {r.understanding}/5</p>
+                  </div>
                 </div>
               );
             })}

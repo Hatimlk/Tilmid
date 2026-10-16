@@ -1719,11 +1719,29 @@ app.get('/api/admin/progress-overview', requireAdmin, async (req, res) => {
 
         const revisions = {};
         const [revisionRows] = await db.query(
-            'SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY) GROUP BY student_id'
+            'SELECT student_id, COUNT(*) AS recent, COALESCE(SUM(duration_min), 0) AS focused_minutes FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY) GROUP BY student_id'
         );
         for (const row of revisionRows) {
-            revisions[row.student_id] = Number(row.recent);
+            revisions[row.student_id] = { count: Number(row.recent), minutes: Number(row.focused_minutes) };
         }
+
+        const planning = {};
+        const [planningRows] = await db.query(
+            'SELECT student_id, COUNT(*) AS recent FROM timetable_tasks WHERE completed = TRUE AND completed_at > (NOW() - INTERVAL 7 DAY) GROUP BY student_id'
+        );
+        for (const row of planningRows) planning[row.student_id] = Number(row.recent);
+
+        const activeDays = {};
+        const [activeDayRows] = await db.query(
+            `SELECT student_id, COUNT(DISTINCT activity_date) AS active_days FROM (
+                SELECT student_id, DATE(COALESCE(completed_at, session_date)) AS activity_date
+                FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY)
+                UNION ALL
+                SELECT student_id, DATE(completed_at) AS activity_date
+                FROM timetable_tasks WHERE completed = TRUE AND completed_at > (NOW() - INTERVAL 7 DAY)
+            ) activity GROUP BY student_id`
+        );
+        for (const row of activeDayRows) activeDays[row.student_id] = Number(row.active_days);
 
         const habits = {};
         const [habitRows] = await db.query('SELECT student_id, days FROM habits');
@@ -1738,6 +1756,7 @@ app.get('/api/admin/progress-overview', requireAdmin, async (req, res) => {
             const plan = plans[s.id] || { total: 0, done: 0 };
             const goal = goals[s.id] || { total: 0, atteints: 0 };
             const habit = habits[s.id] || { count: 0, daysDone: 0 };
+            const revision = revisions[s.id] || { count: 0, minutes: 0 };
             return {
                 studentId: s.id,
                 name: s.name,
@@ -1747,7 +1766,10 @@ app.get('/api/admin/progress-overview', requireAdmin, async (req, res) => {
                 planActionsDone: plan.done,
                 goalsTotal: goal.total,
                 goalsAtteints: goal.atteints,
-                revisionsLast7d: revisions[s.id] || 0,
+                revisionsLast7d: revision.count,
+                focusedMinutesLast7d: revision.minutes,
+                planningCompletedLast7d: planning[s.id] || 0,
+                activeDaysLast7d: activeDays[s.id] || 0,
                 habitCount: habit.count,
                 habitConsistencyPct: habit.count > 0 ? Math.round((habit.daysDone / (habit.count * 7)) * 100) : null,
             };

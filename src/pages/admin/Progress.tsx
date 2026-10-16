@@ -11,7 +11,7 @@ const overallScore = (r: ProgressOverviewRow) => {
   if (r.planActionsTotal > 0) parts.push((r.planActionsDone / r.planActionsTotal) * 100);
   if (r.goalsTotal > 0) parts.push((r.goalsAtteints / r.goalsTotal) * 100);
   if (r.habitConsistencyPct !== null) parts.push(r.habitConsistencyPct);
-  parts.push(Math.min(100, (r.revisionsLast7d / 7) * 100));
+  parts.push(Math.min(100, (r.activeDaysLast7d / 7) * 100));
   return parts.length > 0 ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
 };
 
@@ -65,7 +65,9 @@ export const AdminProgress: React.FC = () => {
                   <div className="hidden md:flex items-center gap-4 text-[11.5px] font-bold text-slate-400 shrink-0">
                     <span>{r.planActionsDone}/{r.planActionsTotal || 0} actions</span>
                     <span>{r.goalsAtteints}/{r.goalsTotal || 0} objectifs</span>
-                    <span>{r.revisionsLast7d} révisions (7j)</span>
+                    <span>{r.activeDaysLast7d}/7 jours actifs</span>
+                    <span>{r.focusedMinutesLast7d} min</span>
+                    <span>{r.planningCompletedLast7d} planning terminé{r.planningCompletedLast7d > 1 ? 's' : ''}</span>
                   </div>
                   <ArrowRight size={16} className="text-slate-300 shrink-0" />
                 </div>
