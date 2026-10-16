@@ -113,16 +113,20 @@ module.exports = {
         status: GOAL_STATUS.nullable(), nextAction: Text(255).nullable(),
     },
     revision: {
+        id: Int({ min: 1 }).nullable(),
         subject: Text(100).req(), chapter: Text(255), durationMin: Int({ min: 0, max: 1440 }),
-        technique: Text(100), understanding: Int({ min: 1, max: 5 }),
+        technique: Text(100), understanding: Int({ min: 1, max: 5 }), startedAt: Text(50).nullable(), completed: Bool(),
     },
-    habit: { id: Int({ min: 1 }).nullable(), name: Text(100).req(), days: Arr(Bool(), { min: 7, max: 7 }) },
+    habit: { id: Int({ min: 1 }).nullable(), name: Text(100).req(), days: Arr(Bool(), { min: 7, max: 7 }), weekStart: Text(10) },
     checkin: {
         adherence: Int({ min: 1, max: 10 }).req(), daysRespected: Int({ min: 0, max: 7 }).req(),
         obstacle: Text(500), concentration: Int({ min: 1, max: 5 }).req(), success: Text(2000),
         needsAdjustment: Bool(),
     },
-    timetable: { subject: Text(100).req(), day: WEEKDAY, startTime: Time(), endTime: Time() },
+    timetable: {
+        id: Int({ min: 1 }).nullable(), subject: Text(100).req(), topic: Text(255), technique: Text(100),
+        day: WEEKDAY, startTime: Time(), endTime: Time(), completed: Bool(),
+    },
     emptyBody: {},
 
     post: {

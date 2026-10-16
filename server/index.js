@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const { limitRoute, ensureRateLimitTable, normalizeEmail, normalizePhone, MINUTE, HOUR } = require('./rateLimit');
 const S = require('./schemas');
 const { validateBody, parseParam, Int } = require('./validation');
+const { VALID_PACKAGES, normalizePackage, getEntitlements, hasEntitlement, canUserUse } = require('./entitlements');
 
 dotenv.config();
 
@@ -132,10 +133,7 @@ async function loadActiveAccount(claims) {
     return { role: rows[0].role, package: null };
 }
 
-// Packages that unlock course videos, library resources and practical tools. Mirrors
-// src/utils/entitlements.ts, where only these three packs set learningContent/practicalTools.
-const LEARNING_PACKAGES = ['essentiel', 'boost', 'premium'];
-const canUseLearningContent = (user) => user.role === 'admin' || LEARNING_PACKAGES.includes(user.package);
+const canUseLearningContent = (user) => canUserUse(user, 'learningContent');
 
 async function authenticate(req, res, next) {
     const authHeader = req.headers['authorization'] || '';
@@ -650,9 +648,6 @@ app.get('/api/students', requireAdmin, async (req, res) => {
     }
 });
 
-const VALID_PACKAGES = ['essentiel', 'boost', 'premium'];
-const normalizePackage = (pkg) => (VALID_PACKAGES.includes(pkg) ? pkg : null);
-
 // Resolves a coachId into {coachId, coachName}: coach_name is kept as a
 // denormalized label for any reader still on the free-text field. A missing/
 // unknown coachId clears the assignment; coachId omitted entirely leaves the
@@ -930,6 +925,21 @@ app.delete('/api/appointments/:id', requireAdmin, async (req, res) => {
     }
 });
 
+async function checkCoachingQuota(studentId, excludeAppointmentId = null) {
+    const [students] = await db.query('SELECT package FROM students WHERE id = ?', [studentId]);
+    if (!students.length) return { status: 404, message: 'Student not found' };
+    const limit = getEntitlements(students[0].package).coachingSessions;
+    if (!limit) return { status: 403, message: 'Individual coaching requires Boost or Premium' };
+    const suffix = excludeAppointmentId ? ' AND id!=?' : '';
+    const params = excludeAppointmentId ? [studentId, excludeAppointmentId] : [studentId];
+    const [counts] = await db.query(
+        `SELECT COUNT(*) AS total FROM appointments WHERE category='coaching' AND student_id=? AND status!='cancelled'${suffix}`,
+        params
+    );
+    if (Number(counts[0].total) >= limit) return { status: 409, message: `This package includes ${limit} coaching session(s)` };
+    return null;
+}
+
 app.post('/api/appointments', requireAdmin, validateBody(S.appointment), async (req, res) => {
     const { id } = req.body;
     const isUpdate = id && /^\d+$/.test(String(id));
@@ -951,11 +961,8 @@ app.post('/api/appointments', requireAdmin, validateBody(S.appointment), async (
             const notes = 'notes' in req.body ? req.body.notes : existing.notes;
 
             if (category === 'coaching' && studentId && (existing.category !== 'coaching' || Number(existing.student_id) !== Number(studentId))) {
-                const [eligible] = await db.query("SELECT package FROM students WHERE id = ? AND package IN ('boost', 'premium')", [studentId]);
-                if (!eligible.length) return res.status(403).json({ message: 'Individual coaching requires Boost or Premium' });
-                const limit = eligible[0].package === 'premium' ? 3 : 1;
-                const [counts] = await db.query("SELECT COUNT(*) AS total FROM appointments WHERE category='coaching' AND student_id=? AND status!='cancelled' AND id!=?", [studentId, id]);
-                if (Number(counts[0].total) >= limit) return res.status(409).json({ message: `This package includes ${limit} coaching session(s)` });
+                const denial = await checkCoachingQuota(studentId, Number(id));
+                if (denial) return res.status(denial.status).json({ message: denial.message });
             }
 
             await db.query(
@@ -970,11 +977,8 @@ app.post('/api/appointments', requireAdmin, validateBody(S.appointment), async (
 
         const { studentName, title, date, time, status = 'confirmed', type = 'live', studentId = null, category = null, notes = null } = req.body;
         if (category === 'coaching') {
-            const [eligible] = await db.query("SELECT package FROM students WHERE id = ? AND package IN ('boost', 'premium')", [studentId]);
-            if (!eligible.length) return res.status(403).json({ message: 'Individual coaching requires Boost or Premium' });
-            const limit = eligible[0].package === 'premium' ? 3 : 1;
-            const [counts] = await db.query("SELECT COUNT(*) AS total FROM appointments WHERE category='coaching' AND student_id=? AND status!='cancelled'", [studentId]);
-            if (Number(counts[0].total) >= limit) return res.status(409).json({ message: `This package includes ${limit} coaching session(s)` });
+            const denial = await checkCoachingQuota(studentId);
+            if (denial) return res.status(denial.status).json({ message: denial.message });
         }
         const [result] = await db.query(
             'INSERT INTO appointments (student_name, title, date, time, status, type, student_id, category, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -1249,11 +1253,22 @@ app.get('/api/revisions', requireStudentOrAdmin, async (req, res) => {
 });
 
 app.post('/api/revisions', requireStudent, validateBody(S.revision), async (req, res) => {
-    const { subject, chapter, durationMin, technique, understanding } = req.body;
+    const { id, subject, chapter, durationMin, technique, understanding, startedAt, completed } = req.body;
     try {
+        if (id) {
+            const [result] = await db.query(
+                `UPDATE revision_sessions SET subject=?, chapter=?, duration_min=?, technique=?, understanding=?,
+                 started_at=?, completed=?, completed_at=CASE WHEN ? THEN COALESCE(completed_at, NOW()) ELSE NULL END
+                 WHERE id=? AND student_id=?`,
+                [subject, chapter || null, durationMin || 0, technique || null, understanding || 3,
+                    startedAt ? new Date(startedAt) : null, !!completed, !!completed, id, req.user.id]
+            );
+            if (!result.affectedRows) return res.status(404).json({ message: 'Revision session not found' });
+            return res.json({ id: Number(id), message: 'Revision session updated' });
+        }
         const [result] = await db.query(
-            'INSERT INTO revision_sessions (student_id, subject, chapter, duration_min, technique, understanding) VALUES (?, ?, ?, ?, ?, ?)',
-            [req.user.id, subject, chapter || null, durationMin || 0, technique || null, understanding || 3]
+            'INSERT INTO revision_sessions (student_id, subject, chapter, duration_min, technique, understanding, started_at, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [req.user.id, subject, chapter || null, durationMin || 0, technique || null, understanding || 3, null, false]
         );
         res.status(201).json({ id: result.insertId, message: 'Revision session created' });
     } catch (err) {
@@ -1287,16 +1302,16 @@ app.get('/api/habits', requireStudentOrAdmin, async (req, res) => {
 });
 
 app.post('/api/habits', requireStudent, validateBody(S.habit), async (req, res) => {
-    const { id, name, days } = req.body;
+    const { id, name, days, weekStart } = req.body;
     try {
         if (id) {
-            const [result] = await db.query('UPDATE habits SET name=?, days=? WHERE id=? AND student_id=?', [name, JSON.stringify(days), id, req.user.id]);
+            const [result] = await db.query('UPDATE habits SET name=?, days=?, week_start=? WHERE id=? AND student_id=?', [name, JSON.stringify(days), weekStart || null, id, req.user.id]);
             if (!result.affectedRows) return res.status(404).json({ message: 'Habit not found' });
             return res.json({ id: Number(id), message: 'Habit updated' });
         }
         const [result] = await db.query(
-            'INSERT INTO habits (student_id, name, days) VALUES (?, ?, ?)',
-            [req.user.id, name, JSON.stringify(days || [false, false, false, false, false, false, false])]
+            'INSERT INTO habits (student_id, name, days, week_start) VALUES (?, ?, ?, ?)',
+            [req.user.id, name, JSON.stringify(days || [false, false, false, false, false, false, false]), weekStart || null]
         );
         res.status(201).json({ id: result.insertId, message: 'Habit created' });
     } catch (err) {
@@ -1332,9 +1347,8 @@ app.get('/api/checkins', requireStudentOrAdmin, async (req, res) => {
 app.post('/api/checkins', requireStudent, validateBody(S.checkin), async (req, res) => {
     const { adherence, daysRespected, obstacle, concentration, success, needsAdjustment } = req.body;
     try {
-        const [students] = await db.query('SELECT package FROM students WHERE id = ?', [req.user.id]);
-        const pkg = students[0]?.package;
-        if (pkg !== 'boost' && pkg !== 'premium') {
+        const policy = getEntitlements(req.user.package);
+        if (!policy.checkInCount && !policy.checkInFrequencyDays) {
             return res.status(403).json({ message: 'Check-ins are only available with Boost or Premium' });
         }
         if (!Number.isInteger(Number(adherence)) || Number(adherence) < 1 || Number(adherence) > 10 ||
@@ -1343,12 +1357,14 @@ app.post('/api/checkins', requireStudent, validateBody(S.checkin), async (req, r
             return res.status(400).json({ message: 'Invalid check-in values' });
         }
         const [previous] = await db.query('SELECT created_at FROM checkins WHERE student_id = ? ORDER BY created_at DESC', [req.user.id]);
-        if (pkg === 'boost' && previous.length >= 1) {
-            return res.status(409).json({ message: 'Boost includes one check-in' });
+        if (policy.checkInCount !== null && previous.length >= policy.checkInCount) {
+            return res.status(409).json({ message: `This package includes ${policy.checkInCount} check-in(s)` });
         }
-        if (pkg === 'premium' && previous.length > 0) {
+        if (policy.checkInFrequencyDays && previous.length > 0) {
             const elapsedDays = (Date.now() - new Date(previous[0].created_at).getTime()) / 86400000;
-            if (elapsedDays < 14) return res.status(409).json({ message: 'The next check-in is available after 14 days' });
+            if (elapsedDays < policy.checkInFrequencyDays) {
+                return res.status(409).json({ message: `The next check-in is available after ${policy.checkInFrequencyDays} days` });
+            }
         }
         const [result] = await db.query(
             'INSERT INTO checkins (student_id, adherence, days_respected, obstacle, concentration, success, needs_adjustment) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -1376,11 +1392,21 @@ app.get('/api/timetable', requireStudentOrAdmin, async (req, res) => {
 });
 
 app.post('/api/timetable', requireStudent, validateBody(S.timetable), async (req, res) => {
-    const { subject, day, startTime, endTime } = req.body;
+    const { id, subject, topic, technique, day, startTime, endTime, completed } = req.body;
     try {
+        if (id) {
+            const [result] = await db.query(
+                `UPDATE timetable_tasks SET subject=?, topic=?, technique=?, day=?, start_time=?, end_time=?,
+                 completed=?, completed_at=CASE WHEN ? THEN COALESCE(completed_at, NOW()) ELSE NULL END
+                 WHERE id=? AND student_id=?`,
+                [subject, topic || null, technique || null, day, startTime, endTime, !!completed, !!completed, id, req.user.id]
+            );
+            if (!result.affectedRows) return res.status(404).json({ message: 'Timetable task not found' });
+            return res.json({ id: Number(id), message: 'Timetable task updated' });
+        }
         const [result] = await db.query(
-            'INSERT INTO timetable_tasks (student_id, subject, day, start_time, end_time) VALUES (?, ?, ?, ?, ?)',
-            [req.user.id, subject, day, startTime, endTime]
+            'INSERT INTO timetable_tasks (student_id, subject, topic, technique, day, start_time, end_time, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [req.user.id, subject, topic || null, technique || null, day, startTime, endTime, false]
         );
         res.status(201).json({ id: result.insertId, message: 'Timetable task created' });
     } catch (err) {
@@ -1645,8 +1671,9 @@ app.post('/api/admin/plans/:studentId', requireAdmin, validateBody(S.adminPlan),
         return res.status(400).json({ message: 'Objective and at least one action are required' });
     }
     try {
-        const [students] = await db.query("SELECT name, package FROM students WHERE id = ? AND package IN ('boost', 'premium')", [studentId]);
-        if (!students.length) return res.status(403).json({ message: 'A Boost or Premium package is required' });
+        const [students] = await db.query('SELECT name, package FROM students WHERE id = ?', [studentId]);
+        if (!students.length) return res.status(404).json({ message: 'Student not found' });
+        if (!getEntitlements(students[0].package).personalPlanDays) return res.status(403).json({ message: 'A Boost or Premium package is required' });
         await db.query(
             `INSERT INTO self_guided_plans (student_id, objective, start_date, obstacles, actions, habits)
              VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE objective=VALUES(objective), start_date=VALUES(start_date), obstacles=VALUES(obstacles), actions=VALUES(actions), habits=VALUES(habits)`,
@@ -1692,7 +1719,7 @@ app.get('/api/admin/progress-overview', requireAdmin, async (req, res) => {
 
         const revisions = {};
         const [revisionRows] = await db.query(
-            'SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE session_date > (NOW() - INTERVAL 7 DAY) GROUP BY student_id'
+            'SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY) GROUP BY student_id'
         );
         for (const row of revisionRows) {
             revisions[row.student_id] = Number(row.recent);
@@ -1808,8 +1835,7 @@ app.get('/api/collective-sessions/:id/registrations', requireAdmin, async (req, 
 app.post('/api/collective-sessions/:id/register', requireStudent, validateBody(S.emptyBody), async (req, res) => {
     const sessionId = Number(req.params.id);
     try {
-        const [students] = await db.query('SELECT package FROM students WHERE id = ?', [req.user.id]);
-        if (!['essentiel', 'boost', 'premium'].includes(students[0]?.package)) {
+        if (!hasEntitlement(req.user.package, 'collectiveSupport')) {
             return res.status(403).json({ message: 'An active Mouwakaba package is required' });
         }
         const [sessions] = await db.query(

@@ -66,7 +66,7 @@ const CollectiveSessionsSection: React.FC = () => {
   );
 };
 
-const IndividualSessions: React.FC = () => {
+const IndividualSessions: React.FC<{ allowance: number }> = ({ allowance }) => {
   const [sessions, setSessions] = useState<Appointment[] | null>(null);
 
   useEffect(() => {
@@ -75,16 +75,34 @@ const IndividualSessions: React.FC = () => {
 
   if (sessions === null) return <Card className="p-8"><div className="h-20 rounded-xl bg-slate-50 animate-pulse" /></Card>;
 
+  const used = sessions.filter((session) => session.status !== 'cancelled').length;
+  const remaining = Math.max(0, allowance - used);
+  const usageCard = (
+    <Card className="p-4 flex flex-wrap items-center justify-between gap-3 bg-blue-50/60 border-blue-100">
+      <div>
+        <p className="font-black text-slate-900 text-[13.5px]">Utilisation de votre formule</p>
+        <p className="text-[12px] font-medium text-slate-500">Les séances annulées ne sont pas décomptées.</p>
+      </div>
+      <div className="flex items-center gap-2 text-[12px] font-black">
+        <span className="px-3 py-1.5 rounded-full bg-white text-slate-600">{used} utilisée{used > 1 ? 's' : ''}</span>
+        <span className="px-3 py-1.5 rounded-full bg-primary text-white">{remaining} restante{remaining > 1 ? 's' : ''}</span>
+      </div>
+    </Card>
+  );
+
   if (sessions.length === 0) {
     return (
-      <Card className="p-8 max-w-lg">
-        <EmptyState
-          icon={Calendar}
-          title="Aucune séance programmée"
-          description="Contactez votre coach pour planifier votre première séance de coaching."
-          cta={{ label: 'Planifier sur WhatsApp', href: 'https://wa.me/212703749901' }}
-        />
-      </Card>
+      <div className="space-y-3">
+        {usageCard}
+        <Card className="p-8 max-w-lg">
+          <EmptyState
+            icon={Calendar}
+            title="Aucune séance programmée"
+            description="Contactez votre coach pour planifier votre première séance de coaching."
+            cta={{ label: 'Planifier sur WhatsApp', href: 'https://wa.me/212703749901' }}
+          />
+        </Card>
+      </div>
     );
   }
 
@@ -92,6 +110,7 @@ const IndividualSessions: React.FC = () => {
 
   return (
     <div className="space-y-3">
+      {usageCard}
       {sorted.map((a) => (
         <Card key={a.id} className="p-5">
           <div className="flex items-center justify-between gap-3">
@@ -130,7 +149,7 @@ export const Coaching: React.FC<{ entitlements: Entitlements }> = ({ entitlement
         />
       ) : (
         <>
-          <IndividualSessions />
+          <IndividualSessions allowance={entitlements.coachingSessions} />
           {entitlements.priorityBooking && (
             <p className="mt-4 text-[12.5px] font-bold text-purple-600 flex items-center gap-1.5">
               <Users size={13} /> Votre formule Premium bénéficie d'une priorité de réservation pour vos séances.

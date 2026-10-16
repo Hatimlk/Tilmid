@@ -5,15 +5,24 @@ import { Entitlements } from '../../utils/entitlements';
 import { PageHeader, Card, LockedState, EmptyState } from '../../components/student/primitives';
 import { resolveFileUrl } from '../../lib/api';
 
-const FILTERS = ['Tous', 'Organisation', 'Révision', 'Examens', 'Productivité', 'Méthodes'];
-
 export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: StudyResource[] }> = ({ entitlements, resources }) => {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('Tous');
 
+  const filters = useMemo(
+    () => ['Tous', ...Array.from(new Set(resources.map((resource) => resource.subject).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'fr'))],
+    [resources]
+  );
+
   const filteredResources = useMemo(
-    () => resources.filter((r) => (!query || r.title.toLowerCase().includes(query.toLowerCase()) || r.subject.toLowerCase().includes(query.toLowerCase()))),
-    [resources, query]
+    () => resources.filter((resource) => {
+      const normalizedQuery = query.trim().toLocaleLowerCase('fr');
+      const matchesQuery = !normalizedQuery
+        || resource.title.toLocaleLowerCase('fr').includes(normalizedQuery)
+        || resource.subject.toLocaleLowerCase('fr').includes(normalizedQuery);
+      return matchesQuery && (filter === 'Tous' || resource.subject === filter);
+    }),
+    [resources, query, filter]
   );
 
   if (!entitlements.practicalTools) {
@@ -36,7 +45,7 @@ export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: Stu
         </div>
       </div>
       <div className="flex flex-wrap gap-2 mb-6">
-        {FILTERS.map((f) => (
+        {filters.map((f) => (
           <button key={f} onClick={() => setFilter(f)} className={`px-3.5 py-1.5 min-h-[36px] rounded-full text-[12.5px] font-bold border transition-all ${filter === f ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-slate-200 text-slate-500'}`}>
             {f}
           </button>
@@ -46,7 +55,11 @@ export const Bibliotheque: React.FC<{ entitlements: Entitlements; resources: Stu
       <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Documents</p>
       {filteredResources.length === 0 ? (
         <Card className="p-8">
-          <EmptyState icon={Library} title="Aucun document disponible pour le moment" description="Vos ressources et documents apparaîtront ici lorsqu'ils seront ajoutés." />
+          <EmptyState
+            icon={Library}
+            title={resources.length === 0 ? 'Aucun document disponible pour le moment' : 'Aucune ressource ne correspond à votre recherche'}
+            description={resources.length === 0 ? "Vos ressources et documents apparaîtront ici lorsqu'ils seront ajoutés." : 'Essayez un autre mot-clé ou sélectionnez une autre matière.'}
+          />
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

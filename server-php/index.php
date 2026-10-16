@@ -1419,14 +1419,24 @@ if ($request_uri === '/api/revisions' && $method == 'GET') {
 if ($request_uri === '/api/revisions' && $method == 'POST') {
     $user = requireStudent($secret_key);
     $input = validate_input($input, $SCHEMAS['revision']);
+    $id = $input['id'] ?? null;
     $subject = $input['subject'] ?? '';
     $chapter = $input['chapter'] ?? null;
     $durationMin = $input['durationMin'] ?? 0;
     $technique = $input['technique'] ?? null;
     $understanding = $input['understanding'] ?? 3;
+    $startedAt = !empty($input['startedAt']) ? date('Y-m-d H:i:s', strtotime($input['startedAt'])) : null;
+    $completed = !empty($input['completed']) ? 1 : 0;
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO revision_sessions (student_id, subject, chapter, duration_min, technique, understanding) VALUES (?, ?, ?, ?, ?, ?)");
+        if ($id) {
+            $stmt = $pdo->prepare("UPDATE revision_sessions SET subject=?, chapter=?, duration_min=?, technique=?, understanding=?, started_at=?, completed=?, completed_at=CASE WHEN ? THEN COALESCE(completed_at, NOW()) ELSE NULL END WHERE id=? AND student_id=?");
+            $stmt->execute([$subject, $chapter, $durationMin, $technique, $understanding, $startedAt, $completed, $completed, $id, $user['id']]);
+            if ($stmt->rowCount() === 0) { http_response_code(404); echo json_encode(['message' => 'Revision session not found']); exit; }
+            echo json_encode(['id' => (int)$id, 'message' => 'Revision session updated']);
+            exit;
+        }
+        $stmt = $pdo->prepare("INSERT INTO revision_sessions (student_id, subject, chapter, duration_min, technique, understanding, started_at, completed) VALUES (?, ?, ?, ?, ?, ?, NULL, 0)");
         $stmt->execute([$user['id'], $subject, $chapter, $durationMin, $technique, $understanding]);
         http_response_code(201);
         echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Revision session created']);
@@ -1469,6 +1479,7 @@ if ($request_uri === '/api/habits' && $method == 'POST') {
     $id = $input['id'] ?? null;
     $name = $input['name'] ?? '';
     $days = json_encode($input['days'] ?? [false, false, false, false, false, false, false]);
+    $weekStart = $input['weekStart'] ?? null;
 
     try {
         if ($id) {
@@ -1479,12 +1490,12 @@ if ($request_uri === '/api/habits' && $method == 'POST') {
                 echo json_encode(['message' => 'Habit not found']);
                 exit;
             }
-            $stmt = $pdo->prepare("UPDATE habits SET name=?, days=? WHERE id=? AND student_id=?");
-            $stmt->execute([$name, $days, $id, $user['id']]);
+            $stmt = $pdo->prepare("UPDATE habits SET name=?, days=?, week_start=? WHERE id=? AND student_id=?");
+            $stmt->execute([$name, $days, $weekStart, $id, $user['id']]);
             echo json_encode(['id' => (int)$id, 'message' => 'Habit updated']);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO habits (student_id, name, days) VALUES (?, ?, ?)");
-            $stmt->execute([$user['id'], $name, $days]);
+            $stmt = $pdo->prepare("INSERT INTO habits (student_id, name, days, week_start) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$user['id'], $name, $days, $weekStart]);
             http_response_code(201);
             echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Habit created']);
         }
@@ -1576,14 +1587,25 @@ if ($request_uri === '/api/timetable' && $method == 'GET') {
 if ($request_uri === '/api/timetable' && $method == 'POST') {
     $user = requireStudent($secret_key);
     $input = validate_input($input, $SCHEMAS['timetable']);
+    $id = $input['id'] ?? null;
     $subject = $input['subject'] ?? '';
+    $topic = $input['topic'] ?? null;
+    $technique = $input['technique'] ?? null;
     $day = $input['day'] ?? '';
     $startTime = $input['startTime'] ?? '';
     $endTime = $input['endTime'] ?? '';
+    $completed = !empty($input['completed']) ? 1 : 0;
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO timetable_tasks (student_id, subject, day, start_time, end_time) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$user['id'], $subject, $day, $startTime, $endTime]);
+        if ($id) {
+            $stmt = $pdo->prepare("UPDATE timetable_tasks SET subject=?, topic=?, technique=?, day=?, start_time=?, end_time=?, completed=?, completed_at=CASE WHEN ? THEN COALESCE(completed_at, NOW()) ELSE NULL END WHERE id=? AND student_id=?");
+            $stmt->execute([$subject, $topic, $technique, $day, $startTime, $endTime, $completed, $completed, $id, $user['id']]);
+            if ($stmt->rowCount() === 0) { http_response_code(404); echo json_encode(['message' => 'Timetable task not found']); exit; }
+            echo json_encode(['id' => (int)$id, 'message' => 'Timetable task updated']);
+            exit;
+        }
+        $stmt = $pdo->prepare("INSERT INTO timetable_tasks (student_id, subject, topic, technique, day, start_time, end_time, completed) VALUES (?, ?, ?, ?, ?, ?, ?, 0)");
+        $stmt->execute([$user['id'], $subject, $topic, $technique, $day, $startTime, $endTime]);
         http_response_code(201);
         echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Timetable task created']);
     } catch (PDOException $e) {
@@ -1954,7 +1976,7 @@ if ($request_uri === '/api/admin/progress-overview' && $method == 'GET') {
     }
 
     $revisions = [];
-    foreach ($pdo->query("SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE session_date > (NOW() - INTERVAL 7 DAY) GROUP BY student_id") as $row) {
+    foreach ($pdo->query("SELECT student_id, COUNT(*) AS recent FROM revision_sessions WHERE completed = TRUE AND COALESCE(completed_at, session_date) > (NOW() - INTERVAL 7 DAY) GROUP BY student_id") as $row) {
         $revisions[$row['student_id']] = (int)$row['recent'];
     }
 

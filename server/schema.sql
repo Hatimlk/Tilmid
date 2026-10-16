@@ -150,9 +150,13 @@ CREATE TABLE IF NOT EXISTS timetable_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT,
     subject VARCHAR(100),
+    topic VARCHAR(255),
+    technique VARCHAR(100),
     day VARCHAR(20),
     start_time VARCHAR(10),
     end_time VARCHAR(10),
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
@@ -220,6 +224,9 @@ CREATE TABLE IF NOT EXISTS revision_sessions (
     duration_min INT DEFAULT 0,
     technique VARCHAR(100),
     understanding INT DEFAULT 3,
+    started_at DATETIME DEFAULT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at DATETIME DEFAULT NULL,
     session_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
@@ -230,6 +237,7 @@ CREATE TABLE IF NOT EXISTS habits (
     student_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     days JSON NOT NULL,
+    week_start VARCHAR(10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );

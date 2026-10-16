@@ -125,17 +125,21 @@ return [
         'status' => R_enum($GOAL_STATUS, true), 'nextAction' => R_nullable(R_text(255)),
     ],
     'revision' => [
+        'id' => R_int(1, 2147483647, false, true),
         'subject' => R_text(100, true), 'chapter' => R_text(255), 'durationMin' => R_int(0, 1440),
-        'technique' => R_text(100), 'understanding' => R_int(1, 5),
+        'technique' => R_text(100), 'understanding' => R_int(1, 5), 'startedAt' => R_nullable(R_text(50)), 'completed' => R_bool(),
     ],
     'habit' => [
-        'id' => R_int(1, 2147483647, false, true), 'name' => R_text(100, true), 'days' => R_array(R_bool(), 7, 7),
+        'id' => R_int(1, 2147483647, false, true), 'name' => R_text(100, true), 'days' => R_array(R_bool(), 7, 7), 'weekStart' => R_text(10),
     ],
     'checkin' => [
         'adherence' => R_int(1, 10, true), 'daysRespected' => R_int(0, 7, true), 'obstacle' => R_text(500),
         'concentration' => R_int(1, 5, true), 'success' => R_text(2000), 'needsAdjustment' => R_bool(),
     ],
-    'timetable' => ['subject' => R_text(100, true), 'day' => R_enum($WEEKDAY), 'startTime' => R_time(), 'endTime' => R_time()],
+    'timetable' => [
+        'id' => R_int(1, 2147483647, false, true), 'subject' => R_text(100, true), 'topic' => R_text(255),
+        'technique' => R_text(100), 'day' => R_enum($WEEKDAY), 'startTime' => R_time(), 'endTime' => R_time(), 'completed' => R_bool(),
+    ],
 
     // Posts
     'post' => [

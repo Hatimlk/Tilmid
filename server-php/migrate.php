@@ -183,20 +183,35 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS revision_sessions (
     duration_min INT DEFAULT 0,
     technique VARCHAR(100),
     understanding INT DEFAULT 3,
+    started_at DATETIME DEFAULT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at DATETIME DEFAULT NULL,
     session_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 )");
 $log[] = 'revision_sessions table ensured';
+
+$revisionCols = $pdo->query("SHOW COLUMNS FROM revision_sessions")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('started_at', $revisionCols, true)) $pdo->exec("ALTER TABLE revision_sessions ADD COLUMN started_at DATETIME DEFAULT NULL AFTER understanding");
+if (!in_array('completed', $revisionCols, true)) $pdo->exec("ALTER TABLE revision_sessions ADD COLUMN completed BOOLEAN DEFAULT TRUE AFTER started_at");
+if (!in_array('completed_at', $revisionCols, true)) $pdo->exec("ALTER TABLE revision_sessions ADD COLUMN completed_at DATETIME DEFAULT NULL AFTER completed");
+$log[] = 'revision timer columns ensured';
 
 $pdo->exec("CREATE TABLE IF NOT EXISTS habits (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
     days JSON NOT NULL,
+    week_start VARCHAR(10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 )");
 $log[] = 'habits table ensured';
+
+$habitCols = $pdo->query("SHOW COLUMNS FROM habits")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('week_start', $habitCols, true)) $pdo->exec("ALTER TABLE habits ADD COLUMN week_start VARCHAR(10) DEFAULT NULL AFTER days");
+$pdo->exec("UPDATE habits SET week_start = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), '%Y-%m-%d') WHERE week_start IS NULL");
+$log[] = 'habit week column ensured';
 
 $pdo->exec("CREATE TABLE IF NOT EXISTS checkins (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -216,13 +231,24 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS timetable_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT,
     subject VARCHAR(100),
+    topic VARCHAR(255),
+    technique VARCHAR(100),
     day VARCHAR(20),
     start_time VARCHAR(10),
     end_time VARCHAR(10),
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 )");
 $log[] = 'timetable_tasks table ensured';
+
+$timetableCols = $pdo->query("SHOW COLUMNS FROM timetable_tasks")->fetchAll(PDO::FETCH_COLUMN);
+if (!in_array('topic', $timetableCols, true)) $pdo->exec("ALTER TABLE timetable_tasks ADD COLUMN topic VARCHAR(255) DEFAULT NULL AFTER subject");
+if (!in_array('technique', $timetableCols, true)) $pdo->exec("ALTER TABLE timetable_tasks ADD COLUMN technique VARCHAR(100) DEFAULT NULL AFTER topic");
+if (!in_array('completed', $timetableCols, true)) $pdo->exec("ALTER TABLE timetable_tasks ADD COLUMN completed BOOLEAN DEFAULT FALSE AFTER end_time");
+if (!in_array('completed_at', $timetableCols, true)) $pdo->exec("ALTER TABLE timetable_tasks ADD COLUMN completed_at DATETIME DEFAULT NULL AFTER completed");
+$log[] = 'timetable completion columns ensured';
 
 // 11. course_modules table — the 5 fixed "Mes contenus" modules, seeded once
 // by slug so the admin can attach a video (link or upload) to each.

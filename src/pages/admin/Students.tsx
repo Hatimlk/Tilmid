@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Search, UserPlus, MoreHorizontal, Eye, Edit, Ban, Unlock, Archive, X, Users,
+  Search, UserPlus, MoreHorizontal, Eye, Edit, Ban, Unlock, Archive, X, Users, Upload,
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { useAdminOutletContext } from '../../components/admin/AdminLayout';
@@ -11,6 +11,7 @@ import {
 } from '../../components/admin/primitives';
 import { Student, StudentStatus } from '../../types';
 import { dataManager } from '../../utils/dataManager';
+import { StudentImportModal } from '../../components/admin/StudentImportModal';
 
 const STATUS_FILTERS: { value: StudentStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'Tous les statuts' },
@@ -24,7 +25,7 @@ const STATUS_FILTERS: { value: StudentStatus | 'all'; label: string }[] = [
 export const AdminStudents: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { students, refreshStudents } = useAdminData();
+  const { students, coaches, refreshStudents } = useAdminData();
   const { openStudentModal } = useAdminOutletContext();
 
   const initialPackageFilter = (location.state as { packageFilter?: string } | null)?.packageFilter;
@@ -36,6 +37,7 @@ export const AdminStudents: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmArchive, setConfirmArchive] = useState<Student | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const grades = useMemo(() => Array.from(new Set(students.data.map((s) => s.grade))).sort(), [students.data]);
 
@@ -96,11 +98,14 @@ export const AdminStudents: React.FC = () => {
         title="Étudiants"
         breadcrumb="Administration / Étudiants"
         description={`${students.data.length} étudiant${students.data.length > 1 ? 's' : ''} au total`}
-        action={
+        action={<div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => setImportOpen(true)} className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-[13.5px] hover:border-primary hover:text-primary transition-colors">
+            <Upload size={16} /> Importer
+          </button>
           <button onClick={() => openStudentModal(null)} className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-slate-900 text-white font-bold text-[13.5px] hover:bg-primary transition-colors">
             <UserPlus size={16} /> Ajouter un étudiant
           </button>
-        }
+        </div>}
       />
 
       <AdminCard className="p-4 mb-4">
@@ -224,6 +229,13 @@ export const AdminStudents: React.FC = () => {
         tone="danger"
         onCancel={() => setConfirmArchive(null)}
         onConfirm={async () => { if (confirmArchive) await changeStatus(confirmArchive, 'archived'); setConfirmArchive(null); }}
+      />
+      <StudentImportModal
+        open={importOpen}
+        students={students.data}
+        coaches={coaches.data}
+        onClose={() => setImportOpen(false)}
+        onImported={refreshStudents}
       />
     </div>
   );

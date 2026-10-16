@@ -87,22 +87,16 @@ function useApiList<T extends { id: string }>(
 
   const update = useCallback(
     (id: string, patch: Partial<T>) => {
-      let merged: T | undefined;
-      setItems((prev) =>
-        prev.map((it) => {
-          if (it.id !== id) return it;
-          merged = { ...it, ...patch };
-          return merged;
-        })
-      );
-      if (merged) {
-        create(mapToApiForUpdate(merged)).catch((err) => {
-          console.error(err);
-          refresh();
-        });
-      }
+      const current = items.find((item) => item.id === id);
+      if (!current) return;
+      const merged = { ...current, ...patch };
+      setItems((prev) => prev.map((item) => (item.id === id ? merged : item)));
+      create(mapToApiForUpdate(merged)).catch((err) => {
+        console.error(err);
+        refresh();
+      });
     },
-    [mapToApiForUpdate, refresh]
+    [items, create, mapToApiForUpdate, refresh]
   );
 
   const remove = useCallback(
@@ -169,16 +163,28 @@ export interface Habit {
   id: string;
   name: string;
   days: boolean[]; // 7 entries, Mon -> Sun
+  weekStart: string;
 }
+
+const currentWeekStart = () => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  return date.toISOString().slice(0, 10);
+};
 
 export const useHabitTracker = (username: string) =>
   useApiList<Habit>(
     username,
     () => dataManager.getHabits(),
-    (r) => ({ id: String(r.id), name: r.name, days: r.days }),
+    (r) => ({
+      id: String(r.id), name: r.name,
+      days: r.week_start !== currentWeekStart() ? [false, false, false, false, false, false, false] : r.days,
+      weekStart: currentWeekStart(),
+    }),
     (body) => dataManager.saveHabit(body),
-    (item) => ({ name: item.name, days: item.days }),
-    (item) => ({ id: item.id, name: item.name, days: item.days }),
+    (item) => ({ name: item.name, days: item.days, weekStart: item.weekStart }),
+    (item) => ({ id: item.id, name: item.name, days: item.days, weekStart: item.weekStart }),
     (id) => dataManager.deleteHabit(id)
   );
 
@@ -194,6 +200,9 @@ export interface RevisionSession {
   technique: string;
   understanding: number; // 1-5
   date: string;
+  startedAt: string | null;
+  completed: boolean;
+  completedAt: string | null;
 }
 
 export const useRevisionTracker = (username: string) =>
@@ -208,10 +217,13 @@ export const useRevisionTracker = (username: string) =>
       technique: r.technique || '',
       understanding: r.understanding,
       date: r.session_date,
+      startedAt: r.started_at ? String(r.started_at).replace(' ', 'T') : null,
+      completed: !!Number(r.completed),
+      completedAt: r.completed_at ? String(r.completed_at).replace(' ', 'T') : null,
     }),
     (body) => dataManager.saveRevision(body),
-    (item) => ({ subject: item.subject, chapter: item.chapter, durationMin: item.durationMin, technique: item.technique, understanding: item.understanding }),
-    (item) => ({ subject: item.subject, chapter: item.chapter, durationMin: item.durationMin, technique: item.technique, understanding: item.understanding }),
+    (item) => ({ subject: item.subject, chapter: item.chapter, durationMin: item.durationMin, technique: item.technique, understanding: item.understanding, startedAt: item.startedAt, completed: item.completed }),
+    (item) => ({ id: item.id, subject: item.subject, chapter: item.chapter, durationMin: item.durationMin, technique: item.technique, understanding: item.understanding, startedAt: item.startedAt, completed: item.completed }),
     (id) => dataManager.deleteRevision(id)
   );
 
@@ -352,10 +364,14 @@ export const useTimetable = (username: string) =>
   useApiList<TimetableTask>(
     username,
     () => dataManager.getTimetable(),
-    (r) => ({ id: String(r.id), subject: r.subject, day: r.day, startTime: r.start_time, endTime: r.end_time }),
+    (r) => ({
+      id: String(r.id), subject: r.subject, topic: r.topic || '', technique: r.technique || '',
+      day: r.day, startTime: r.start_time, endTime: r.end_time,
+      completed: !!Number(r.completed), completedAt: r.completed_at ? String(r.completed_at).replace(' ', 'T') : null,
+    }),
     (body) => dataManager.saveTimetableTask(body),
-    (item) => ({ subject: item.subject, day: item.day, startTime: item.startTime, endTime: item.endTime }),
-    (item) => ({ subject: item.subject, day: item.day, startTime: item.startTime, endTime: item.endTime }),
+    (item) => ({ subject: item.subject, topic: item.topic, technique: item.technique, day: item.day, startTime: item.startTime, endTime: item.endTime, completed: !!item.completed }),
+    (item) => ({ id: item.id, subject: item.subject, topic: item.topic, technique: item.technique, day: item.day, startTime: item.startTime, endTime: item.endTime, completed: !!item.completed }),
     (id) => dataManager.deleteTimetableTask(id)
   );
 

@@ -287,7 +287,7 @@ export const StudentArea: React.FC = () => {
   const entitlements = getEntitlements(user?.package);
 
   // Timetable — synced with the backend, visible to admin in near real time
-  const { items: timetable, add: addTimetableItem, remove: removeTimetableItem } = useTimetable(user?.username || '');
+  const { items: timetable, add: addTimetableItem, update: updateTimetableItem, remove: removeTimetableItem } = useTimetable(user?.username || '');
   // Resources — real data from the backend
   const [resources, setResources] = useState<StudyResource[]>([]);
 
@@ -350,7 +350,7 @@ export const StudentArea: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             {activeTab === 'dashboard' && <DashboardHome student={user} entitlements={entitlements} timetable={timetable} onNavigate={setActiveTab} />}
             {activeTab === 'plan' && <MonPlan student={user} entitlements={entitlements} onNavigate={setActiveTab} />}
-            {activeTab === 'planning' && <Planning timetable={timetable} onAdd={addTimetableItem} onRemove={removeTimetableItem} />}
+            {activeTab === 'planning' && <Planning timetable={timetable} onAdd={addTimetableItem} onUpdate={updateTimetableItem} onRemove={removeTimetableItem} />}
             {activeTab === 'progression' && <Progression student={user} timetable={timetable} />}
             {activeTab === 'contenus' && <MesContenus entitlements={entitlements} />}
             {activeTab === 'bibliotheque' && <Bibliotheque entitlements={entitlements} resources={resources} />}

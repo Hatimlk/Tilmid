@@ -11,7 +11,8 @@
         "seed:admin": "node seed.js",
         "test:api": "node --test test/api-ownership.test.js",
         "test:ratelimit": "node --test test/rate-limit.test.js",
-        "test:validation": "node --test test/input-validation.test.js"
+        "test:validation": "node --test test/input-validation.test.js",
+        "test:entitlements": "node --test test/entitlements.test.js"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

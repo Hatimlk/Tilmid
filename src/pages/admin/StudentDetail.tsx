@@ -63,10 +63,10 @@ function useStudentModules(studentId: string | undefined) {
       setData({
         plan: plan ? { objective: plan.objective || '', startDate: plan.start_date || '', obstacles: plan.obstacles || '', studentNote: plan.student_note || '', actions: plan.actions || [], habits: plan.habits || [] } : null,
         goals: goals.map((r: any) => ({ id: String(r.id), title: r.title, category: r.category, targetDate: r.target_date || '', progress: r.progress, status: r.status, nextAction: r.next_action || '' })),
-        revisions: revisions.map((r: any) => ({ id: String(r.id), subject: r.subject, chapter: r.chapter || '', durationMin: r.duration_min, technique: r.technique || '', understanding: r.understanding, date: r.session_date })),
-        habits: habits.map((r: any) => ({ id: String(r.id), name: r.name, days: r.days })),
+        revisions: revisions.map((r: any) => ({ id: String(r.id), subject: r.subject, chapter: r.chapter || '', durationMin: r.duration_min, technique: r.technique || '', understanding: r.understanding, date: r.session_date, startedAt: r.started_at || null, completed: !!Number(r.completed), completedAt: r.completed_at || null })),
+        habits: habits.map((r: any) => ({ id: String(r.id), name: r.name, days: r.days, weekStart: r.week_start || '' })),
         checkins: checkins.map((r: any) => ({ id: String(r.id), date: r.created_at, adherence: r.adherence, daysRespected: r.days_respected, obstacle: r.obstacle || '', concentration: r.concentration, success: r.success || '', needsAdjustment: !!r.needs_adjustment })),
-        timetable: timetable.map((r: any) => ({ id: String(r.id), subject: r.subject, day: r.day, startTime: r.start_time, endTime: r.end_time })),
+        timetable: timetable.map((r: any) => ({ id: String(r.id), subject: r.subject, topic: r.topic || '', technique: r.technique || '', day: r.day, startTime: r.start_time, endTime: r.end_time, completed: !!Number(r.completed), completedAt: r.completed_at || null })),
         coachingSessions,
         feedback,
         courseModules: courseModuleRows.map((r: any) => ({ id: r.id, slug: r.slug, title: r.title, description: r.description || '', position: r.position, videoUrl: r.video_url, videoSource: r.video_source, watchedSeconds: Number(r.watched_seconds || 0), durationSeconds: Number(r.duration_seconds || 0), progressPercent: Number(r.progress_percent || 0), completed: !!Number(r.completed) })),

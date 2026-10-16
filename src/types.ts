@@ -44,9 +44,13 @@ export interface CourseModule {
 export interface TimetableTask {
   id: string;
   subject: string;
+  topic?: string;
+  technique?: string;
   startTime: string;
   endTime: string;
   day: string;
+  completed?: boolean;
+  completedAt?: string | null;
 }
 
 export interface VideoReel {

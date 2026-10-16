@@ -40,7 +40,7 @@ export const DashboardHome: React.FC<{
   const firstName = student.name?.split(' ')[0] || student.name;
   const todayIndex = (new Date().getDay() + 6) % 7; // Monday = 0
   const todayName = DAYS_FR[todayIndex];
-  const todaysSessions = timetable.filter((t) => t.day === todayName);
+  const todaysSessions = timetable.filter((t) => t.day === todayName && !t.completed);
 
   const planActionsDone = plan.record.actions.filter((a) => a.done).length;
   const planActionsTotal = plan.record.actions.length;
@@ -65,7 +65,7 @@ export const DashboardHome: React.FC<{
   const weeklyMinutesByDay = useMemo(() => {
     const now = new Date();
     const buckets = [0, 0, 0, 0, 0, 0, 0];
-    revisions.items.forEach((r) => {
+    revisions.items.filter((revision) => revision.completed).forEach((r) => {
       const d = new Date(r.date);
       const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
       if (diffDays >= 0 && diffDays < 7) {
