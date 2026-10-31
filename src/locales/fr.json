@@ -824,6 +824,55 @@
       "primaryButton": "Explorer les écoles",
       "secondaryButton": "Commencer mon orientation"
     },
+    "detail": {
+      "seoTitle": "{{name}}{{acronym}} — Écoles Supérieures",
+      "seoDescription": "{{name}} — établissement {{type}} à {{city}}. Filières : {{fields}}. Admission et conditions d'accès sur Tilmid.",
+      "backToSchools": "Retour aux écoles",
+      "favorite": "Favori",
+      "overview": "Aperçu",
+      "overviewText": "{{name}}{{acronym}} est un établissement {{type}} situé à {{city}}, proposant des formations en {{fields}}.",
+      "fields": "Filières",
+      "accessConditions": "Conditions d'accès",
+      "information2026": "Informations 2026",
+      "network": "Réseau / catégorie",
+      "authority": "Université / tutelle",
+      "mainDomain": "Domaine principal",
+      "degree": "Diplôme / niveau",
+      "bacProfiles": "Bacs / profils",
+      "verificationLevel": "Niveau de vérification",
+      "tuition": "Frais de scolarité",
+      "careers": "Débouchés",
+      "notAvailable": "Information non disponible",
+      "contests2026": "Concours et dates 2026",
+      "status": "Statut",
+      "deadline": "Date limite",
+      "toVerify": "À vérifier",
+      "notProvided": "Non renseignée",
+      "schoolSource": "Source établissement",
+      "contestSource": "Source concours",
+      "faqTitle": "Questions fréquentes",
+      "faq": {
+        "q1": {
+          "q": "Ces informations sont-elles garanties exactes ?",
+          "a": "Les informations affichées sont générales et à titre indicatif. Vérifiez toujours les conditions d'accès, le programme et les modalités directement auprès de l'établissement avant de vous engager."
+        },
+        "q2": {
+          "q": "Puis-je comparer cette école avec d'autres ?",
+          "a": "Oui, utilisez le bouton comparateur pour l'ajouter à votre sélection et la comparer à d'autres établissements."
+        }
+      },
+      "helpTitle": "Besoin d'aide pour choisir ?",
+      "helpText": "Notre équipe peut vous aider à comprendre si cet établissement correspond à votre profil.",
+      "whatsapp": "Parler sur WhatsApp",
+      "similarSchools": "Écoles similaires",
+      "metadata": {
+        "publicUniversity": "Université publique",
+        "encgDegree": "Diplôme ENCG",
+        "economicManagementScienceBacs": "Bacs économiques, gestion et scientifiques",
+        "officialSourceVerified": "Vérifié / source officielle",
+        "expired": "Expiré"
+      }
+    },
     "types": {
       "public": "Public",
       "private": "Privé"
