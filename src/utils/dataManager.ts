@@ -149,8 +149,10 @@ export const dataManager = {
     return students.map(mapStudent);
   },
 
-  loginStudent: async (username: string, password: string): Promise<{ token: string; user: Student }> => {
-    const res = await api.post('/students/login', { username, password });
+  loginStudent: async (email: string, password: string): Promise<{ token: string; user: Student }> => {
+    // Keep the established API field for backward compatibility; the server
+    // already resolves this value against the student's e-mail address.
+    const res = await api.post('/students/login', { username: email, password });
     return { ...res, user: mapStudent(res.user) };
   },
 

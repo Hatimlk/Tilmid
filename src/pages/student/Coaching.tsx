@@ -99,7 +99,7 @@ const IndividualSessions: React.FC<{ allowance: number }> = ({ allowance }) => {
             icon={Calendar}
             title="Aucune séance programmée"
             description="Contactez votre coach pour planifier votre première séance de coaching."
-            cta={{ label: 'Planifier sur WhatsApp', href: 'https://wa.me/212703749901' }}
+            cta={{ label: 'Planifier sur WhatsApp', href: 'https://wa.me/212708838299' }}
           />
         </Card>
       </div>

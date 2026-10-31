@@ -93,7 +93,7 @@ const SEO = ({
                     ],
                     "contactPoint": {
                         "@type": "ContactPoint",
-                        "telephone": "+212-778-104-220",
+                        "telephone": "+212-708-838-299",
                         "contactType": "customer service",
                         "areaServed": "MA",
                         "availableLanguage": ["Arabic", "French"]

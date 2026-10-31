@@ -43,7 +43,7 @@ const TESTIMONIALS = [
   img0604, img0605, img0606, img0710, img0726, img0727, img2756, img2944, img2945, img2947
 ];
 
-const WHATSAPP_URL = 'https://wa.me/message/GN4XKUOMHNHGO1';
+const WHATSAPP_URL = 'https://wa.me/212708838299';
 
 const COACHING_AR: Record<string, string> = {
   'Nos formules': 'باقاتنا',

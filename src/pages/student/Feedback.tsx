@@ -17,7 +17,7 @@ export const Feedback: React.FC<{ entitlements: Entitlements }> = ({ entitlement
     return (
       <div>
         <PageHeader title="Feedback" />
-        <LockedState title="Le feedback personnalisé n'est pas inclus dans votre formule" description="Le feedback de votre coach est disponible avec les formules Boost et Premium." />
+        <LockedState title="Le feedback personnalisé nécessite une formule active" description="Le feedback de votre coach est disponible avec toutes les formules Mouwakaba." />
       </div>
     );
   }
@@ -30,7 +30,7 @@ export const Feedback: React.FC<{ entitlements: Entitlements }> = ({ entitlement
         <Card className="p-8 max-w-lg"><div className="h-20 rounded-xl bg-slate-50 animate-pulse" /></Card>
       ) : entries.length === 0 ? (
         <Card className="p-8 max-w-lg">
-          <EmptyState icon={MessageSquare} title="Votre feedback apparaîtra ici après son envoi" description="Après votre première séance ou votre premier Check-in, le feedback de votre coach sera disponible sur cette page." />
+          <EmptyState icon={MessageSquare} title="Votre feedback apparaîtra ici après son envoi" description="Dès que votre coach vous envoie un feedback, il sera disponible sur cette page." />
         </Card>
       ) : (
         <div className="space-y-3 max-w-lg">

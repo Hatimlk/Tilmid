@@ -372,7 +372,7 @@ const TawjihAIAdvisor: React.FC = () => {
             </p>
 
             <div className="flex flex-col gap-3 w-full">
-              <a href="https://wa.me/212703749901" target="_blank" rel="noreferrer" className="px-8 py-3.5 bg-white text-slate-900 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-colors text-center flex items-center justify-center">{t('programDetails.advisor.chatBtn')}</a>
+              <a href="https://wa.me/212708838299" target="_blank" rel="noreferrer" className="px-8 py-3.5 bg-white text-slate-900 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-colors text-center flex items-center justify-center">{t('programDetails.advisor.chatBtn')}</a>
               <button onClick={() => {
                 setStep('intro');
                 setLevel('');
@@ -818,7 +818,7 @@ const OrientationHero: React.FC<{
                   <ArrowLeft size={18} className="transform ltr:rotate-180 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <a
-                  href="https://wa.me/212703749901"
+                  href="https://wa.me/212708838299"
                   target="_blank"
                   rel="noreferrer"
                   className="w-full sm:w-auto h-[52px] px-8 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-[15px] hover:border-blue-200 hover:text-blue-700 hover:bg-blue-50/50 transition-colors flex items-center justify-center gap-2.5"
@@ -1031,7 +1031,7 @@ const OrientationFinalCTA: React.FC = () => {
                 <ArrowLeft size={20} className="transform ltr:rotate-180" />
               </button>
               <a
-                href="https://wa.me/212703749901"
+                href="https://wa.me/212708838299"
                 target="_blank"
                 rel="noreferrer"
                 className="w-full sm:w-auto px-9 py-4 bg-white/5 text-white border border-white/15 rounded-xl font-black text-base md:text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-3"
@@ -1364,7 +1364,7 @@ export const ProgramDetails: React.FC = () => {
                     <p className="text-slate-500 mb-7 text-sm font-bold leading-relaxed px-2">{helpDesc}</p>
 
                     <div className="space-y-3">
-                      <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noreferrer" className="w-full min-h-[52px] py-3.5 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 text-base group/btn active:scale-95 transition-all relative overflow-hidden">
+                      <a href="https://wa.me/212708838299" target="_blank" rel="noreferrer" className="w-full min-h-[52px] py-3.5 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(37,211,102,0.3)] flex items-center justify-center gap-3 text-base group/btn active:scale-95 transition-all relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                         <MessageCircle size={22} fill="white" className="relative z-10" />
                         <span className="relative z-10">{helpWhatsapp}</span>

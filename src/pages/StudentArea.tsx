@@ -101,28 +101,29 @@ const StudentWelcomePanel: React.FC<{ t: any }> = ({ t }) => {
 };
 
 const StudentLoginGate: React.FC<{
-  onLogin: (username: string, password: string) => Promise<void>;
+  onLogin: (email: string, password: string) => Promise<void>;
   loginPending: boolean;
   errorKind: LoginErrorKind;
   loginSuccess: boolean;
 }> = ({ onLogin, loginPending, errorKind, loginSuccess }) => {
   const { t } = useTranslation();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({});
-  const usernameRef = useRef<HTMLInputElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const errors: { username?: string; password?: string } = {};
-    if (!username.trim()) errors.username = t('studentLogin.errors.emptyIdentifier');
+    const errors: { email?: string; password?: string } = {};
+    if (!email.trim()) errors.email = t('studentLogin.errors.emptyEmail');
+    else if (!/^\S+@\S+\.\S+$/.test(email.trim())) errors.email = t('studentLogin.errors.invalidEmail');
     if (!password) errors.password = t('studentLogin.errors.emptyPassword');
     setFieldErrors(errors);
-    if (errors.username) { usernameRef.current?.focus(); return; }
+    if (errors.email) { emailRef.current?.focus(); return; }
     if (errors.password) return;
-    onLogin(username, password);
+    onLogin(email.trim(), password);
   };
 
   const handlePasswordKeyEvent = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -165,27 +166,28 @@ const StudentLoginGate: React.FC<{
                 {errorKind && <LoginAlert kind={errorKind} t={t} />}
 
                 <div>
-                  <label htmlFor="student-username" className="block text-[13px] font-bold text-slate-700 mb-2">{t('studentLogin.identifierLabel')}</label>
+                  <label htmlFor="student-email" className="block text-[13px] font-bold text-slate-700 mb-2">{t('studentLogin.emailLabel')}</label>
                   <div className="relative">
                     <User size={18} className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     <input
-                      id="student-username"
-                      ref={usernameRef}
-                      type="text"
-                      autoComplete="username"
-                      value={username}
-                      onChange={(e) => { setUsername(e.target.value); setFieldErrors((f) => ({ ...f, username: undefined })); }}
-                      placeholder={t('studentLogin.identifierPlaceholder')}
-                      aria-invalid={!!fieldErrors.username}
-                      aria-describedby={fieldErrors.username ? 'username-error' : undefined}
-                      className={`w-full h-14 ps-11 pe-4 rounded-2xl border outline-none font-medium text-[15px] bg-[#F9FAFC] transition-all focus:bg-white ${fieldErrors.username ? 'border-red-400' : 'border-slate-200 focus:border-primary'
+                      id="student-email"
+                      ref={emailRef}
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setFieldErrors((f) => ({ ...f, email: undefined })); }}
+                      placeholder={t('studentLogin.emailPlaceholder')}
+                      aria-invalid={!!fieldErrors.email}
+                      aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+                      className={`w-full h-14 ps-11 pe-4 rounded-2xl border outline-none font-medium text-[15px] bg-[#F9FAFC] transition-all focus:bg-white ${fieldErrors.email ? 'border-red-400' : 'border-slate-200 focus:border-primary'
                         }`}
-                      style={fieldErrors.username ? { boxShadow: '0 0 0 4px rgba(240,68,56,.08)' } : undefined}
-                      onFocus={(e) => { if (!fieldErrors.username) e.currentTarget.style.boxShadow = '0 0 0 4px rgba(22,139,255,.10)'; }}
+                      style={fieldErrors.email ? { boxShadow: '0 0 0 4px rgba(240,68,56,.08)' } : undefined}
+                      onFocus={(e) => { if (!fieldErrors.email) e.currentTarget.style.boxShadow = '0 0 0 4px rgba(22,139,255,.10)'; }}
                       onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                     />
                   </div>
-                  {fieldErrors.username && <p id="username-error" className="mt-1.5 text-[12px] font-bold text-red-500">{fieldErrors.username}</p>}
+                  {fieldErrors.email && <p id="email-error" className="mt-1.5 text-[12px] font-bold text-red-500">{fieldErrors.email}</p>}
                 </div>
 
                 <div>
@@ -227,7 +229,7 @@ const StudentLoginGate: React.FC<{
                 </div>
 
                 <div className="flex justify-end">
-                  <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold text-primary hover:underline">
+                  <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold text-primary hover:underline">
                     {t('studentLogin.helpLink')}
                   </a>
                 </div>
@@ -255,7 +257,7 @@ const StudentLoginGate: React.FC<{
             <div className="mt-7 pt-6 border-t border-slate-100">
               <p className="text-[13px] font-bold text-slate-700 mb-1">{t('studentLogin.noAccount.title')}</p>
               <p className="text-[12.5px] text-slate-400 font-medium leading-relaxed mb-3">{t('studentLogin.noAccount.desc')}</p>
-              <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-primary hover:gap-2.5 transition-all">
+              <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-primary hover:gap-2.5 transition-all">
                 {t('studentLogin.noAccount.cta')} <ArrowLeft size={14} className="transform ltr:rotate-180" />
               </a>
             </div>
@@ -304,11 +306,11 @@ export const StudentArea: React.FC = () => {
     loadStudentData();
   }, [user?.username]);
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     setLoginErrorKind(null);
     setLoginPending(true);
     try {
-      const { token, user: account } = await dataManager.loginStudent(username, password);
+      const { token, user: account } = await dataManager.loginStudent(email, password);
       setLoginPending(false);
       setLoginSuccess(true);
       // Brief confirmation before handing off to the dashboard — avoids an

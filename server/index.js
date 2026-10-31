@@ -262,9 +262,9 @@ app.get('/api/health', async (req, res) => {
 // visitors included. Falls back to the current hardcoded values if the row is
 // somehow missing so the footer is never blank.
 const SETTINGS_DEFAULTS = {
-    contact_phone: '+212778104220',
+    contact_phone: '+212708838299',
     contact_email: 'contact@tilmide.ma',
-    whatsapp_number: 'https://wa.me/message/GN4XKUOMHNHGO1',
+    whatsapp_number: 'https://wa.me/212708838299',
     instagram_url: 'https://www.instagram.com/tilmid.official/',
     tiktok_url: 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc',
     facebook_url: 'https://web.facebook.com/profile.php?id=61568646044886',
@@ -274,7 +274,11 @@ const SETTINGS_DEFAULTS = {
 app.get('/api/settings', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM platform_settings WHERE id = 1');
-        res.json({ ...SETTINGS_DEFAULTS, ...(rows[0] || {}) });
+        const settings = { ...SETTINGS_DEFAULTS, ...(rows[0] || {}) };
+        // Upgrade the previously shipped contact values in existing databases.
+        if (settings.contact_phone === '+212778104220') settings.contact_phone = SETTINGS_DEFAULTS.contact_phone;
+        if (settings.whatsapp_number === 'https://wa.me/message/GN4XKUOMHNHGO1') settings.whatsapp_number = SETTINGS_DEFAULTS.whatsapp_number;
+        res.json(settings);
     } catch (err) {
         console.error(err);
         res.json(SETTINGS_DEFAULTS);
@@ -664,6 +668,9 @@ app.post('/api/students', requireAdmin, validateBody(S.student), async (req, res
     const { id, name, username, email, grade, status, avatar, password } = req.body;
     const pkg = normalizePackage(req.body.package);
     const isUpdate = id && /^\d+$/.test(String(id));
+    if (!email) {
+        return res.status(400).json({ message: 'Student email is required' });
+    }
     if (password && !isAcceptablePassword(password)) {
         return res.status(400).json({ message: 'Password must be 8 to 72 characters' });
     }

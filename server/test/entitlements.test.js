@@ -23,6 +23,12 @@ describe('Mouwakaba server entitlements', () => {
         assert.equal(getEntitlements('premium').checkInFrequencyDays, 14);
     });
 
+    it('makes personal feedback available in every Mouwakaba package', () => {
+        for (const packageName of VALID_PACKAGES) {
+            assert.equal(getEntitlements(packageName).personalFeedback, true, packageName);
+        }
+    });
+
     it('denies missing or unknown packages without throwing', () => {
         assert.equal(hasEntitlement(null, 'learningContent'), false);
         assert.equal(hasEntitlement('unknown', 'collectiveSupport'), false);

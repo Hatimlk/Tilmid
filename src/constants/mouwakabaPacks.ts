@@ -31,6 +31,7 @@ export const PACKS: PackDef[] = [
       'Outils pratiques prêts à l’emploi',
       'Groupe WhatsApp privé',
       'Session collective de 60 minutes',
+      'Feedback personnalisé',
     ],
     duration: 'Accès plateforme 10 mois',
     personalSupport: 'Accompagnement collectif',

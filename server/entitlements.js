@@ -7,7 +7,7 @@ const PLAN_ENTITLEMENTS = Object.freeze({
     essentiel: Object.freeze({
         platformAccess: true, learningContent: true, practicalTools: true,
         collectiveSupport: true, personalPlanDays: null, coachingSessions: 0,
-        checkInCount: 0, checkInFrequencyDays: null, personalFeedback: false,
+        checkInCount: 0, checkInFrequencyDays: null, personalFeedback: true,
         priorityBooking: false, finalReport: false,
     }),
     boost: Object.freeze({

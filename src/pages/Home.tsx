@@ -408,7 +408,7 @@ export const Home: React.FC = () => {
                 <IntentChip to="/tawjih" icon={Compass} label={t('home.intentFiliere')} />
                 <IntentChip to="/bac-simulator" icon={Calculator} label={t('home.intentChances')} />
                 <IntentChip to="/higher-schools" icon={Building2} label={t('home.intentEcoles')} />
-                <IntentChip href="https://wa.me/message/GN4XKUOMHNHGO1" icon={Users} label={t('home.intentConseiller')} />
+                <IntentChip href="https://wa.me/212708838299" icon={Users} label={t('home.intentConseiller')} />
               </div>
             </div>
 
@@ -661,7 +661,7 @@ export const Home: React.FC = () => {
                   </Link>
 
                   <a
-                    href="https://wa.me/message/GN4XKUOMHNHGO1"
+                    href="https://wa.me/212708838299"
                     target="_blank"
                     rel="noreferrer"
                     className="w-full md:w-auto px-8 py-4 bg-transparent text-white border-2 border-white/20 hover:border-white hover:bg-white/5 rounded-[2rem] font-black text-lg transition-all flex items-center justify-center gap-3 group active:scale-95"

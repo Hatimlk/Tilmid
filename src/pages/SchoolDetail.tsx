@@ -267,7 +267,7 @@ export const SchoolDetail: React.FC = () => {
                 <div className="bg-white rounded-[1.75rem] border border-slate-100 shadow-sm p-6">
                   <h3 className="font-black text-slate-900 mb-4">{t('higherSchools.detail.helpTitle')}</h3>
                   <p className="text-slate-500 text-sm font-medium leading-relaxed mb-5">{t('higherSchools.detail.helpText')}</p>
-                  <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="w-full min-h-[48px] mb-3 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black text-sm transition-all">
+                  <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="w-full min-h-[48px] mb-3 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebc56] text-white rounded-2xl font-black text-sm transition-all">
                     <MessageCircle size={18} fill="white" />
                     {t('higherSchools.detail.whatsapp')}
                   </a>

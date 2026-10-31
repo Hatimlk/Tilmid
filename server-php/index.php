@@ -346,9 +346,9 @@ if ($request_uri === '/api/health' && $method === 'GET') {
 // visitors included. Falls back to the current hardcoded values if the row is
 // somehow missing so the footer is never blank.
 $SETTINGS_DEFAULTS = [
-    'contact_phone' => '+212778104220',
+    'contact_phone' => '+212708838299',
     'contact_email' => 'contact@tilmide.ma',
-    'whatsapp_number' => 'https://wa.me/message/GN4XKUOMHNHGO1',
+    'whatsapp_number' => 'https://wa.me/212708838299',
     'instagram_url' => 'https://www.instagram.com/tilmid.official/',
     'tiktok_url' => 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc',
     'facebook_url' => 'https://web.facebook.com/profile.php?id=61568646044886',
@@ -360,7 +360,11 @@ if ($request_uri === '/api/settings' && $method == 'GET') {
         $stmt = $pdo->query("SELECT * FROM platform_settings WHERE id = 1");
         $row = $stmt->fetch();
         $stored = array_filter($row ?: [], static fn($value) => $value !== null && $value !== '');
-        echo json_encode(array_merge($SETTINGS_DEFAULTS, $stored));
+        $settings = array_merge($SETTINGS_DEFAULTS, $stored);
+        // Upgrade the previously shipped contact values in existing databases.
+        if (($settings['contact_phone'] ?? '') === '+212778104220') $settings['contact_phone'] = $SETTINGS_DEFAULTS['contact_phone'];
+        if (($settings['whatsapp_number'] ?? '') === 'https://wa.me/message/GN4XKUOMHNHGO1') $settings['whatsapp_number'] = $SETTINGS_DEFAULTS['whatsapp_number'];
+        echo json_encode($settings);
     } catch (PDOException $e) {
         echo json_encode($SETTINGS_DEFAULTS);
     }
@@ -793,6 +797,11 @@ if ($request_uri === '/api/students' && $method == 'POST') {
     $status = $input['status'] ?? 'active';
     $avatar = $input['avatar'] ?? null;
     $password = $input['password'] ?? null; // optional - only set/changed when provided
+    if (!$email) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Student email is required']);
+        exit;
+    }
     if ($password !== null && $password !== '' && !isAcceptablePassword((string)$password)) {
         http_response_code(400);
         echo json_encode(['message' => 'Password must be 8 to 72 characters']);

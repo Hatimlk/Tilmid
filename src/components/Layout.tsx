@@ -156,7 +156,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ripple pointer-events-none"></span>
           <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ripple animation-delay-1000 pointer-events-none"></span>
           <a 
-            href="https://wa.me/message/GN4XKUOMHNHGO1" 
+            href="https://wa.me/212708838299"
             target="_blank" 
             rel="noopener noreferrer"
             className="relative block bg-[#25D366] text-white p-4 lg:p-5 rounded-full shadow-2xl shadow-green-500/40 hover:shadow-green-500/60 hover:-translate-y-2 active:scale-90 transition-all z-10"

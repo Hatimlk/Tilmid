@@ -83,9 +83,10 @@ const parseRows = (rawRows: Record<string, unknown>[], students: Student[], coac
     else if (existingUsers.has(userKey)) errors.push('Identifiant déjà utilisé');
     else if (seenUsers.has(userKey)) errors.push('Identifiant dupliqué');
     if (!password) errors.push('Mot de passe manquant'); else { const problem = passwordProblem(password); if (problem) errors.push(problem.replace(/\.$/, '')); }
-    if (email && !EMAIL.test(email)) errors.push('E-mail invalide');
-    else if (email && existingEmails.has(emailKey)) errors.push('E-mail déjà utilisé');
-    else if (email && seenEmails.has(emailKey)) errors.push('E-mail dupliqué');
+    if (!email) errors.push('E-mail manquant');
+    else if (!EMAIL.test(email)) errors.push('E-mail invalide');
+    else if (existingEmails.has(emailKey)) errors.push('E-mail déjà utilisé');
+    else if (seenEmails.has(emailKey)) errors.push('E-mail dupliqué');
     if (rawStatus && !status) errors.push('Statut inconnu');
     if (rawPackage && pkg === null && !['aucune', 'aucun', 'none', 'sansformule'].includes(normalize(rawPackage))) errors.push('Formule inconnue');
     if ((coachText || coachIdText) && !coach) errors.push('Coach introuvable');
@@ -160,7 +161,7 @@ export const StudentImportModal: React.FC<{
             <Upload size={26} className="mx-auto text-primary mb-3" /><p className="font-black text-slate-800 text-[14px]">Glissez votre fichier ici</p><p className="text-[12px] text-slate-400 font-medium my-2">CSV ou XLSX · 500 lignes maximum</p>
             <button onClick={() => inputRef.current?.click()} className="h-10 px-4 rounded-xl bg-white border border-slate-200 font-bold text-[12.5px] text-slate-700 hover:border-primary hover:text-primary">Choisir un fichier</button>
           </div>
-          <div className="flex items-center justify-between gap-3 mt-3"><p className="text-[11.5px] text-slate-500 font-medium">Colonnes requises : nom, identifiant et mot de passe.</p><button onClick={downloadTemplate} className="shrink-0 inline-flex items-center gap-1.5 text-[12px] font-bold text-primary hover:underline"><Download size={14} /> Télécharger le modèle</button></div>
+          <div className="flex items-center justify-between gap-3 mt-3"><p className="text-[11.5px] text-slate-500 font-medium">Colonnes requises : nom, identifiant, e-mail et mot de passe.</p><button onClick={downloadTemplate} className="shrink-0 inline-flex items-center gap-1.5 text-[12px] font-bold text-primary hover:underline"><Download size={14} /> Télécharger le modèle</button></div>
           {message && <p className="mt-4 flex items-start gap-2 text-[12.5px] font-bold text-amber-700 bg-amber-50 rounded-xl px-3 py-2.5"><AlertCircle size={16} className="shrink-0 mt-0.5" />{message}</p>}
           {rows.length > 0 && <div className="mt-5">
             <div className="flex flex-wrap items-center gap-2 mb-3"><span className="font-black text-slate-800 text-[13.5px] flex-1 truncate">{fileName}</span><span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11.5px] font-black">{validRows.length} valide{validRows.length !== 1 ? 's' : ''}</span>{rows.length > validRows.length && <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 text-[11.5px] font-black">{rows.length - validRows.length} à corriger</span>}</div>

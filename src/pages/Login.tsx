@@ -28,7 +28,7 @@ const MODULE_CHIPS = [
   { icon: Star, label: 'Témoignages' },
 ];
 
-const SUPPORT_URL = 'https://wa.me/message/GN4XKUOMHNHGO1';
+const SUPPORT_URL = 'https://wa.me/212708838299';
 
 type FormErrorKind = 'invalid' | 'network' | 'rateLimit' | null;
 

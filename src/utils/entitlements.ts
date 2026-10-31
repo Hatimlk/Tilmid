@@ -51,7 +51,7 @@ const ENTITLEMENTS: Record<MouwakabaPackage, Entitlements> = {
     coachingSessions: 0,
     checkInFrequencyDays: null,
     checkInCount: null,
-    personalFeedback: false,
+    personalFeedback: true,
     priorityBooking: false,
     finalReport: false,
     label: 'Essentiel',

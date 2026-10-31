@@ -21,7 +21,7 @@ export const Support: React.FC<{ entitlements: Entitlements }> = ({ entitlements
           <span className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3"><LifeBuoy size={19} /></span>
           <p className="font-black text-slate-900 text-[15px] mb-1">Support Tilmid</p>
           <p className="text-slate-500 text-[13px] font-medium mb-4">Questions techniques ou générales sur votre espace.</p>
-          <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-[#25D366] text-white rounded-xl font-bold text-[13px]">
+          <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-[#25D366] text-white rounded-xl font-bold text-[13px]">
             <MessageCircle size={16} /> Contacter le support
           </a>
         </Card>
@@ -31,7 +31,7 @@ export const Support: React.FC<{ entitlements: Entitlements }> = ({ entitlements
             <span className="w-11 h-11 rounded-2xl bg-blue-50 text-primary flex items-center justify-center mb-3"><Users size={19} /></span>
             <p className="font-black text-slate-900 text-[15px] mb-1">Groupe WhatsApp Mouwakaba</p>
             <p className="text-slate-500 text-[13px] font-medium mb-4">Espace collectif pour vos questions pendant les créneaux dédiés.</p>
-            <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-primary text-white rounded-xl font-bold text-[13px]">
+            <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-primary text-white rounded-xl font-bold text-[13px]">
               <MessageCircle size={16} /> Rejoindre le groupe
             </a>
           </Card>

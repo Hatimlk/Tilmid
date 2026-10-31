@@ -20,7 +20,7 @@ const fromSettings = (s: PlatformSettings): FormState => ({
 });
 
 const FIELDS: { key: keyof FormState; label: string; placeholder: string }[] = [
-  { key: 'contactPhone', label: 'Téléphone de contact', placeholder: '+212778104220' },
+  { key: 'contactPhone', label: 'Téléphone de contact', placeholder: '+212708838299' },
   { key: 'contactEmail', label: 'E-mail de contact', placeholder: 'contact@tilmide.ma' },
   { key: 'whatsappNumber', label: 'Lien WhatsApp', placeholder: 'https://wa.me/...' },
   { key: 'instagramUrl', label: 'Instagram', placeholder: 'https://www.instagram.com/...' },

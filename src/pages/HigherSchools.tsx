@@ -594,7 +594,7 @@ const EmptyState: React.FC<{ onReset: () => void }> = ({ onReset }) => {
       <p className="text-slate-500 font-medium max-w-md mx-auto mb-7">{t('higherSchools.empty.description')}</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <button onClick={onReset} className="px-6 py-3 min-h-[44px] bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">{t('higherSchools.explorer.resetButton')}</button>
-        <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">{t('higherSchools.empty.contactButton')}</a>
+        <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">{t('higherSchools.empty.contactButton')}</a>
       </div>
     </div>
   );
@@ -964,7 +964,7 @@ const OrientationCTA: React.FC = () => {
             <span>{t('higherSchools.orientationCTA.primaryButton')}</span>
             <ArrowLeft size={16} className="transform ltr:rotate-180" />
           </Link>
-          <a href="https://wa.me/message/GN4XKUOMHNHGO1" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all">
+          <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all">
             <MessageCircle size={16} />
             <span>{t('higherSchools.orientationCTA.secondaryButton')}</span>
           </a>

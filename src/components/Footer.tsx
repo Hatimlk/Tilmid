@@ -11,9 +11,9 @@ import { formatMaPhone, toTelHref } from '../utils/phone';
 // Hardcoded fallback — used until /api/settings resolves, and if it fails,
 // so the footer is never blank. Kept in sync with the admin "Paramètres" module.
 const FALLBACK_SETTINGS: PlatformSettings = {
-  contact_phone: '+212778104220',
+  contact_phone: '+212708838299',
   contact_email: 'contact@tilmide.ma',
-  whatsapp_number: 'https://wa.me/message/GN4XKUOMHNHGO1',
+  whatsapp_number: 'https://wa.me/212708838299',
   instagram_url: 'https://www.instagram.com/tilmid.official/',
   tiktok_url: 'https://www.tiktok.com/@tilmid.official?is_from_webapp=1&sender_device=pc',
   facebook_url: 'https://web.facebook.com/profile.php?id=61568646044886',

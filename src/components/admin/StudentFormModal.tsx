@@ -46,8 +46,8 @@ export const StudentFormModal: React.FC<{
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name?.trim() || !form.username?.trim()) {
-      setError('Le nom et l\'identifiant sont obligatoires.');
+    if (!form.name?.trim() || !form.username?.trim() || !form.email?.trim()) {
+      setError("Le nom, l'identifiant interne et l'e-mail sont obligatoires.");
       return;
     }
     if (!isEdit && !form.password) {
@@ -77,8 +77,8 @@ export const StudentFormModal: React.FC<{
     }
   };
 
-  const copyUsername = () => {
-    navigator.clipboard.writeText(created?.username || '');
+  const copyEmail = () => {
+    navigator.clipboard.writeText(created?.email || '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -99,10 +99,10 @@ export const StudentFormModal: React.FC<{
             </p>
             <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between mb-6">
               <div className="text-start">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Identifiant</p>
-                <p className="font-mono font-black text-slate-800" dir="ltr">{created.username}</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">E-mail de connexion</p>
+                <p className="font-mono font-black text-slate-800" dir="ltr">{created.email}</p>
               </div>
-              <button onClick={copyUsername} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-[12.5px] font-bold text-slate-600 hover:border-primary hover:text-primary transition-colors">
+              <button onClick={copyEmail} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-[12.5px] font-bold text-slate-600 hover:border-primary hover:text-primary transition-colors">
                 {copied ? <CheckCircle2 size={14} className="text-emerald-600" /> : <Copy size={14} />}
                 {copied ? 'Copié' : 'Copier'}
               </button>
@@ -129,12 +129,12 @@ export const StudentFormModal: React.FC<{
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Identifiant</label>
+                  <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Identifiant interne</label>
                   <input required dir="ltr" value={form.username || ''} onChange={(e) => setForm({ ...form, username: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px]" placeholder="sara.elamrani" />
                 </div>
                 <div>
                   <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">E-mail</label>
-                  <input type="email" dir="ltr" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px]" placeholder="sara@exemple.com" />
+                  <input required type="email" dir="ltr" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full h-12 px-3.5 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-[14px]" placeholder="sara@exemple.com" />
                 </div>
               </div>
 
