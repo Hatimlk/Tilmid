@@ -17,6 +17,7 @@ import { Login } from './pages/Login';
 const StudentArea = lazy(() => import('./pages/StudentArea').then(m => ({ default: m.StudentArea })));
 const HigherSchools = lazy(() => import('./pages/HigherSchools').then(m => ({ default: m.HigherSchools })));
 const SchoolDetail = lazy(() => import('./pages/SchoolDetail').then(m => ({ default: m.SchoolDetail })));
+const InstitutionDetail = lazy(() => import('./pages/InstitutionDetail').then(m => ({ default: m.InstitutionDetail })));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminStudents = lazy(() => import('./pages/admin/Students').then(m => ({ default: m.AdminStudents })));
@@ -57,6 +58,7 @@ function App() {
           <Route path="/coaching-offer" element={<CoachingOffer />} />
           <Route path="/coaching-offer/inscription" element={<CoachingRegistration />} />
           <Route path="/higher-schools" element={<HigherSchools />} />
+          <Route path="/higher-schools/institution/:institutionSlug" element={<InstitutionDetail />} />
           <Route path="/higher-schools/:slug" element={<SchoolDetail />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/login" element={<Login />} />

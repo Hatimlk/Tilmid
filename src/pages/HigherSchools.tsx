@@ -1,1180 +1,220 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Search, X, MapPin, GraduationCap, Compass, ChevronDown, Heart, Scale,
-  SlidersHorizontal, ArrowLeft, Check, Building2, Briefcase,
-  Code2, Stethoscope, Ruler, Atom, Sprout, Calculator, MessageCircle,
-  Cog, Frown, Target, Award
+  ArrowLeft, Award, Building2, ChevronDown, ChevronLeft, ChevronRight,
+  Compass, GraduationCap, Heart, MapPin, Search, SlidersHorizontal, X,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import {
-  School, SCHOOLS, FIELDS, CITIES, ACCESS_LEVELS, ADMISSION_METHODS,
-  SchoolFilters, EMPTY_FILTERS, filterSchools, getFieldCounts, getCityCounts,
-  getSuggestions, toSlug, computeMatch, MIN_MATCH_DIMENSIONS, MatchResult, SchoolProfile
-} from '../constants/schools';
-import { useFavorites, useCompareList } from '../hooks/useSchoolCollections';
-import { useSchoolProfile } from '../hooks/useSchoolProfile';
-import { MatchScoreBadge } from '../components/MatchScoreBadge';
-
-/* -------------------------------------------------------------------------- */
-/* Shared primitives                                                          */
-/* -------------------------------------------------------------------------- */
-
-const useReveal = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) { setVisible(true); return; }
-    const el = ref.current;
-    if (!el) return;
-    const fallback = window.setTimeout(() => setVisible(true), 1800);
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setVisible(true); window.clearTimeout(fallback); observer.disconnect(); }
-    }, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
-    observer.observe(el);
-    return () => { observer.disconnect(); window.clearTimeout(fallback); };
-  }, []);
-  return { ref, visible };
-};
-
-const Reveal: React.FC<{ children: React.ReactNode; delay?: number; className?: string }> = ({ children, delay = 0, className = '' }) => {
-  const { ref, visible } = useReveal();
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-out ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
-      {children}
-    </div>
-  );
-};
-
-const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-primary/5 text-primary ring-1 ring-primary/10">
-    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-    {children}
-  </span>
-);
-
-const SectionHeader: React.FC<{ eyebrow: string; title: string; subtitle?: string; className?: string }> = ({ eyebrow, title, subtitle, className = '' }) => (
-  <Reveal className={`text-center max-w-2xl mx-auto space-y-4 ${className}`}>
-    <Eyebrow>{eyebrow}</Eyebrow>
-    <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{title}</h2>
-    {subtitle && <p className="text-slate-500 text-base md:text-lg font-medium leading-relaxed">{subtitle}</p>}
-  </Reveal>
-);
-
-const FIELD_ICONS: Record<string, any> = {
-  'Ingénierie': Cog,
-  'Informatique & Digital': Code2,
-  'Médecine & Santé': Stethoscope,
-  'Commerce & Management': Briefcase,
-  'Architecture': Ruler,
-  'Sciences': Atom,
-  'Agriculture & Vétérinaire': Sprout,
-  'Économie & Statistique': Calculator,
-};
-
-const LOCALIZED_SCHOOL_FAMILIES = [
-  'ENSAM', 'FSJES', 'ENCG', 'ENSA', 'FST', 'EST', 'FMP', 'FLSH',
-  'ESEF', 'ENA', 'ENS', 'FEG', 'FP', 'FS',
-];
-
-const getLocalizedSchoolLabel = (
-  school: School,
-  language: string,
-  t: ReturnType<typeof useTranslation>['t'],
-) => {
-  if (!language.startsWith('ar')) {
-    return { name: school.name, acronym: school.acronym };
-  }
-
-  const city = t(`higherSchools.cities.${school.city}`, { defaultValue: school.city });
-  const family = LOCALIZED_SCHOOL_FAMILIES.find((key) =>
-    school.acronym === key || school.acronym?.startsWith(`${key} `),
-  );
-
-  if (!family) return { name: school.name, acronym: school.acronym };
-
-  return {
-    name: `${t(`higherSchools.schoolFamilies.${family}`)} ${city}`,
-    acronym: `${family} ${city}`,
-  };
-};
-
-/* -------------------------------------------------------------------------- */
-/* School logo / badge / chips                                               */
-/* -------------------------------------------------------------------------- */
-
-const SchoolLogo: React.FC<{ school: School; size?: 'sm' | 'md' | 'lg' }> = ({ school, size = 'md' }) => {
-  const dims = size === 'lg' ? 'w-16 h-16 text-lg' : size === 'sm' ? 'w-10 h-10 text-xs' : 'w-12 h-12 text-sm';
-  const initials = (school.acronym || school.name).split(/[\s-]+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase().slice(0, 3);
-  return (
-    <div className={`${dims} rounded-2xl bg-blue-50 text-primary flex items-center justify-center font-black shrink-0 ring-1 ring-blue-100`}>
-      {initials || <GraduationCap size={20} />}
-    </div>
-  );
-};
-
-const TypeBadge: React.FC<{ type: School['type']; rawType?: string }> = ({ type, rawType = '' }) => {
-  const { t } = useTranslation();
-  const normalized = rawType.toLocaleLowerCase('fr');
-  const displayType = normalized.includes('militaire') ? 'military' : normalized.includes('partenariat') ? 'partnership' : type;
-  return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide ${displayType === 'military' ? 'bg-slate-800 text-white' : type === 'public' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>
-      {t(`higherSchools.types.${displayType}`)}
-    </span>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* School card                                                               */
-/* -------------------------------------------------------------------------- */
-
-const SchoolCard: React.FC<{
-  school: School;
-  isFavorite: boolean;
-  onToggleFavorite: () => void;
-  isCompared: boolean;
-  onToggleCompare: () => void;
-  compareDisabled: boolean;
-  match?: MatchResult | null;
-}> = ({ school, isFavorite, onToggleFavorite, isCompared, onToggleCompare, compareDisabled, match }) => {
-  const { t, i18n } = useTranslation();
-  const extraFields = Math.max(0, school.fields.length - 2);
-  const schoolLabel = getLocalizedSchoolLabel(school, i18n.language, t);
-  return (
-    <div className="group relative bg-white border border-slate-200 rounded-[22px] shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_42px_rgba(15,23,42,0.09)] hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col h-full">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <SchoolLogo school={school} />
-          <div className="flex flex-wrap items-center gap-1.5">
-            <TypeBadge type={school.type} rawType={school.rawType} />
-            {match && <MatchScoreBadge match={match} />}
-          </div>
-        </div>
-        <button
-          onClick={onToggleFavorite}
-          aria-pressed={isFavorite}
-          aria-label={isFavorite ? t('higherSchools.card.rmFromFav') : t('higherSchools.card.addToFav')}
-          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${isFavorite ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-300 hover:text-red-400'}`}
-        >
-          <Heart size={17} fill={isFavorite ? 'currentColor' : 'none'} />
-        </button>
-      </div>
-
-      <h3 className="text-[17px] font-black text-slate-900 mb-1.5 leading-snug line-clamp-2">{schoolLabel.name}</h3>
-      {schoolLabel.acronym && <p className="text-xs font-bold text-primary mb-3">{schoolLabel.acronym}</p>}
-
-      <div className="flex items-center gap-1.5 text-slate-500 text-[13px] font-semibold mb-4">
-        <MapPin size={14} className="text-slate-400" />
-        {t(`higherSchools.cities.${school.city}`, school.city)}
-      </div>
-
-      <div className="flex flex-wrap gap-1.5 mb-5">
-        {school.fields.slice(0, 2).map((f) => (
-          <span key={f} className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 text-[11px] font-bold">{t(`higherSchools.fields.${f}`, f)}</span>
-        ))}
-        {extraFields > 0 && (
-          <span className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[11px] font-bold">
-            {extraFields > 1 ? t('higherSchools.card.fieldsMorePlural', { count: extraFields }) : t('higherSchools.card.fieldsMore', { count: extraFields })}
-          </span>
-        )}
-      </div>
-
-      {school.degree && (
-        <div className="flex items-start gap-2 text-[12px] text-slate-500 font-semibold mb-4">
-          <Award size={14} className="text-slate-400 shrink-0 mt-0.5" />
-          <span className="line-clamp-2"><span className="font-black text-slate-600">{t('higherSchools.detail.diplomasAwarded')} :</span> {school.degree}</span>
-        </div>
-      )}
-
-      <div className="mt-auto pt-4 border-t border-slate-50 flex items-center gap-2">
-        <Link
-          to={`/higher-schools/${school.slug}`}
-          className="flex-1 min-h-[44px] flex items-center justify-center gap-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all"
-        >
-          <span>{t('higherSchools.card.viewSchool')}</span>
-          <ArrowLeft size={15} className="transform ltr:rotate-180" />
-        </Link>
-        <button
-          onClick={onToggleCompare}
-          disabled={!isCompared && compareDisabled}
-          aria-pressed={isCompared}
-          title={isCompared ? t('higherSchools.card.rmFromCompare') : t('higherSchools.card.addToCompare')}
-          className={`w-11 min-h-[44px] rounded-xl flex items-center justify-center border transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${isCompared ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-slate-200 text-slate-400 hover:text-primary hover:border-primary/40'}`}
-        >
-          <Scale size={16} />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Hero + search                                                             */
-/* -------------------------------------------------------------------------- */
-
-const POPULAR_CHIPS = [
-  { id: 'engineering', value: 'Ingénierie' },
-  { id: 'medicine', value: 'Médecine & Santé' },
-  { id: 'business', value: 'Commerce & Management' },
-  { id: 'it', value: 'Informatique & Digital' },
-  { id: 'architecture', value: 'Architecture' },
-  { id: 'public', value: 'Écoles publiques' },
-  { id: 'private', value: 'Écoles privées' }
-];
-
-const SchoolsHero: React.FC<{
-  query: string;
-  onQueryChange: (q: string) => void;
-  onSubmit: () => void;
-  onQuickFilter: (chip: string) => void;
-}> = ({ query, onQueryChange, onSubmit, onQuickFilter }) => {
-  const { t, i18n } = useTranslation();
-  const [focused, setFocused] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  const suggestions = useMemo(() => getSuggestions(query), [query]);
-  const flatSuggestions = useMemo(
-    () => [
-      ...suggestions.schools.map((s) => ({ type: 'school' as const, value: s.acronym || s.name, slug: s.slug })),
-      ...suggestions.fields.map((f) => ({ type: 'field' as const, value: f })),
-      ...suggestions.cities.map((c) => ({ type: 'city' as const, value: c })),
-    ],
-    [suggestions]
-  );
-  const showDropdown = focused && query.trim().length > 0 && flatSuggestions.length > 0;
-
-  useEffect(() => {
-    const onClickOutside = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setFocused(false);
-    };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
-
-  const selectSuggestion = (item: (typeof flatSuggestions)[number]) => {
-    if (item.type === 'field' || item.type === 'city') {
-      onQueryChange(item.value);
-    } else {
-      onQueryChange(item.value);
-    }
-    setFocused(false);
-    onSubmit();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown) {
-      if (e.key === 'Enter') onSubmit();
-      return;
-    }
-    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex((i) => Math.min(i + 1, flatSuggestions.length - 1)); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex((i) => Math.max(i - 1, -1)); }
-    else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (activeIndex >= 0 && flatSuggestions[activeIndex]) selectSuggestion(flatSuggestions[activeIndex]);
-      else { setFocused(false); onSubmit(); }
-    } else if (e.key === 'Escape') { setFocused(false); inputRef.current?.blur(); }
-  };
-
-  return (
-    <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-24 overflow-hidden bg-gradient-to-b from-[#F6FAFF] to-white">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] start-[10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[130px]"></div>
-        <div className="absolute top-[10%] end-[5%] w-[420px] h-[420px] bg-purple-500/[0.06] rounded-full blur-[120px]"></div>
-        <div
-          className="absolute inset-0 opacity-[0.4] [mask-image:radial-gradient(ellipse_55%_55%_at_50%_10%,black,transparent)]"
-          style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '28px 28px' }}
-        ></div>
-      </div>
-
-      <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
-        <Reveal className="inline-flex items-center gap-2 mb-7 px-4 py-2 rounded-full bg-white border border-blue-100 shadow-sm text-[13px] font-bold text-slate-700">
-          <Compass size={14} className="text-primary" />
-          <span>{t('higherSchools.hero.guide')}</span>
-        </Reveal>
-
-        <Reveal delay={80}>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[60px] font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1] max-w-4xl mx-auto">
-            {t('higherSchools.hero.title1')} <span className="text-primary">{t('higherSchools.hero.title2')}</span>
-          </h1>
-        </Reveal>
-
-        <Reveal delay={140}>
-          <p className="text-[17px] md:text-lg text-slate-500 max-w-[650px] mx-auto leading-[1.65] font-medium mb-10">
-            {t('higherSchools.hero.description')}
-          </p>
-        </Reveal>
-
-        <Reveal delay={200} className="max-w-2xl mx-auto relative z-30">
-          <div ref={wrapperRef} className="relative">
-            <div className="flex items-center gap-2 bg-white rounded-2xl border border-slate-200 shadow-[0_12px_32px_rgba(15,23,42,0.08)] p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15 transition-all">
-              <Search size={20} className="text-slate-400 ms-3 shrink-0" />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(e) => { onQueryChange(e.target.value); setActiveIndex(-1); }}
-                onFocus={() => setFocused(true)}
-                onKeyDown={handleKeyDown}
-                placeholder={t('higherSchools.hero.searchPlaceholder')}
-                aria-label={t('higherSchools.hero.searchPlaceholder')}
-                aria-expanded={showDropdown}
-                role="combobox"
-                aria-autocomplete="list"
-                className="flex-1 min-w-0 h-11 outline-none text-slate-900 font-medium placeholder:text-slate-400 bg-transparent"
-              />
-              {query && (
-                <button onClick={() => { onQueryChange(''); inputRef.current?.focus(); }} aria-label={t('higherSchools.hero.searchClear')} className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 shrink-0">
-                  <X size={16} />
-                </button>
-              )}
-              <button
-                onClick={() => { setFocused(false); onSubmit(); }}
-                className="h-11 px-6 bg-primary text-white rounded-xl font-bold text-sm hover:bg-[#0875E8] transition-all shrink-0 hidden sm:flex items-center"
-              >
-                {t('higherSchools.hero.searchBtn')}
-              </button>
-            </div>
-
-            {showDropdown && (
-              <div className="absolute top-full inset-x-0 mt-2 bg-white rounded-2xl border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.12)] p-3 text-start z-30 max-h-80 overflow-y-auto" role="listbox">
-                {suggestions.schools.length > 0 && (
-                  <div className="mb-2">
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.searchSchools')}</p>
-                    {suggestions.schools.map((s) => {
-                      const idx = flatSuggestions.findIndex((f) => f.type === 'school' && f.slug === s.slug);
-                      const schoolLabel = getLocalizedSchoolLabel(s, i18n.language, t);
-                      return (
-                        <button key={s.id} role="option" aria-selected={activeIndex === idx} onClick={() => selectSuggestion(flatSuggestions[idx])} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start ${activeIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
-                          <SchoolLogo school={s} size="sm" />
-                          <span className="text-sm font-bold text-slate-700 truncate">{schoolLabel.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                {suggestions.fields.length > 0 && (
-                  <div className="mb-2">
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.searchFields')}</p>
-                    {suggestions.fields.map((f) => {
-                      const idx = flatSuggestions.findIndex((x) => x.type === 'field' && x.value === f);
-                      return (
-                        <button key={f} role="option" aria-selected={activeIndex === idx} onClick={() => selectSuggestion(flatSuggestions[idx])} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start ${activeIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
-                          <span className="text-sm font-bold text-slate-700">{t(`higherSchools.fields.${f}`, f)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                {suggestions.cities.length > 0 && (
-                  <div>
-                    <p className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('higherSchools.hero.searchCities')}</p>
-                    {suggestions.cities.map((c) => {
-                      const idx = flatSuggestions.findIndex((x) => x.type === 'city' && x.value === c);
-                      return (
-                        <button key={c} role="option" aria-selected={activeIndex === idx} onClick={() => selectSuggestion(flatSuggestions[idx])} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-start ${activeIndex === idx ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
-                          <MapPin size={14} className="text-slate-400" />
-                          <span className="text-sm font-bold text-slate-700">{t(`higherSchools.cities.${c}`, c)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => { setFocused(false); onSubmit(); }}
-            className="sm:hidden w-full mt-3 h-12 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2"
-          >
-            <Search size={17} /> {t('higherSchools.hero.searchBtn')}
-          </button>
-        </Reveal>
-
-        <Reveal delay={260} className="mt-8">
-          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wide mb-3">{t('higherSchools.hero.popularSearch')}</p>
-          <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto">
-            {POPULAR_CHIPS.map((chip) => (
-              <button
-                key={chip.id}
-                onClick={() => onQuickFilter(chip.value)}
-                className="px-4 py-2 min-h-[40px] rounded-full bg-white border border-slate-200 text-[13px] font-bold text-slate-600 hover:border-primary/40 hover:text-primary transition-all"
-              >
-                {t(`higherSchools.hero.chips.${chip.id}`)}
-              </button>
-            ))}
-          </div>
-        </Reveal>
-
-        <Reveal delay={320} className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-          {[
-            { icon: Building2, id: 'publicPrivate' },
-            { icon: MapPin, id: 'cities' },
-            { icon: GraduationCap, id: 'fields' },
-          ].map((item) => (
-            <span key={item.id} className="flex items-center gap-2 text-[13px] font-bold text-slate-500">
-              <item.icon size={16} className="text-primary" />
-              {t(`higherSchools.hero.features.${item.id}`)}
-            </span>
-          ))}
-        </Reveal>
-      </div>
-    </section>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Featured schools                                                          */
-/* -------------------------------------------------------------------------- */
-
-const FeaturedSchools: React.FC<{
-  favorites: ReturnType<typeof useFavorites>;
-  compare: ReturnType<typeof useCompareList>;
-  profile: SchoolProfile;
-}> = ({ favorites, compare, profile }) => {
-  const { t } = useTranslation();
-  const featured = SCHOOLS.slice(0, 6);
-  return (
-    <section>
-      <SectionHeader eyebrow={t('higherSchools.featured.eyebrow')} title={t('higherSchools.featured.title')} subtitle={t('higherSchools.featured.subtitle')} className="mb-12" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {featured.map((s, i) => (
-          <Reveal key={s.id} delay={(i % 3) * 90}>
-            <SchoolCard
-              school={s}
-              isFavorite={favorites.has(s.id)}
-              onToggleFavorite={() => favorites.toggle(s.id)}
-              isCompared={compare.has(s.id)}
-              onToggleCompare={() => compare.toggle(s.id)}
-              compareDisabled={compare.isFull}
-              match={computeMatch(s, profile)}
-            />
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Filters                                                                    */
-/* -------------------------------------------------------------------------- */
-
-const FilterCheckboxGroup: React.FC<{
-  title: string;
-  options: readonly string[] | string[];
-  selected: string[];
-  onToggle: (value: string) => void;
-  counts?: Map<string, number>;
-  labels?: Record<string, string>;
-}> = ({ title, options, selected, onToggle, counts, labels }) => (
-  <div className="py-5 border-b border-slate-100 last:border-b-0">
-    <p className="text-[12px] font-black uppercase tracking-wide text-slate-400 mb-3">{title}</p>
-    <div className="space-y-2.5">
-      {options.map((opt) => (
-        <label key={opt} className="flex items-center justify-between gap-2 cursor-pointer group min-h-[28px]">
-          <span className="flex items-center gap-2.5">
-            <span className={`w-[18px] h-[18px] rounded-md border-2 flex items-center justify-center transition-colors ${selected.includes(opt) ? 'bg-primary border-primary' : 'border-slate-300 group-hover:border-primary/50'}`}>
-              {selected.includes(opt) && <Check size={12} className="text-white" strokeWidth={3.5} />}
-            </span>
-            <input type="checkbox" className="sr-only" checked={selected.includes(opt)} onChange={() => onToggle(opt)} />
-            <span className="text-[13.5px] font-semibold text-slate-700">{labels?.[opt] || opt}</span>
-          </span>
-          {counts && <span className="text-[11px] font-bold text-slate-400">{counts.get(opt) || 0}</span>}
-        </label>
-      ))}
-    </div>
-  </div>
-);
-
-const FilterPanelContent: React.FC<{ filters: SchoolFilters; setFilters: (f: SchoolFilters) => void }> = ({ filters, setFilters }) => {
-  const { t } = useTranslation();
-  const fieldCounts = useMemo(getFieldCounts, []);
-  const cityCounts = useMemo(getCityCounts, []);
-
-  const toggleIn = (key: keyof SchoolFilters, value: string) => {
-    const current = filters[key] as string[];
-    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
-    setFilters({ ...filters, [key]: next });
-  };
-
-  return (
-    <div>
-      <FilterCheckboxGroup
-        title={t('higherSchools.filters.type')}
-        options={['public', 'private']}
-        selected={filters.types}
-        onToggle={(v) => toggleIn('types', v)}
-        counts={new Map([['public', SCHOOLS.filter(s => s.type === 'public').length], ['private', SCHOOLS.filter(s => s.type === 'private').length]])}
-        labels={{ public: t('higherSchools.card.public'), private: t('higherSchools.card.private') }}
-      />
-      <FilterCheckboxGroup title={t('higherSchools.filters.city')} options={CITIES} selected={filters.cities} onToggle={(v) => toggleIn('cities', v)} counts={cityCounts} labels={Object.fromEntries(CITIES.map(c => [c, t(`higherSchools.cities.${c}`, c)]))} />
-      <FilterCheckboxGroup title={t('higherSchools.filters.field')} options={FIELDS as unknown as string[]} selected={filters.fields} onToggle={(v) => toggleIn('fields', v)} counts={fieldCounts} labels={Object.fromEntries(FIELDS.map(f => [f, t(`higherSchools.fields.${f}`, f)]))} />
-      <FilterCheckboxGroup title={t('higherSchools.filters.accessLevel')} options={ACCESS_LEVELS as unknown as string[]} selected={filters.accessLevels} onToggle={(v) => toggleIn('accessLevels', v)} labels={Object.fromEntries(ACCESS_LEVELS.map(a => [a, t(`higherSchools.access.${a}`, a)]))} />
-      <FilterCheckboxGroup title={t('higherSchools.filters.admissionMethod')} options={ADMISSION_METHODS as unknown as string[]} selected={filters.admissionMethods} onToggle={(v) => toggleIn('admissionMethods', v)} labels={Object.fromEntries(ADMISSION_METHODS.map(a => [a, t(`higherSchools.admission.${a}`, a)]))} />
-    </div>
-  );
-};
-
-
-/* -------------------------------------------------------------------------- */
-/* Compatibility profile — drives the match-score badges, entirely local      */
-/* -------------------------------------------------------------------------- */
-
-const SELECT_CLASS = "h-11 px-3 rounded-xl border border-slate-200 text-[13px] font-bold text-slate-700 bg-white outline-none focus:border-primary/50 w-full";
-
-const MatchProfilePanel: React.FC<{
-  profile: SchoolProfile;
-  setField: <K extends keyof SchoolProfile>(key: K, value: SchoolProfile[K] | '') => void;
-  clear: () => void;
-  dimensionCount: number;
-}> = ({ profile, setField, clear, dimensionCount }) => {
-  const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(dimensionCount === 0);
-  const active = dimensionCount >= MIN_MATCH_DIMENSIONS;
-
-  return (
-    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm mb-6 overflow-hidden">
-      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center justify-between gap-3 p-4 min-h-[44px]">
-        <span className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0">
-            <Target size={15} />
-          </span>
-          <span className="font-black text-slate-900 text-sm text-start">{t('higherSchools.profile.title')}</span>
-          {active && <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wide">{t('higherSchools.profile.activeBadge')}</span>}
-        </span>
-        <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
-      </button>
-
-      {expanded && (
-        <div className="px-4 pb-4">
-          <p className="text-slate-500 text-[12.5px] font-medium leading-relaxed mb-4">
-            {t('higherSchools.profile.description')}
-          </p>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <select value={profile.field || ''} onChange={(e) => setField('field', e.target.value)} className={SELECT_CLASS} aria-label="Filière souhaitée">
-              <option value="">{t('higherSchools.profile.fieldPlaceholder')}</option>
-              {FIELDS.map((f) => <option key={f} value={f}>{t(`higherSchools.fields.${f}`, f)}</option>)}
-            </select>
-            <select value={profile.city || ''} onChange={(e) => setField('city', e.target.value)} className={SELECT_CLASS} aria-label="Ville souhaitée">
-              <option value="">{t('higherSchools.profile.cityPlaceholder')}</option>
-              {CITIES.map((c) => <option key={c} value={c}>{t(`higherSchools.cities.${c}`, c)}</option>)}
-            </select>
-            <select value={profile.accessLevel || ''} onChange={(e) => setField('accessLevel', e.target.value)} className={SELECT_CLASS} aria-label="Niveau d'accès">
-              <option value="">{t('higherSchools.profile.accessPlaceholder')}</option>
-              {ACCESS_LEVELS.map((a) => <option key={a} value={a}>{t(`higherSchools.access.${a}`, a)}</option>)}
-            </select>
-            <select value={profile.type || ''} onChange={(e) => setField('type', e.target.value as SchoolProfile['type'] | '')} className={SELECT_CLASS} aria-label="Type d'établissement">
-              <option value="">{t('higherSchools.profile.typePlaceholder')}</option>
-              <option value="public">{t('higherSchools.card.public')}</option>
-              <option value="private">{t('higherSchools.card.private')}</option>
-            </select>
-          </div>
-          {dimensionCount > 0 && (
-            <button onClick={clear} className="mt-3 text-[12px] font-bold text-slate-400 hover:text-red-500 transition-colors">
-              {t('higherSchools.profile.resetButton')}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Results                                                                    */
-/* -------------------------------------------------------------------------- */
-
-type SortOption = 'pertinence' | 'name' | 'city' | 'match';
-
-const PAGE_SIZE = 9;
-
-const EmptyState: React.FC<{ onReset: () => void }> = ({ onReset }) => {
-  const { t } = useTranslation();
-  return (
-    <div className="text-center py-16 px-6">
-      <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center mx-auto mb-5">
-        <Frown size={28} />
-      </div>
-      <h3 className="text-xl font-black text-slate-900 mb-2">{t('higherSchools.empty.title')}</h3>
-      <p className="text-slate-500 font-medium max-w-md mx-auto mb-7">{t('higherSchools.empty.description')}</p>
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <button onClick={onReset} className="px-6 py-3 min-h-[44px] bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">{t('higherSchools.explorer.resetButton')}</button>
-        <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="px-6 py-3 min-h-[44px] bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">{t('higherSchools.empty.contactButton')}</a>
-      </div>
-    </div>
-  );
-};
-
-const SchoolsExplorer: React.FC<{
-  filters: SchoolFilters;
-  setFilters: (f: SchoolFilters) => void;
-  favorites: ReturnType<typeof useFavorites>;
-  compare: ReturnType<typeof useCompareList>;
-  profile: SchoolProfile;
-  setProfileField: <K extends keyof SchoolProfile>(key: K, value: SchoolProfile[K] | '') => void;
-  clearProfile: () => void;
-  profileDimensionCount: number;
-}> = ({ filters, setFilters, favorites, compare, profile, setProfileField, clearProfile, profileDimensionCount }) => {
-  const { t } = useTranslation();
-  const [sort, setSort] = useState<SortOption>('pertinence');
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const matchActive = profileDimensionCount >= MIN_MATCH_DIMENSIONS;
-
-  const filtered = useMemo(() => {
-    const results = filterSchools(SCHOOLS, filters);
-    const sorted = [...results];
-    if (sort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-    else if (sort === 'city') sorted.sort((a, b) => a.city.localeCompare(b.city, 'fr'));
-    else if (sort === 'match') sorted.sort((a, b) => (computeMatch(b, profile)?.pct || 0) - (computeMatch(a, profile)?.pct || 0));
-    return sorted;
-  }, [filters, sort, profile]);
-
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filters, sort]);
-
-  const activeFilterCount = filters.types.length + filters.cities.length + filters.fields.length + filters.accessLevels.length + filters.admissionMethods.length;
-  const visible = filtered.slice(0, visibleCount);
-
-  return (
-    <section id="explorer">
-      <SectionHeader eyebrow={t('higherSchools.explorer.eyebrow')} title={t('higherSchools.explorer.title')} subtitle={t('higherSchools.explorer.subtitle')} className="mb-10" />
-
-      {/* Mobile filter trigger */}
-      <div className="lg:hidden max-w-6xl mx-auto mb-6 px-4">
-        <button onClick={() => setMobileFiltersOpen(true)} className="w-full min-h-[48px] flex items-center justify-center gap-2 bg-white border border-slate-200 rounded-2xl font-bold text-slate-700 shadow-sm">
-          <SlidersHorizontal size={18} />
-          <span>{t('higherSchools.explorer.filters')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</span>
-        </button>
-      </div>
-
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 px-4 lg:px-0">
-        {/* Desktop sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-[110px] bg-white rounded-[22px] border border-slate-100 shadow-sm p-6 max-h-[calc(100vh-140px)] overflow-y-auto">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="font-black text-slate-900">{t('higherSchools.explorer.filters')}</h3>
-              {activeFilterCount > 0 && (
-                <button onClick={() => setFilters(EMPTY_FILTERS)} className="text-xs font-bold text-primary hover:underline">{t('higherSchools.explorer.resetButton')}</button>
-              )}
-            </div>
-            <FilterPanelContent filters={filters} setFilters={setFilters} />
-          </div>
-        </aside>
-
-        {/* Results */}
-        <div>
-          <MatchProfilePanel profile={profile} setField={setProfileField} clear={clearProfile} dimensionCount={profileDimensionCount} />
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-            <p className="text-sm font-bold text-slate-500">
-              {filtered.length} {filtered.length !== 1 ? t('higherSchools.explorer.schoolsFoundPlural') : t('higherSchools.explorer.schoolsFound')}
-            </p>
-            <div className="flex items-center gap-2">
-              <label htmlFor="sort" className="text-xs font-bold text-slate-400">{t('higherSchools.explorer.sortBy')}</label>
-              <select id="sort" value={sort} onChange={(e) => setSort(e.target.value as SortOption)} className="h-10 px-3 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 bg-white outline-none focus:border-primary/50">
-                <option value="pertinence">{t('higherSchools.explorer.sortOptions.relevance')}</option>
-                <option value="name">{t('higherSchools.explorer.sortOptions.name')}</option>
-                <option value="city">{t('higherSchools.explorer.sortOptions.city')}</option>
-                {matchActive && <option value="match">{t('higherSchools.explorer.sortOptions.match')}</option>}
-              </select>
-            </div>
-          </div>
-
-          {filtered.length === 0 ? (
-            <EmptyState onReset={() => setFilters(EMPTY_FILTERS)} />
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {visible.map((s) => (
-                  <SchoolCard
-                    key={s.id}
-                    school={s}
-                    isFavorite={favorites.has(s.id)}
-                    onToggleFavorite={() => favorites.toggle(s.id)}
-                    isCompared={compare.has(s.id)}
-                    onToggleCompare={() => compare.toggle(s.id)}
-                    compareDisabled={compare.isFull}
-                    match={computeMatch(s, profile)}
-                  />
-                ))}
-              </div>
-              {visibleCount < filtered.length && (
-                <div className="text-center mt-10">
-                  <button onClick={() => setVisibleCount((v) => v + PAGE_SIZE)} className="px-7 py-3.5 min-h-[48px] bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-bold hover:border-primary/40 hover:text-primary transition-all">
-                    {t('higherSchools.explorer.loadMore')}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile filter sheet */}
-      {mobileFiltersOpen && (
-        <div className="lg:hidden fixed inset-0 z-[100]">
-          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setMobileFiltersOpen(false)} />
-          <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-[2rem] max-h-[85vh] flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.2)]">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-              <h3 className="text-lg font-black text-slate-900">{t('higherSchools.explorer.mobileFilterTitle')}</h3>
-              <button onClick={() => setMobileFiltersOpen(false)} aria-label="Fermer" className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center"><X size={18} /></button>
-            </div>
-            <div className="overflow-y-auto px-6 flex-1">
-              <FilterPanelContent filters={filters} setFilters={setFilters} />
-            </div>
-            <div className="p-6 border-t border-slate-100 flex items-center gap-3 shrink-0">
-              <button onClick={() => setFilters(EMPTY_FILTERS)} className="flex-1 min-h-[48px] bg-white border border-slate-200 rounded-2xl font-bold text-slate-700">{t('higherSchools.explorer.resetButton')}</button>
-              <button onClick={() => setMobileFiltersOpen(false)} className="flex-1 min-h-[48px] bg-primary text-white rounded-2xl font-bold">
-                {t('higherSchools.explorer.showResults', { count: filtered.length })}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Explore by field / city                                                   */
-/* -------------------------------------------------------------------------- */
-
-const StudyFieldsExplorer: React.FC<{ onSelectField: (field: string) => void }> = ({ onSelectField }) => {
-  const { t } = useTranslation();
-  const counts = useMemo(getFieldCounts, []);
-  return (
-    <section>
-      <SectionHeader eyebrow={t('higherSchools.exploreFields.eyebrow')} title={t('higherSchools.exploreFields.title')} className="mb-12" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-        {FIELDS.map((field, i) => {
-          const Icon = FIELD_ICONS[field] || GraduationCap;
-          const count = counts.get(field) || 0;
-          return (
-            <Reveal key={field} delay={(i % 4) * 70}>
-              <button onClick={() => onSelectField(field)} className="group w-full text-start bg-white rounded-[1.5rem] border border-slate-100 p-5 shadow-sm hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)] hover:-translate-y-1 transition-all duration-300 h-full">
-                <div className="w-11 h-11 rounded-xl bg-blue-50 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                  <Icon size={20} strokeWidth={2.2} />
-                </div>
-                <h3 className="text-[14px] font-black text-slate-900 mb-3 leading-tight">{t(`higherSchools.fields.${field}`, field)}</h3>
-                <span className="flex items-center gap-1 text-[12px] font-bold text-primary">
-                  {count} {count !== 1 ? t('higherSchools.exploreFields.schoolsPlural') : t('higherSchools.exploreFields.schools')}
-                  <ArrowLeft size={13} className="transform ltr:rotate-180 ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-transform" />
-                </span>
-              </button>
-            </Reveal>
-          );
-        })}
-      </div>
-    </section>
-  );
-};
-
-const CitiesExplorer: React.FC<{ onSelectCity: (city: string) => void }> = ({ onSelectCity }) => {
-  const { t } = useTranslation();
-  const counts = useMemo(getCityCounts, []);
-  return (
-    <section>
-      <SectionHeader eyebrow={t('higherSchools.exploreCities.eyebrow')} title={t('higherSchools.exploreCities.title')} subtitle={t('higherSchools.exploreCities.subtitle')} className="mb-12" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-        {CITIES.map((city, i) => {
-          const count = counts.get(city) || 0;
-          return (
-            <Reveal key={city} delay={(i % 4) * 70}>
-              <button onClick={() => onSelectCity(city)} className="group w-full text-start relative overflow-hidden bg-gradient-to-br from-slate-900 to-[#101D48] rounded-[1.5rem] p-5 h-32 flex flex-col justify-between shadow-sm hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,23,42,0.2)] transition-all duration-300">
-                <div className="absolute -end-6 -bottom-6 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-colors"></div>
-                <Building2 size={20} className="text-blue-300 relative z-10" />
-                <div className="relative z-10">
-                  <h3 className="text-white font-black text-[15px] mb-0.5">{t(`higherSchools.cities.${city}`, city)}</h3>
-                  <span className="text-blue-200 text-[11px] font-bold">{count} {count !== 1 ? t('higherSchools.exploreCities.schoolsPlural') : t('higherSchools.exploreCities.schools')}</span>
-                </div>
-              </button>
-            </Reveal>
-          );
-        })}
-      </div>
-    </section>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Public vs private                                                         */
-/* -------------------------------------------------------------------------- */
-
-const PublicPrivateGuide: React.FC<{ onSelectType: (type: 'public' | 'private') => void }> = ({ onSelectType }) => {
-  const { t } = useTranslation();
-  return (
-    <section>
-      <SectionHeader eyebrow={t('higherSchools.guide.eyebrow')} title={t('higherSchools.guide.title')} className="mb-12" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        <Reveal>
-          <div className="bg-white rounded-[1.75rem] border border-slate-100 p-8 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black uppercase tracking-wide mb-4">{t('higherSchools.guide.public.badge')}</span>
-            <h3 className="text-xl font-black text-slate-900 mb-3">{t('higherSchools.guide.public.title')}</h3>
-            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">{t('higherSchools.guide.public.description')}</p>
-            <button onClick={() => onSelectType('public')} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:gap-3 transition-all">
-              {t('higherSchools.guide.public.button')} <ArrowLeft size={15} className="transform ltr:rotate-180" />
-            </button>
-          </div>
-        </Reveal>
-        <Reveal delay={100}>
-          <div className="bg-white rounded-[1.75rem] border border-slate-100 p-8 h-full shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <span className="inline-flex px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-[11px] font-black uppercase tracking-wide mb-4">{t('higherSchools.guide.private.badge')}</span>
-            <h3 className="text-xl font-black text-slate-900 mb-3">{t('higherSchools.guide.private.title')}</h3>
-            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">{t('higherSchools.guide.private.description')}</p>
-            <button onClick={() => onSelectType('private')} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:gap-3 transition-all">
-              {t('higherSchools.guide.private.button')} <ArrowLeft size={15} className="transform ltr:rotate-180" />
-            </button>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Comparison CTA + modal                                                    */
-/* -------------------------------------------------------------------------- */
-
-const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onClear: () => void; onRemove: (id: string) => void; profile: SchoolProfile }> = ({ schoolIds, onClose, onClear, onRemove, profile }) => {
-  const { t } = useTranslation();
-  const schools = schoolIds.map((id) => SCHOOLS.find((s) => s.id === id)).filter(Boolean) as School[];
-  const rows: { label: string; render: (s: School) => React.ReactNode }[] = [
-    { label: t('higherSchools.compare.typeLabel'), render: (s) => <TypeBadge type={s.type} rawType={s.rawType} /> },
-    { label: t('higherSchools.compare.cityLabel'), render: (s) => t(`higherSchools.cities.${s.city}`, s.city) },
-    { label: t('higherSchools.compare.fieldsLabel'), render: (s) => s.fields.map(f => t(`higherSchools.fields.${f}`, f)).join(', ') },
-    { label: t('higherSchools.compare.accessLabel'), render: (s) => s.accessLevels.map(a => t(`higherSchools.access.${a}`, a)).join(', ') },
-    { label: t('higherSchools.compare.admissionLabel'), render: (s) => s.admissionMethods.map(a => t(`higherSchools.admission.${a}`, a)).join(', ') },
-    { label: t('higherSchools.compare.durationLabel'), render: () => <span className="text-slate-400 italic">{t('higherSchools.detail.durationUnknown')}</span> },
-    { label: t('higherSchools.compare.diplomaLabel'), render: (s) => s.degree || <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
-    { label: t('higherSchools.compare.bacsLabel'), render: (s) => s.bacProfiles || <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
-    { label: t('higherSchools.compare.tuitionLabel'), render: () => <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
-    {
-      label: t('higherSchools.compare.matchLabel'), render: (s) => {
-        const match = computeMatch(s, profile);
-        return match ? <MatchScoreBadge match={match} /> : <span className="text-slate-400 italic">—</span>;
-      }
-    },
-  ];
-
-  return (
-    <div className="fixed inset-0 z-[110]" role="dialog" aria-modal="true" aria-label="Comparateur d'écoles">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 md:inset-0 md:m-auto md:max-w-4xl md:h-fit md:max-h-[85vh] bg-white rounded-t-[2rem] md:rounded-[2rem] max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
-          <h3 className="text-lg font-black text-slate-900">{t('higherSchools.compare.title')}</h3>
-          <button onClick={onClose} aria-label="Fermer le comparateur" className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center"><X size={18} /></button>
-        </div>
-        <div className="overflow-auto flex-1 p-6">
-          {schools.length === 0 ? (
-            <p className="text-slate-500 font-medium text-center py-10">{t('higherSchools.compare.empty')}</p>
-          ) : (
-            <table className="w-full text-start border-collapse min-w-[500px]">
-              <thead>
-                <tr>
-                  <th className="text-start p-3 text-[12px] font-black text-slate-400 uppercase w-32"></th>
-                  {schools.map((s) => (
-                    <th key={s.id} className="p-3 text-start align-top">
-                      <div className="flex items-start gap-2">
-                        <SchoolLogo school={s} size="sm" />
-                        <div>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight">{s.acronym || s.name}</p>
-                          <button onClick={() => onRemove(s.id)} className="text-[11px] font-bold text-slate-400 hover:text-red-500 mt-1">{t('higherSchools.compare.removeButton')}</button>
-                        </div>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, i) => (
-                  <tr key={row.label} className={i % 2 === 0 ? 'bg-slate-50/50' : ''}>
-                    <td className="p-3 text-[12.5px] font-bold text-slate-500 align-top">{row.label}</td>
-                    {schools.map((s) => (
-                      <td key={s.id} className="p-3 text-[13px] font-semibold text-slate-700 align-top">{row.render(s)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-        {schools.length > 0 && (
-          <div className="p-6 border-t border-slate-100 shrink-0">
-            <button onClick={onClear} className="text-sm font-bold text-slate-400 hover:text-red-500">{t('higherSchools.compare.clearAll')}</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const ComparisonCTA: React.FC<{ onOpen: () => void }> = ({ onOpen }) => {
-  const { t } = useTranslation();
-  return (
-    <section>
-      <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#F4F8FF] to-white border border-blue-100 rounded-[2rem] p-8 md:p-12 text-center">
-        <Eyebrow>{t('higherSchools.compareCTA.eyebrow')}</Eyebrow>
-        <h2 className="text-2xl md:text-4xl font-black text-slate-900 mt-4 mb-4 tracking-tight">{t('higherSchools.compareCTA.title')}</h2>
-        <p className="text-slate-500 font-medium max-w-lg mx-auto mb-8">{t('higherSchools.compareCTA.subtitle')}</p>
-
-        <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
-          {[t('higherSchools.compareCTA.schoolA'), t('higherSchools.compareCTA.schoolB'), t('higherSchools.compareCTA.schoolC')].map((label, i) => (
-            <React.Fragment key={label}>
-              <div className="w-24 h-16 rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-400">{label}</div>
-              {i < 2 && <span className="text-slate-300 font-black text-xs">VS</span>}
-            </React.Fragment>
-          ))}
-        </div>
-
-        <button onClick={onOpen} className="inline-flex items-center gap-2 px-7 py-3.5 min-h-[48px] bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all hover:-translate-y-0.5">
-          <Scale size={17} />
-          <span>{t('higherSchools.compareCTA.button')}</span>
-        </button>
-      </div>
-    </section>
-  );
-};
-
-const StickyCompareBar: React.FC<{ count: number; onOpen: () => void; onClear: () => void }> = ({ count, onOpen, onClear }) => {
-  const { t } = useTranslation();
-  return (
-    <div className={`fixed bottom-0 inset-x-0 z-40 transition-transform duration-300 ${count >= 2 ? 'translate-y-0' : 'translate-y-full'}`}>
-      <div className="max-w-2xl mx-auto m-4 bg-slate-900 text-white rounded-2xl shadow-2xl p-4 flex items-center justify-between gap-4">
-        <span className="font-bold text-sm">
-          {count} {count !== 1 ? t('higherSchools.stickyBar.selectedPlural') : t('higherSchools.stickyBar.selected')}
-        </span>
-        <div className="flex items-center gap-2">
-          <button onClick={onClear} className="px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-bold text-slate-300 hover:bg-white/10 transition-colors">{t('higherSchools.stickyBar.clear')}</button>
-          <button onClick={onOpen} className="px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-bold bg-primary text-white hover:bg-[#0875E8] transition-colors">{t('higherSchools.stickyBar.compare')}</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Orientation CTA                                                           */
-/* -------------------------------------------------------------------------- */
-
-const OrientationCTA: React.FC = () => {
-  const { t } = useTranslation();
-  return (
-    <Reveal>
-      <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-[#F4F8FF] border border-blue-100 rounded-[2rem] p-8 md:p-12 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-white text-primary flex items-center justify-center mx-auto mb-6 shadow-sm">
-          <Compass size={26} />
-        </div>
-        <Eyebrow>{t('higherSchools.orientationCTA.eyebrow')}</Eyebrow>
-        <h2 className="text-2xl md:text-4xl font-black text-slate-900 mt-4 mb-4 tracking-tight">{t('higherSchools.orientationCTA.title')}</h2>
-        <p className="text-slate-500 font-medium max-w-lg mx-auto mb-8">{t('higherSchools.orientationCTA.subtitle')}</p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/tawjih" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-primary text-white rounded-2xl font-bold hover:bg-[#0875E8] transition-all hover:-translate-y-0.5">
-            <span>{t('higherSchools.orientationCTA.primaryButton')}</span>
-            <ArrowLeft size={16} className="transform ltr:rotate-180" />
-          </Link>
-          <a href="https://wa.me/212708838299" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto min-h-[48px] px-7 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all">
-            <MessageCircle size={16} />
-            <span>{t('higherSchools.orientationCTA.secondaryButton')}</span>
-          </a>
-        </div>
-      </div>
-    </Reveal>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* FAQ                                                                       */
-/* -------------------------------------------------------------------------- */
-
-const SchoolsFAQ: React.FC = () => {
-  const { t } = useTranslation();
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-  
-  const faqItems = [
-    { q: t('higherSchools.faq.q1.q'), a: t('higherSchools.faq.q1.a') },
-    { q: t('higherSchools.faq.q2.q'), a: t('higherSchools.faq.q2.a') },
-    { q: t('higherSchools.faq.q3.q'), a: t('higherSchools.faq.q3.a') },
-    { q: t('higherSchools.faq.q4.q'), a: t('higherSchools.faq.q4.a') },
-    { q: t('higherSchools.faq.q5.q'), a: t('higherSchools.faq.q5.a') },
-    { q: t('higherSchools.faq.q6.q'), a: t('higherSchools.faq.q6.a') },
-  ];
-
-  return (
-    <section className="max-w-3xl mx-auto">
-      <SectionHeader eyebrow={t('higherSchools.faq.eyebrow')} title={t('higherSchools.faq.title')} className="mb-12" />
-      <div className="space-y-4">
-        {faqItems.map((item, i) => {
-          const isOpen = openIndex === i;
-          const panelId = `schools-faq-panel-${i}`;
-          const buttonId = `schools-faq-button-${i}`;
-          return (
-            <div key={item.q} className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
-              <h3>
-                <button id={buttonId} aria-expanded={isOpen} aria-controls={panelId} onClick={() => setOpenIndex(isOpen ? null : i)} className="w-full flex items-center justify-between gap-4 p-6 text-start min-h-[44px]">
-                  <span className="text-base md:text-lg font-black text-slate-900">{item.q}</span>
-                  <span className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${isOpen ? 'bg-primary text-white' : 'bg-slate-50 text-slate-400'}`}>
-                    <ChevronDown size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                  </span>
-                </button>
-              </h3>
-              <div id={panelId} role="region" aria-labelledby={buttonId} className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                <div className="overflow-hidden">
-                  <p className="text-slate-500 font-medium leading-relaxed px-6 pb-6 border-t border-slate-50 pt-5">{item.a}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* Final CTA                                                                 */
-/* -------------------------------------------------------------------------- */
-
-const FinalCTA: React.FC = () => {
-  const { t } = useTranslation();
-  return (
-    <Reveal>
-      <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#08142F] via-[#101D48] to-[#0B1330] border border-white/5 shadow-2xl p-10 md:p-16 text-center max-w-5xl mx-auto">
-        <div className="absolute top-0 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-[0.16em] bg-primary/10 text-blue-300 ring-1 ring-primary/20 mb-6">
-            <GraduationCap size={12} />
-            {t('higherSchools.finalCTA.eyebrow')}
-          </span>
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight leading-tight">
-            {t('higherSchools.finalCTA.title1')}<br />{t('higherSchools.finalCTA.title2')}
-          </h2>
-          <p className="text-slate-300 text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl mx-auto">
-            {t('higherSchools.finalCTA.subtitle')}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto min-h-[52px] px-9 bg-primary text-white rounded-2xl font-black text-base md:text-lg shadow-xl shadow-primary/20 hover:bg-[#0875E8] hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3">
-              <span>{t('higherSchools.finalCTA.primaryButton')}</span>
-              <ArrowLeft size={20} className="transform ltr:rotate-180" />
-            </button>
-            <Link to="/tawjih" className="w-full sm:w-auto min-h-[52px] px-9 bg-white/5 text-white border border-white/15 rounded-2xl font-black text-base md:text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3">
-              <Compass size={19} />
-              <span>{t('higherSchools.finalCTA.secondaryButton')}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </Reveal>
-  );
-};
-
-/* -------------------------------------------------------------------------- */
-/* URL <-> filters                                                           */
-/* -------------------------------------------------------------------------- */
-
-const buildSlugMap = (values: readonly string[]) => {
-  const map = new Map<string, string>();
-  values.forEach((v) => map.set(toSlug(v), v));
-  return map;
-};
-
-const CITY_SLUGS = buildSlugMap(CITIES);
-const FIELD_SLUGS = buildSlugMap(FIELDS);
-const ACCESS_SLUGS = buildSlugMap(ACCESS_LEVELS);
-const ADMISSION_SLUGS = buildSlugMap(ADMISSION_METHODS);
-
-const filtersFromParams = (params: URLSearchParams): SchoolFilters => ({
-  types: (params.get('type')?.split(',').filter((t) => t === 'public' || t === 'private') as ('public' | 'private')[]) || [],
-  cities: params.get('city')?.split(',').map((s) => CITY_SLUGS.get(s)).filter(Boolean) as string[] || [],
-  fields: params.get('field')?.split(',').map((s) => FIELD_SLUGS.get(s)).filter(Boolean) as string[] || [],
-  accessLevels: params.get('access')?.split(',').map((s) => ACCESS_SLUGS.get(s)).filter(Boolean) as string[] || [],
-  admissionMethods: params.get('admission')?.split(',').map((s) => ADMISSION_SLUGS.get(s)).filter(Boolean) as string[] || [],
+  EMPTY_INSTITUTION_FILTERS, filterInstitutions, Institution, InstitutionFilters,
+  INSTITUTION_CITIES, INSTITUTION_DEGREES, INSTITUTION_FIELDS, INSTITUTIONS,
+  matchingCampuses,
+} from '../constants/institutions';
+import { SchoolType, toSlug } from '../constants/schools';
+import { useCompareList, useFavorites } from '../hooks/useSchoolCollections';
+
+const PAGE_SIZE = 12;
+
+const parseList = (value: string | null) => value?.split(',').filter(Boolean) || [];
+const parseFilters = (params: URLSearchParams): InstitutionFilters => ({
   query: params.get('q') || '',
+  types: parseList(params.get('type')).filter((value): value is SchoolType => value === 'public' || value === 'private'),
+  cities: parseList(params.get('city')).map((slug) => INSTITUTION_CITIES.find((city) => toSlug(city) === slug)).filter(Boolean) as string[],
+  fields: parseList(params.get('field')).map((slug) => INSTITUTION_FIELDS.find((field) => toSlug(field) === slug)).filter(Boolean) as string[],
+  degrees: parseList(params.get('degree')).map((slug) => INSTITUTION_DEGREES.find((degree) => toSlug(degree) === slug)).filter(Boolean) as string[],
 });
 
-const paramsFromFilters = (filters: SchoolFilters): URLSearchParams => {
-  const params = new URLSearchParams();
-  if (filters.types.length) params.set('type', filters.types.join(','));
-  if (filters.cities.length) params.set('city', filters.cities.map(toSlug).join(','));
-  if (filters.fields.length) params.set('field', filters.fields.map(toSlug).join(','));
-  if (filters.accessLevels.length) params.set('access', filters.accessLevels.map(toSlug).join(','));
-  if (filters.admissionMethods.length) params.set('admission', filters.admissionMethods.map(toSlug).join(','));
-  if (filters.query) params.set('q', filters.query);
-  return params;
+const localizedInstitutionName = (institution: Institution, language: string, t: ReturnType<typeof useTranslation>['t']) => {
+  if (!language.startsWith('ar') || !institution.isNetwork || !institution.acronym) return institution.name;
+  return t(`higherSchools.schoolFamilies.${institution.acronym}`, { defaultValue: institution.name });
 };
 
-/* -------------------------------------------------------------------------- */
-/* Page                                                                       */
-/* -------------------------------------------------------------------------- */
+const typeLabel = (institution: Institution, t: ReturnType<typeof useTranslation>['t']) => {
+  const raw = institution.rawTypes.join(' ').toLocaleLowerCase('fr');
+  const key = raw.includes('militaire') ? 'military' : raw.includes('partenariat') ? 'partnership' : institution.type;
+  return t(`higherSchools.types.${key}`);
+};
 
-export const HigherSchools: React.FC = () => {
-  const { i18n } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [filters, setFiltersState] = useState<SchoolFilters>(() => filtersFromParams(searchParams));
-  const [heroQuery, setHeroQuery] = useState(filters.query);
-  const [compareModalOpen, setCompareModalOpen] = useState(false);
-
-  const favorites = useFavorites();
-  const compare = useCompareList();
-  const { profile, setField: setProfileField, clear: clearProfile, dimensionCount: profileDimensionCount } = useSchoolProfile();
-
-  const setFilters = (next: SchoolFilters) => {
-    setFiltersState(next);
-    setSearchParams(paramsFromFilters(next), { replace: true });
-  };
-
-  const runHeroSearch = () => setFilters({ ...EMPTY_FILTERS, query: heroQuery });
-
-  const applyQuickFilter = (chip: string) => {
-    if (chip === 'Écoles publiques') setFilters({ ...EMPTY_FILTERS, types: ['public'] });
-    else if (chip === 'Écoles privées') setFilters({ ...EMPTY_FILTERS, types: ['private'] });
-    else setFilters({ ...EMPTY_FILTERS, fields: [chip] });
-    document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const selectField = (field: string) => { setFilters({ ...EMPTY_FILTERS, fields: [field] }); document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' }); };
-  const selectCity = (city: string) => { setFilters({ ...EMPTY_FILTERS, cities: [city] }); document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' }); };
-  const selectType = (type: 'public' | 'private') => { setFilters({ ...EMPTY_FILTERS, types: [type] }); document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' }); };
+const InstitutionCard: React.FC<{
+  institution: Institution;
+  filters: InstitutionFilters;
+  favorite: ReturnType<typeof useFavorites>;
+  compare: ReturnType<typeof useCompareList>;
+}> = ({ institution, filters, favorite, compare }) => {
+  const { t, i18n } = useTranslation();
+  const ids = [institution.favoriteId, ...institution.campuses.map((campus) => campus.id)];
+  const isFavorite = favorite.hasAny(ids);
+  const isCompared = compare.hasAny(ids);
+  const matched = matchingCampuses(institution, filters);
+  const queryMatchedCities = [...new Set(matched.map((campus) => campus.city))];
+  const name = localizedInstitutionName(institution, i18n.language, t);
+  const initials = institution.acronym || name.split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
+  const diplomaText = institution.degrees.slice(0, 2).join(' · ') || t('higherSchools.detail.diplomaUnknown');
 
   return (
-    <div
-      dir={i18n.dir()}
-      lang={i18n.language.startsWith('ar') ? 'ar' : 'fr'}
-      className="min-h-screen bg-slate-50 pb-4 overflow-x-hidden font-sans w-full max-w-full text-start"
-    >
-      <SEO
-        title="Écoles Supérieures au Maroc"
-        description="Découvrez les écoles supérieures au Maroc, explorez leurs filières, villes et conditions d'accès et comparez les établissements qui correspondent à votre projet."
-      />
-
-      <SchoolsHero query={heroQuery} onQueryChange={setHeroQuery} onSubmit={runHeroSearch} onQuickFilter={applyQuickFilter} />
-
-      <div className="container mx-auto px-4 lg:px-8 mt-16 lg:mt-24 relative z-20 space-y-24 lg:space-y-28">
-        <FeaturedSchools favorites={favorites} compare={compare} profile={profile} />
-        <SchoolsExplorer
-          filters={filters}
-          setFilters={setFilters}
-          favorites={favorites}
-          compare={compare}
-          profile={profile}
-          setProfileField={setProfileField}
-          clearProfile={clearProfile}
-          profileDimensionCount={profileDimensionCount}
-        />
-        <StudyFieldsExplorer onSelectField={selectField} />
-        <PublicPrivateGuide onSelectType={selectType} />
-        <OrientationCTA />
-        <SchoolsFAQ />
-        <FinalCTA />
+    <article className="bg-white border border-slate-200 rounded-[1.35rem] p-5 flex flex-col min-h-[330px] shadow-[0_8px_24px_rgba(15,23,42,0.035)] hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,23,42,0.075)] transition-all">
+      <div className="flex items-start justify-between gap-3">
+        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-primary ring-1 ring-blue-100 flex items-center justify-center text-sm font-black shrink-0">{initials.slice(0, 4)}</div>
+        <button onClick={() => favorite.toggleCanonical(institution.favoriteId, institution.campuses.map((campus) => campus.id))} aria-pressed={isFavorite} aria-label={isFavorite ? t('higherSchools.card.rmFromFav') : t('higherSchools.card.addToFav')} className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isFavorite ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-400 hover:text-red-500'}`}><Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} /></button>
       </div>
 
-      <StickyCompareBar count={compare.ids.length} onOpen={() => setCompareModalOpen(true)} onClear={compare.clear} />
-      {compareModalOpen && (
-        <ComparisonModal schoolIds={compare.ids} onClose={() => setCompareModalOpen(false)} onClear={compare.clear} onRemove={compare.toggle} profile={profile} />
-      )}
-    </div>
+      <div className="mt-4">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          {institution.acronym && <span className="font-black text-primary text-sm">{institution.acronym}</span>}
+          <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${institution.type === 'public' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>{typeLabel(institution, t)}</span>
+        </div>
+        <h2 className="text-[17px] font-black text-slate-900 leading-snug line-clamp-2 min-h-[46px]">{name}</h2>
+      </div>
+
+      <div className="mt-4 space-y-2.5 text-[12.5px] font-semibold text-slate-500">
+        <p className="flex items-start gap-2"><GraduationCap size={15} className="text-slate-400 shrink-0 mt-0.5" /><span className="line-clamp-2">{institution.fields.slice(0, 2).map((field) => t(`higherSchools.fields.${field}`, field)).join(' · ')}</span></p>
+        <p className="flex items-start gap-2"><Building2 size={15} className="text-slate-400 shrink-0 mt-0.5" /><span>{institution.campuses.length === 1 ? t('higherSchools.directoryV2.oneCampus') : t('higherSchools.directoryV2.campusCount', { count: institution.campuses.length })}</span></p>
+        <p className="flex items-start gap-2"><Award size={15} className="text-slate-400 shrink-0 mt-0.5" /><span className="line-clamp-2">{diplomaText}</span></p>
+        {filters.query && queryMatchedCities.length > 0 && queryMatchedCities.length < institution.cities.length && <p className="flex items-start gap-2 text-primary"><MapPin size={15} className="shrink-0 mt-0.5" /><span>{t('higherSchools.directoryV2.matchingCampus')} : {queryMatchedCities.map((city) => t(`higherSchools.cities.${city}`, city)).join(', ')}</span></p>}
+      </div>
+
+      <div className="mt-auto pt-5 flex items-center gap-2">
+        <Link to={`/higher-schools/institution/${institution.slug}`} className="flex-1 min-h-[44px] px-3 rounded-xl bg-slate-900 text-white flex items-center justify-center gap-1.5 text-xs font-black whitespace-nowrap hover:bg-primary transition-colors">{t('higherSchools.directoryV2.discover')}<ArrowLeft size={14} className="ltr:rotate-180 shrink-0" /></Link>
+        <button onClick={() => compare.toggleCanonical(institution.favoriteId, institution.campuses.map((campus) => campus.id))} disabled={!isCompared && compare.isFull} aria-pressed={isCompared} aria-label={isCompared ? t('higherSchools.card.rmFromCompare') : t('higherSchools.card.addToCompare')} className={`w-11 min-h-[44px] rounded-xl border flex items-center justify-center text-xs font-black disabled:opacity-40 ${isCompared ? 'bg-blue-50 border-primary text-primary' : 'border-slate-200 text-slate-500'}`}>⇄</button>
+      </div>
+    </article>
   );
+};
+
+const CheckboxGroup: React.FC<{
+  title: string;
+  options: string[];
+  selected: string[];
+  labels?: Record<string, string>;
+  onToggle: (value: string) => void;
+}> = ({ title, options, selected, labels = {}, onToggle }) => (
+  <details open className="group border-b border-slate-100 pb-4 last:border-0">
+    <summary className="list-none cursor-pointer flex items-center justify-between min-h-[40px] font-black text-sm text-slate-800"><span>{title}</span><ChevronDown size={16} className="text-slate-400 group-open:rotate-180 transition-transform" /></summary>
+    <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pe-1">
+      {options.map((option) => <label key={option} className="flex items-start gap-2.5 cursor-pointer text-[13px] text-slate-600 font-semibold"><input type="checkbox" checked={selected.includes(option)} onChange={() => onToggle(option)} className="mt-0.5 w-4 h-4 rounded border-slate-300 accent-primary" /><span>{labels[option] || option}</span></label>)}
+    </div>
+  </details>
+);
+
+const FiltersPanel: React.FC<{
+  filters: InstitutionFilters;
+  toggle: (key: 'types' | 'cities' | 'fields' | 'degrees', value: string) => void;
+  clear: () => void;
+  activeCount: number;
+}> = ({ filters, toggle, clear, activeCount }) => {
+  const { t } = useTranslation();
+  return <div className="bg-white border border-slate-200 rounded-[1.35rem] p-5 space-y-4">
+    <div className="flex items-center justify-between"><h2 className="font-black text-slate-900 flex items-center gap-2"><SlidersHorizontal size={17} />{t('higherSchools.explorer.filters')}{activeCount > 0 && <span className="w-6 h-6 rounded-full bg-primary text-white text-[11px] flex items-center justify-center">{activeCount}</span>}</h2>{activeCount > 0 && <button onClick={clear} className="text-xs font-black text-primary hover:underline">{t('higherSchools.explorer.resetButton')}</button>}</div>
+    <CheckboxGroup title={t('higherSchools.filters.type')} options={['public', 'private']} selected={filters.types} labels={{ public: t('higherSchools.types.public'), private: t('higherSchools.types.private') }} onToggle={(value) => toggle('types', value)} />
+    <CheckboxGroup title={t('higherSchools.filters.city')} options={INSTITUTION_CITIES} selected={filters.cities} labels={Object.fromEntries(INSTITUTION_CITIES.map((city) => [city, t(`higherSchools.cities.${city}`, city)]))} onToggle={(value) => toggle('cities', value)} />
+    <CheckboxGroup title={t('higherSchools.filters.field')} options={INSTITUTION_FIELDS} selected={filters.fields} labels={Object.fromEntries(INSTITUTION_FIELDS.map((field) => [field, t(`higherSchools.fields.${field}`, field)]))} onToggle={(value) => toggle('fields', value)} />
+    <CheckboxGroup title={t('higherSchools.directoryV2.diplomaFilter')} options={INSTITUTION_DEGREES} selected={filters.degrees} onToggle={(value) => toggle('degrees', value)} />
+  </div>;
+};
+
+const ComparisonModal: React.FC<{ institutions: Institution[]; onClose: () => void; onClear: () => void }> = ({ institutions, onClose, onClear }) => {
+  const { t } = useTranslation();
+  const rows = [
+    [t('higherSchools.compare.typeLabel'), (item: Institution) => typeLabel(item, t)],
+    [t('higherSchools.compare.cityLabel'), (item: Institution) => item.cities.join(', ')],
+    [t('higherSchools.compare.fieldsLabel'), (item: Institution) => item.fields.join(', ')],
+    [t('higherSchools.compare.durationLabel'), () => t('higherSchools.detail.durationUnknown')],
+    [t('higherSchools.compare.diplomaLabel'), (item: Institution) => item.degrees.join(' · ') || t('higherSchools.compare.notAvailable')],
+    [t('higherSchools.compare.bacsLabel'), (item: Institution) => item.bacProfiles.join(' · ') || t('higherSchools.compare.notAvailable')],
+    [t('higherSchools.directoryV2.campusesLabel'), (item: Institution) => String(item.campuses.length)],
+  ] as const;
+  return <div className="fixed inset-0 z-[120]" role="dialog" aria-modal="true"><button className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={onClose} aria-label={t('higherSchools.directoryV2.close')} /><div className="absolute inset-x-0 bottom-0 md:inset-0 md:m-auto md:max-w-5xl md:h-fit max-h-[88vh] bg-white rounded-t-[2rem] md:rounded-[2rem] overflow-auto shadow-2xl"><div className="sticky top-0 bg-white border-b border-slate-100 p-5 flex items-center justify-between z-10"><h2 className="font-black text-lg">{t('higherSchools.compare.title')}</h2><div className="flex gap-3"><button onClick={onClear} className="text-xs font-black text-red-500">{t('higherSchools.compare.clearAll')}</button><button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center"><X size={17} /></button></div></div><div className="p-5 overflow-x-auto"><table className="w-full min-w-[700px] text-sm"><thead><tr><th className="p-3 text-start text-slate-400">—</th>{institutions.map((item) => <th key={item.id} className="p-3 text-start font-black text-slate-900">{item.acronym || item.name}</th>)}</tr></thead><tbody>{rows.map(([label, render]) => <tr key={label} className="border-t border-slate-100"><th className="p-3 text-start text-xs text-slate-500">{label}</th>{institutions.map((item) => <td key={item.id} className="p-3 text-slate-700 font-semibold align-top">{render(item)}</td>)}</tr>)}</tbody></table></div></div></div>;
+};
+
+export const HigherSchools: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const [params, setParams] = useSearchParams();
+  const filters = useMemo(() => parseFilters(params), [params]);
+  const [searchValue, setSearchValue] = useState(filters.query);
+  const [mobileFilters, setMobileFilters] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const favorites = useFavorites();
+  const compare = useCompareList();
+  const sort = params.get('sort') || 'az';
+  const requestedPage = Math.max(1, Number(params.get('page') || 1));
+
+  useEffect(() => { setSearchValue(filters.query); }, [filters.query]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (searchValue === filters.query) return;
+      const next = new URLSearchParams(params);
+      searchValue.trim() ? next.set('q', searchValue.trim()) : next.delete('q');
+      next.delete('page');
+      setParams(next, { replace: true });
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [searchValue, filters.query, params, setParams]);
+
+  const updateList = (key: 'types' | 'cities' | 'fields' | 'degrees', value: string) => {
+    const current = filters[key] as string[];
+    const values = current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
+    const nextFilters = { ...filters, [key]: values } as InstitutionFilters;
+    const next = new URLSearchParams(params);
+    const paramKey = key === 'types' ? 'type' : key === 'cities' ? 'city' : key === 'fields' ? 'field' : 'degree';
+    nextFilters[key].length ? next.set(paramKey, nextFilters[key].map(toSlug).join(',')) : next.delete(paramKey);
+    next.delete('page');
+    setParams(next, { replace: true });
+  };
+  const clearFilters = () => { const next = new URLSearchParams(); if (filters.query) next.set('q', filters.query); if (sort !== 'az') next.set('sort', sort); setParams(next, { replace: true }); };
+
+  const activeCount = filters.types.length + filters.cities.length + filters.fields.length + filters.degrees.length;
+  const sorted = useMemo(() => {
+    const result = filterInstitutions(INSTITUTIONS, filters);
+    return [...result].sort((a, b) => {
+      if (sort === 'za') return (b.acronym || b.name).localeCompare(a.acronym || a.name, 'fr');
+      if (sort === 'city') return (a.cities[0] || '').localeCompare(b.cities[0] || '', 'fr');
+      return (a.acronym || a.name).localeCompare(b.acronym || b.name, 'fr');
+    });
+  }, [filters, sort]);
+  const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const page = Math.min(requestedPage, pageCount);
+  const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const setPage = (value: number) => { const next = new URLSearchParams(params); value > 1 ? next.set('page', String(value)) : next.delete('page'); setParams(next); window.scrollTo({ top: 280, behavior: 'smooth' }); };
+
+  const selectedInstitutions = useMemo(() => {
+    const found = compare.ids.map((id) => INSTITUTIONS.find((institution) => institution.favoriteId === id || institution.campuses.some((campus) => campus.id === id))).filter(Boolean) as Institution[];
+    return found.filter((institution, index) => found.findIndex((item) => item.id === institution.id) === index);
+  }, [compare.ids]);
+
+  return <div dir={i18n.dir()} lang={i18n.language.startsWith('ar') ? 'ar' : 'fr'} className="min-h-screen bg-[#F7F9FC] pb-16 text-start">
+    <SEO title={t('higherSchools.directoryV2.title')} description={t('higherSchools.directoryV2.subtitle')} url="/higher-schools" />
+    <section className="bg-gradient-to-b from-blue-50/70 to-white border-b border-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-9 md:py-12 text-center">
+        <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] font-black text-primary mb-3"><GraduationCap size={15} />{t('higherSchools.hero.guide')}</span>
+        <h1 className="text-3xl md:text-4xl font-black text-slate-950 tracking-tight">{t('higherSchools.directoryV2.title')}</h1>
+        <p className="max-w-2xl mx-auto mt-3 text-slate-500 font-medium leading-relaxed">{t('higherSchools.directoryV2.subtitle')}</p>
+        <div className="max-w-3xl mx-auto mt-7 relative"><Search size={20} className="absolute start-5 top-1/2 -translate-y-1/2 text-slate-400" /><input value={searchValue} onChange={(event) => setSearchValue(event.target.value)} type="search" placeholder={t('higherSchools.directoryV2.searchPlaceholder')} className="w-full h-14 ps-14 pe-12 rounded-2xl bg-white border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.06)] outline-none focus:border-primary focus:ring-4 focus:ring-blue-100 text-[15px] font-semibold" />{searchValue && <button onClick={() => setSearchValue('')} aria-label={t('higherSchools.hero.searchClear')} className="absolute end-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><X size={15} /></button>}</div>
+      </div>
+    </section>
+
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex lg:hidden mb-4"><button onClick={() => setMobileFilters(true)} className="min-h-[44px] px-4 rounded-xl bg-white border border-slate-200 flex items-center gap-2 font-black text-sm"><SlidersHorizontal size={17} />{t('higherSchools.explorer.filters')}{activeCount > 0 && <span className="bg-primary text-white rounded-full px-2 py-0.5 text-xs">{activeCount}</span>}</button></div>
+      <div className="grid lg:grid-cols-[250px_minmax(0,1fr)] gap-7 items-start">
+        <aside className="hidden lg:block sticky top-[112px]"><FiltersPanel filters={filters} toggle={updateList} clear={clearFilters} activeCount={activeCount} /></aside>
+        <main>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div><p className="font-black text-slate-900">{t(sorted.length === 1 ? 'higherSchools.directoryV2.resultCount' : 'higherSchools.directoryV2.resultCountMany', { count: sorted.length })}</p>{activeCount > 0 && <p className="text-xs text-slate-400 font-semibold mt-1">{t(activeCount === 1 ? 'higherSchools.directoryV2.activeFilters' : 'higherSchools.directoryV2.activeFiltersMany', { count: activeCount })}</p>}</div>
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-500">{t('higherSchools.explorer.sortBy')}<select value={sort} onChange={(event) => { const next = new URLSearchParams(params); event.target.value === 'az' ? next.delete('sort') : next.set('sort', event.target.value); next.delete('page'); setParams(next); }} className="h-10 px-3 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-700 outline-none"><option value="az">{t('higherSchools.explorer.sortOptions.name')}</option><option value="za">{t('higherSchools.directoryV2.nameZa')}</option><option value="city">{t('higherSchools.explorer.sortOptions.city')}</option></select></label>
+          </div>
+
+          {visible.length > 0 ? <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">{visible.map((institution) => <InstitutionCard key={institution.id} institution={institution} filters={filters} favorite={favorites} compare={compare} />)}</div> : <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center"><Search size={28} className="mx-auto text-slate-300" /><h2 className="font-black text-slate-900 mt-4">{t('higherSchools.empty.title')}</h2><p className="text-sm text-slate-500 mt-2">{t('higherSchools.empty.description')}</p><button onClick={() => { setSearchValue(''); setParams(new URLSearchParams()); }} className="mt-5 px-5 min-h-[44px] rounded-xl bg-primary text-white font-black text-sm">{t('higherSchools.empty.resetButton')}</button></div>}
+
+          {pageCount > 1 && <nav className="flex items-center justify-center gap-2 mt-8" aria-label={t('higherSchools.directoryV2.pagination')}><button onClick={() => setPage(page - 1)} disabled={page === 1} className="w-10 h-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center disabled:opacity-40" aria-label={t('higherSchools.directoryV2.previous')}><ChevronLeft size={18} className="rtl:rotate-180" /></button>{Array.from({ length: pageCount }, (_, index) => index + 1).filter((number) => number === 1 || number === pageCount || Math.abs(number - page) <= 1).map((number, index, list) => <React.Fragment key={number}>{index > 0 && number - list[index - 1] > 1 && <span className="text-slate-400">…</span>}<button onClick={() => setPage(number)} aria-current={number === page ? 'page' : undefined} className={`w-10 h-10 rounded-xl text-sm font-black ${number === page ? 'bg-primary text-white' : 'bg-white border border-slate-200 text-slate-600'}`}>{number}</button></React.Fragment>)}<button onClick={() => setPage(page + 1)} disabled={page === pageCount} className="w-10 h-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center disabled:opacity-40" aria-label={t('higherSchools.directoryV2.next')}><ChevronRight size={18} className="rtl:rotate-180" /></button></nav>}
+        </main>
+      </div>
+
+      <section className="mt-12 rounded-[1.5rem] bg-[#0B1739] px-6 py-7 md:px-9 flex flex-col md:flex-row md:items-center justify-between gap-5 text-white"><div><h2 className="text-xl font-black">{t('higherSchools.directoryV2.ctaTitle')}</h2><p className="text-sm text-blue-100/75 font-medium mt-1">{t('higherSchools.directoryV2.ctaText')}</p></div><Link to="/tawjih" className="shrink-0 min-h-[46px] px-5 rounded-xl bg-primary flex items-center justify-center gap-2 text-sm font-black"><Compass size={17} />{t('higherSchools.orientationCTA.primaryButton')}</Link></section>
+    </div>
+
+    {mobileFilters && <div className="fixed inset-0 z-[120] lg:hidden"><button className="absolute inset-0 bg-slate-950/50" onClick={() => setMobileFilters(false)} aria-label={t('higherSchools.directoryV2.close')} /><div className="absolute inset-y-0 start-0 w-[min(88vw,360px)] bg-[#F7F9FC] p-4 overflow-y-auto shadow-2xl"><div className="flex items-center justify-between mb-4"><h2 className="font-black text-lg">{t('higherSchools.explorer.mobileFilterTitle')}</h2><button onClick={() => setMobileFilters(false)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center"><X size={18} /></button></div><FiltersPanel filters={filters} toggle={updateList} clear={clearFilters} activeCount={activeCount} /><button onClick={() => setMobileFilters(false)} className="sticky bottom-3 w-full h-12 mt-4 rounded-xl bg-primary text-white font-black">{t('higherSchools.explorer.showResults', { count: sorted.length })}</button></div></div>}
+
+    {selectedInstitutions.length > 0 && <div className="fixed bottom-4 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-50 bg-slate-900 text-white rounded-2xl px-4 py-3 shadow-2xl flex items-center gap-4"><span className="text-sm font-black">{t('higherSchools.stickyBar.selectedPlural', { count: selectedInstitutions.length })} : {selectedInstitutions.length}</span><button onClick={() => setCompareOpen(true)} className="px-4 py-2 rounded-xl bg-primary text-xs font-black">{t('higherSchools.stickyBar.compare')}</button><button onClick={compare.clear} className="text-xs font-bold text-slate-300">{t('higherSchools.stickyBar.clear')}</button></div>}
+    {compareOpen && <ComparisonModal institutions={selectedInstitutions} onClose={() => setCompareOpen(false)} onClear={() => { compare.clear(); setCompareOpen(false); }} />}
+  </div>;
 };

@@ -55,7 +55,20 @@ const useIdList = (key: string, max?: number) => {
 
   const has = useCallback((id: string) => ids.includes(id), [ids]);
 
-  return { ids, toggle, clear, has, isFull: max ? ids.length >= max : false };
+  const hasAny = useCallback((candidateIds: string[]) => candidateIds.some((id) => ids.includes(id)), [ids]);
+
+  const toggleCanonical = useCallback((canonicalId: string, legacyIds: string[] = []) => {
+    setIds((prev) => {
+      const aliases = new Set([canonicalId, ...legacyIds]);
+      const active = prev.some((id) => aliases.has(id));
+      let next = prev.filter((id) => !aliases.has(id));
+      if (!active && (!max || next.length < max)) next = [...next, canonicalId];
+      writeList(key, next);
+      return next;
+    });
+  }, [key, max]);
+
+  return { ids, toggle, clear, has, hasAny, toggleCanonical, isFull: max ? ids.length >= max : false };
 };
 
 export const useFavorites = () => useIdList(FAVORITES_KEY);
