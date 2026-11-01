@@ -5,7 +5,7 @@ import {
   Search, X, MapPin, GraduationCap, Compass, ChevronDown, Heart, Scale,
   SlidersHorizontal, ArrowLeft, Check, Building2, Briefcase,
   Code2, Stethoscope, Ruler, Atom, Sprout, Calculator, MessageCircle,
-  Cog, Frown, Target
+  Cog, Frown, Target, Award
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import {
@@ -115,11 +115,13 @@ const SchoolLogo: React.FC<{ school: School; size?: 'sm' | 'md' | 'lg' }> = ({ s
   );
 };
 
-const TypeBadge: React.FC<{ type: School['type'] }> = ({ type }) => {
+const TypeBadge: React.FC<{ type: School['type']; rawType?: string }> = ({ type, rawType = '' }) => {
   const { t } = useTranslation();
+  const normalized = rawType.toLocaleLowerCase('fr');
+  const displayType = normalized.includes('militaire') ? 'military' : normalized.includes('partenariat') ? 'partnership' : type;
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide ${type === 'public' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>
-      {type === 'public' ? t('higherSchools.card.public') : t('higherSchools.card.private')}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide ${displayType === 'military' ? 'bg-slate-800 text-white' : type === 'public' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}`}>
+      {t(`higherSchools.types.${displayType}`)}
     </span>
   );
 };
@@ -146,7 +148,7 @@ const SchoolCard: React.FC<{
         <div className="flex items-center gap-3">
           <SchoolLogo school={school} />
           <div className="flex flex-wrap items-center gap-1.5">
-            <TypeBadge type={school.type} />
+            <TypeBadge type={school.type} rawType={school.rawType} />
             {match && <MatchScoreBadge match={match} />}
           </div>
         </div>
@@ -178,6 +180,13 @@ const SchoolCard: React.FC<{
           </span>
         )}
       </div>
+
+      {school.degree && (
+        <div className="flex items-start gap-2 text-[12px] text-slate-500 font-semibold mb-4">
+          <Award size={14} className="text-slate-400 shrink-0 mt-0.5" />
+          <span className="line-clamp-2"><span className="font-black text-slate-600">{t('higherSchools.detail.diplomasAwarded')} :</span> {school.degree}</span>
+        </div>
+      )}
 
       <div className="mt-auto pt-4 border-t border-slate-50 flex items-center gap-2">
         <Link
@@ -834,11 +843,14 @@ const ComparisonModal: React.FC<{ schoolIds: string[]; onClose: () => void; onCl
   const { t } = useTranslation();
   const schools = schoolIds.map((id) => SCHOOLS.find((s) => s.id === id)).filter(Boolean) as School[];
   const rows: { label: string; render: (s: School) => React.ReactNode }[] = [
-    { label: t('higherSchools.compare.typeLabel'), render: (s) => <TypeBadge type={s.type} /> },
+    { label: t('higherSchools.compare.typeLabel'), render: (s) => <TypeBadge type={s.type} rawType={s.rawType} /> },
     { label: t('higherSchools.compare.cityLabel'), render: (s) => t(`higherSchools.cities.${s.city}`, s.city) },
     { label: t('higherSchools.compare.fieldsLabel'), render: (s) => s.fields.map(f => t(`higherSchools.fields.${f}`, f)).join(', ') },
     { label: t('higherSchools.compare.accessLabel'), render: (s) => s.accessLevels.map(a => t(`higherSchools.access.${a}`, a)).join(', ') },
     { label: t('higherSchools.compare.admissionLabel'), render: (s) => s.admissionMethods.map(a => t(`higherSchools.admission.${a}`, a)).join(', ') },
+    { label: t('higherSchools.compare.durationLabel'), render: () => <span className="text-slate-400 italic">{t('higherSchools.detail.durationUnknown')}</span> },
+    { label: t('higherSchools.compare.diplomaLabel'), render: (s) => s.degree || <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
+    { label: t('higherSchools.compare.bacsLabel'), render: (s) => s.bacProfiles || <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
     { label: t('higherSchools.compare.tuitionLabel'), render: () => <span className="text-slate-400 italic">{t('higherSchools.compare.notAvailable')}</span> },
     {
       label: t('higherSchools.compare.matchLabel'), render: (s) => {

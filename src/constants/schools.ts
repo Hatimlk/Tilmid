@@ -22,6 +22,8 @@ export interface School {
   name: string;
   acronym?: string;
   type: SchoolType;
+  /** Original classification from the verified source (e.g. Militaire or partenariat). */
+  rawType: string;
   city: string;
   fields: string[];
   accessLevels: string[];
@@ -128,6 +130,7 @@ export const SCHOOLS: School[] = dataset.data.map((row, index) => ({
   name: row.Établissement,
   acronym: row.Sigle || undefined,
   type: row.Statut.toLocaleLowerCase('fr').includes('priv') ? 'private' : 'public',
+  rawType: row.Statut || 'Public',
   city: row.Ville || 'Non renseignée',
   fields: inferFields(row['Domaine principal']),
   accessLevels: inferAccessLevels(row['Diplôme / niveau'], row["Mode d'accès"]),
